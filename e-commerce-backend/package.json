@@ -1,0 +1,27 @@
+{
+  "name": "e-commerce-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:server": "ts-node ./src/index.ts",
+    "dev:worker": "ts-node ./src/index-worker.ts",
+    "dev": "concurrently npm:dev:*",
+    "build": "tsc",
+    "start:server": "node ./dist/index.js",
+    "start:worker": "node ./dist/index-worker.js",
+    "start": "concurrently npm:start:*"
+  },
+  "dependencies": {
+    "@vendure/admin-ui-plugin": "2.2.6",
+    "@vendure/asset-server-plugin": "2.2.6",
+    "@vendure/core": "2.2.6",
+    "@vendure/email-plugin": "2.2.6",
+    "dotenv": "16.4.5",
+    "mysql": "2.18.1"
+  },
+  "devDependencies": {
+    "@vendure/cli": "2.2.6",
+    "concurrently": "8.2.2",
+    "typescript": "5.3.3"
+  }
+}
