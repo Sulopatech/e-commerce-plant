@@ -6,6 +6,8 @@ import Orientation from 'react-native-orientation-locker';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import StackNavigator from './src/navigation/StackNavigator';
+import {NavigationContainer} from '@react-navigation/native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import { store, persistor } from './src/store'; // Adjust path as per your project structure
 import { components } from './src/components'; // Adjust path as per your project structure
 import { ApolloProvider ,
@@ -13,7 +15,6 @@ import { ApolloProvider ,
         HttpLink,
         InMemoryCache,
 } from '@apollo/client';
-
 import { API_URL } from "./src/Api/Environment";
 enableScreens();
 
@@ -21,15 +22,6 @@ const App = () => {
   useEffect(() => {
     Orientation.lockToPortrait();
   }, []);
-
-  const httpLink = new HttpLink({
-    uri: API_URL,
-  })
-
-  const client = new ApolloClient({
-    link: httpLink,
-    cache: new InMemoryCache(),
-  })
 
   return (
     <SafeAreaProvider>
