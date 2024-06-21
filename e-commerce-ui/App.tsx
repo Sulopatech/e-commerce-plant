@@ -1,17 +1,21 @@
-import { Provider } from 'react-redux';
 import React, { useEffect } from 'react';
-import { components } from './src/components';
-import { persistor, store } from './src/store';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import { enableScreens } from 'react-native-screens';
 import Orientation from 'react-native-orientation-locker';
-import { PersistGate } from 'redux-persist/integration/react';
 import StackNavigator from './src/navigation/StackNavigator';
-import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider, ApolloLink, Observable } from '@apollo/client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {NavigationContainer} from '@react-navigation/native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import { store, persistor } from './src/store'; // Adjust path as per your project structure
+import { components } from './src/components'; // Adjust path as per your project structure
+import { ApolloProvider ,
+        ApolloClient,
+        HttpLink,
+        InMemoryCache,
+} from '@apollo/client';
 
-import { API_URL } from './src/API/Enviroment';
+import { API_URL } from "./src/Api/Environment";
+
 enableScreens();
 
 const App = () => {
@@ -19,29 +23,12 @@ const App = () => {
     Orientation.lockToPortrait();
   }, []);
 
-  const httpLink = new HttpLink({ uri: API_URL });
-
-  const authMiddleware = new ApolloLink((operation, forward) => {
-    return new Observable(observer => {
-      (async () => {
-        const token = await AsyncStorage.getItem("token");
-        operation.setContext({
-          headers: {
-            authorization: token ? `Bearer ${token}` : "",
-          },
-        });
-        const subscriber = {
-          next: observer.next.bind(observer),
-          error: observer.error.bind(observer),
-          complete: observer.complete.bind(observer),
-        };
-        forward(operation).subscribe(subscriber);
-      })();
-    });
+  const httpLink = new HttpLink({
+    uri: API_URL,
   });
 
   const client = new ApolloClient({
-    link: ApolloLink.from([authMiddleware, httpLink]),
+    link: httpLink,
     cache: new InMemoryCache(),
   });
 
