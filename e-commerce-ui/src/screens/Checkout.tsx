@@ -1,6 +1,7 @@
-import axios from 'axios';
+// Checkout.tsx
 import React, {useState} from 'react';
 import {View, ScrollView} from 'react-native';
+import {GraphQLClient} from 'graphql-request';
 
 import {text} from '../text';
 import {hooks} from '../hooks';
@@ -9,6 +10,11 @@ import {custom} from '../custom';
 import {theme} from '../constants';
 import {components} from '../components';
 import {ENDPOINTS, CONFIG} from '../config';
+import {CREATE_ORDER_MUTATION} from '../screens/createOrderGql';  // Adjust the path as needed
+
+const client = new GraphQLClient(CONFIG.graphqlEndpoint, {
+  headers: CONFIG.headers,
+});
 
 const Checkout: React.FC = () => {
   const navigation = hooks.useAppNavigation();
@@ -42,14 +48,14 @@ const Checkout: React.FC = () => {
         email: user?.email,
         phoneNumber: user?.phoneNumber,
       };
-      const response = await axios({
-        data: data,
-        method: 'post',
-        headers: CONFIG.headers,
-        url: ENDPOINTS.ORDER_CREATE,
-      });
 
-      if (response.status === 200) {
+      const variables = {
+        input: data,
+      };
+
+      const response = await client.request(CREATE_ORDER_MUTATION, variables);
+
+      if (response.createOrder.status === 'success') {
         navigation.reset({
           index: 0,
           routes: [{name: 'OrderSuccessful'}],

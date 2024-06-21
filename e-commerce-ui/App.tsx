@@ -11,7 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApolloClient, HttpLink, InMemoryCache, ApolloProvider, ApolloLink, Observable } from '@apollo/client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { API_URL } from './src/API/Environment';
+import { API_URL } from './src/API/Enviroment';
 enableScreens();
 
 const App = () => {
