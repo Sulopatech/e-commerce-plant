@@ -17,7 +17,7 @@ const userDeleted = () => {
   ]);
 };
 
-const somethingWentWrong = () => {
+const somethingWentWrong = (message: string) => {
   return Alert.alert('Something went wrong, please try again later');
 };
 
