@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, {useState, useEffect, useRef} from 'react';
 import {View, TextInput, TouchableOpacity} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -11,10 +10,14 @@ import {custom} from '../custom';
 import {theme} from '../constants';
 import {components} from '../components';
 import {validation} from '../validation';
-import {ENDPOINTS, CONFIG} from '../config';
 import {validateName} from '../validation/validateName';
 import {validateEmail} from '../validation/validateEmail';
 import {handleTextChange} from '../utils/handleTextChange';
+import {useMutation} from '@apollo/client';
+import {SIGNUP} from '../Api/signup_gql';
+import {LOGIN_USER} from '../config';
+import {Image} from 'react-native-svg';
+import SignIn from './SignIn';
 
 const SignUp: React.FC = () => {
   const navigation = hooks.useAppNavigation();
@@ -38,6 +41,8 @@ const SignUp: React.FC = () => {
   const passwordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
 
+  const [signupAPI, {error}] = useMutation(SIGNUP);
+
   useEffect(() => {
     if (loading) {
       nameInputRef.current?.blur();
@@ -48,33 +53,27 @@ const SignUp: React.FC = () => {
   }, [loading]);
 
   const handleCreateUser = async () => {
+    setLoading(true);
+    console.log('coming');
     try {
-      setLoading(true);
-      const response = await axios({
-        method: 'post',
-        headers: CONFIG.headers,
-        url: ENDPOINTS.CREATE_USER,
-        data: {name, email, password},
+      const {data} = await signupAPI({
+        variables: {
+          firstName: name,
+          emailAddress: email,
+          password: confirmPassword,
+        },
       });
-
-      if (response.status === 200) {
-        navigation.replace('SignUpAccountCreated', {email, password});
-        return;
-      }
-
-      alert.somethingWentWrong();
-    } catch (error: any) {
-      if (error.response.status === 409) {
-        alert.userWithThisNameOrEmailAlreadyExists();
-        return;
-      }
-
-      alert.somethingWentWrong();
+      console.log('data', data);
+      // if (data && data.signup) {
+      //   navigation.navigate('SignIn');
+      // }
+      navigation.navigate('SignIn');
+    } catch (error) {
+      console.error('Signup error', error);
     } finally {
       setLoading(false);
     }
   };
-
   const renderHeader = (): JSX.Element => {
     return <components.Header goBackIcon={true} />;
   };
