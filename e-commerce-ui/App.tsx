@@ -16,8 +16,8 @@ import {
 } from '@apollo/client';
 
 import {API_URL} from './src/Api/Environment';
-
-import Toast from 'react-native-toast-message';
+import localStorage from 'redux-persist/es/storage';
+import * as Keychain from 'react-native-keychain';
 
 enableScreens();
 
@@ -53,3 +53,8 @@ const App = () => {
 };
 
 export default App;
+function setContext(
+  arg0: (_: any, {headers}: {headers: any}) => Promise<{headers: any}>,
+) {
+  throw new Error('Function not implemented.');
+}

@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useRef, useState} from 'react';
 import {View, TouchableOpacity, TextInput} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {showMessage} from 'react-native-flash-message';
 
 import {text} from '../text';
 import {alert} from '../alert';
@@ -20,6 +21,7 @@ import {handleTextChange} from '../utils/handleTextChange';
 import {useMutation} from '@apollo/client';
 import {LOGIN_MUTATION} from '../Api/login_gql';
 import {setScreen} from '../store/slices/tabSlice';
+import Home from './tabs/Home';
 
 const SignIn: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -40,8 +42,6 @@ const SignIn: React.FC = () => {
 
   const [SignIn, {error}] = useMutation(LOGIN_MUTATION);
 
-  // console.log("Test : ",email, "pass: ", password, "remeber ? ",rememberMe);
-
   useEffect(() => {
     if (loading) {
       emailInputRef.current?.blur();
@@ -60,21 +60,39 @@ const SignIn: React.FC = () => {
           rememberMe: rememberMe,
         },
       });
-      console.log('data', data);
-      navigation.navigate('SignUp');
-      const signInResponse = data.login;
 
-      if (signInResponse.token) {
-        await AsyncStorage.setItem('token', signInResponse.token);
-        console.log('Token stored successfully:', signInResponse.token);
+      console.log('API response:', data);
+
+      if (data.authenticate && data.authenticate.__typename === 'CurrentUser') {
+        const channels = data.authenticate.channels;
+        if (channels && channels.length > 0) {
+          const token = channels[0].token;
+
+          await AsyncStorage.clear();
+          await AsyncStorage.setItem('userToken', token);
+          const userData: any = {
+            email: email,
+            password: password,
+          };
+          dispatch(actions.setUser(userData));
+          showMessage({
+            message: 'Login Successful',
+            type: 'success',
+          });
+          navigation.navigate('TabNavigator');
+        } else {
+          console.log('No channels found');
+        }
       } else {
-        console.error('Token not found in login response');
+        showMessage({
+          message: 'Invalid Crendentials',
+          type: 'danger',
+        });
       }
     } catch (error) {
       console.error('Error during login:', error);
     } finally {
       setLoading(false);
-      console.log('Exiting handleSignIn');
     }
   };
 
@@ -185,9 +203,7 @@ const SignIn: React.FC = () => {
     return (
       <components.Button
         title='Sign in'
-        onPress={() => {
-          handleSignIn();
-        }}
+        onPress={() => handleSignIn()}
         loading={loading}
       />
     );
@@ -207,13 +223,7 @@ const SignIn: React.FC = () => {
   };
 
   const renderHeight = (): JSX.Element => {
-    return (
-      <View
-        style={{
-          height: utils.responsiveHeight(70, true),
-        }}
-      />
-    );
+    return <View style={{height: utils.responsiveHeight(70, true)}} />;
   };
 
   const renderContent = (): JSX.Element => {

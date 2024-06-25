@@ -15,6 +15,7 @@ import {components} from '../components';
 import BottomTabBar from './BottomTabBar';
 import {queryHooks} from '../store/slices/apiSlice';
 
+
 const TabNavigator: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
   const user = hooks.useAppSelector(state => state.userSlice.user);
@@ -24,16 +25,16 @@ const TabNavigator: React.FC = () => {
 
   console.log('user', JSON.stringify(user, null, 2));
 
-  const {
-    data: userData,
-    error: userError,
-    isLoading: userLoading,
-    refetch: refetchUser,
-  } = queryHooks.useGetUserQuery(user?.id || 0);
+  // const {
+  //   data: userData,
+  //   error: userError,
+  //   isLoading: userLoading,
+  //   refetch: refetchUser,
+  // } = queryHooks.useGetUserQuery(user?.id || 0);
 
   useEffect(() => {
     dispatch(actions.resetFilters());
-    refetchUser();
+    // refetchUser();
   }, [currentTabScreen]);
 
   const getTitle = (): string | null => {
