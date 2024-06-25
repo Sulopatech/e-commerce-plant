@@ -1,4 +1,5 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useRef, useState} from 'react';
 import {View, TouchableOpacity, TextInput} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
@@ -16,6 +17,10 @@ import {validation} from '../validation';
 import {ENDPOINTS, CONFIG} from '../config';
 import {validateEmail} from '../validation/validateEmail';
 import {handleTextChange} from '../utils/handleTextChange';
+import { useMutation } from '@apollo/client';
+import { LOGIN_MUTATION } from "../Api/login_gql";
+import { setScreen } from '../store/slices/tabSlice';
+
 
 const SignIn: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -34,7 +39,11 @@ const SignIn: React.FC = () => {
   const emailInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
 
-  const user = {email, password};
+  const [SignIn, {error}] = useMutation(LOGIN_MUTATION);
+
+  // console.log("Test : ",email, "pass: ", password, "remeber ? ",rememberMe);
+  
+
 
   useEffect(() => {
     if (loading) {
@@ -43,34 +52,37 @@ const SignIn: React.FC = () => {
     }
   }, [loading]);
 
-  const handleSignIn = async () => {
-    try {
-      setLoading(true);
 
-      const response = await axios({
-        data: user,
-        method: 'post',
-        headers: CONFIG.headers,
-        url: ENDPOINTS.LOGIN_USER,
+  const handleSignIn = async () => {
+    console.log("Inside handleSignIn"); // Debugging log
+    setLoading(true);
+    try {
+      const { data } = await SignIn({
+        variables: {
+          username: email,
+          password: password,
+          rememberMe: rememberMe,
+        },  
       });
 
-      if (response.status === 200) {
-        dispatch(actions.setUser(response.data.user));
-        return;
+      const signInResponse = data.login; 
+
+      if (signInResponse.token) {
+        await AsyncStorage.setItem('token', signInResponse.token);
+        console.log('Token stored successfully:', signInResponse.token);
+      } else {
+        console.error('Token not found in login response');
       }
 
-      alert.somethingWentWrong();
-    } catch (error: any) {
-      if (error.response.status === 401) {
-        alert.invalidUsernameOrPassword();
-        return;
-      }
-
-      alert.somethingWentWrong();
+    } catch (error) {
+      console.error('Error during login:',error );
     } finally {
       setLoading(false);
+      console.log("Exiting handleSignIn");
     }
   };
+  
+
 
   const renderHeader = (): JSX.Element => {
     return <components.Header goBackIcon={true} />;
@@ -180,9 +192,10 @@ const SignIn: React.FC = () => {
       <components.Button
         title='Sign in'
         onPress={() => {
-          validation(user) ? handleSignIn() : null;
+          handleSignIn()
         }}
         loading={loading}
+        
       />
     );
   };
@@ -240,3 +253,4 @@ const SignIn: React.FC = () => {
 };
 
 export default SignIn;
+
