@@ -15,6 +15,8 @@ import { ApolloProvider ,
 } from '@apollo/client';
 
 import { API_URL } from "./src/Api/Environment";
+import localStorage from 'redux-persist/es/storage';
+import * as Keychain from 'react-native-keychain';
 
 enableScreens();
 
@@ -26,6 +28,7 @@ const App = () => {
   const httpLink = new HttpLink({
     uri: API_URL,
   });
+
 
   const client = new ApolloClient({
     link: httpLink,
@@ -50,3 +53,7 @@ const App = () => {
 };
 
 export default App;
+function setContext(arg0: (_: any, { headers }: { headers: any; }) => Promise<{ headers: any; }>) {
+  throw new Error('Function not implemented.');
+}
+

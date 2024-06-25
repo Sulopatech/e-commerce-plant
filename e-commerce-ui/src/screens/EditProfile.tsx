@@ -1,19 +1,21 @@
 import axios from 'axios';
-import {useSelector} from 'react-redux';
-import {View, ScrollView, TextInput} from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import { useSelector } from 'react-redux';
+import { View, ScrollView, TextInput } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
 
-import {alert} from '../alert';
-import {hooks} from '../hooks';
-import {utils} from '../utils';
-import {custom} from '../custom';
-import {UserType} from '../types';
-import {RootState} from '../store';
-import {validation} from '../validation';
-import {actions} from '../store/actions';
-import {components} from '../components';
-import {ENDPOINTS, CONFIG} from '../config';
-import {handleTextChange} from '../utils/handleTextChange';
+import { alert } from '../alert';
+import { hooks } from '../hooks';
+import { utils } from '../utils';
+import { custom } from '../custom';
+import { UserType } from '../types';
+import { RootState } from '../store';
+import { validation } from '../validation';
+import { actions } from '../store/actions';
+import { components } from '../components';
+import { ENDPOINTS, CONFIG } from '../config';
+import { handleTextChange } from '../utils/handleTextChange';
+import { UPDATE_USER } from '../Api/updateuser_gql';
+import { useMutation } from '@apollo/client';
 
 const EditProfile: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -36,7 +38,7 @@ const EditProfile: React.FC = () => {
   const handleLocationChange = handleTextChange(setLocation);
   const handlePhoneNumberChange = handleTextChange(setPhoneNumber);
 
-  const updatedUser = {name, location};
+  const [updateUserMutation] = useMutation(UPDATE_USER);
 
   const nameInputRef = useRef<TextInput>(null);
   const emailInputRef = useRef<TextInput>(null);
@@ -56,93 +58,97 @@ const EditProfile: React.FC = () => {
     try {
       setLoading(true);
 
-      const response = await axios({
-        method: 'put',
-        url: ENDPOINTS.UPDATE_USER + `/${user?.id}`,
-        headers: CONFIG.headers,
-        data: updatedUser,
+      const response = await updateUserMutation({
+        variables: {
+          input: {
+            name,
+            phoneNumber
+            
+          },
+        },
       });
 
-      if (response.status === 200) {
-        dispatch(actions.setUser(response.data.user));
+      if (response.data && response.data.updateCustomer) {
+        dispatch(actions.setUser(response.data.updateCustomer));
         navigation.navigate('InfoSaved');
-        return;
+      } else {
+        alert.somethingWentWrong('Failed to update user.');
       }
-
-      alert.somethingWentWrong();
     } catch (error: any) {
-      alert.somethingWentWrong();
+      console.error('Error updating user:', error);
+      alert.somethingWentWrong('Error updating user.');
     } finally {
       setLoading(false);
     }
   };
 
   const renderHeader = (): JSX.Element => {
-    return <components.Header title='Edit personal info' goBackIcon={true} />;
+    return <components.Header title="Edit personal info" goBackIcon={true} />;
   };
 
   const renderUserInfo = (): JSX.Element => {
     return (
       <components.UserData
-        containerStyle={{marginBottom: utils.responsiveHeight(40)}}
+        containerStyle={{ marginBottom: utils.responsiveHeight(40) }}
       />
     );
   };
 
   const renderInputFields = (): JSX.Element => {
     return (
-      <View style={{paddingHorizontal: 20}}>
+      <View style={{ paddingHorizontal: 20 }}>
         <custom.InputField
-          label='Name'
+          label="Name"
           value={name}
-          keyboardType='default'
+          keyboardType="default"
           innerRef={nameInputRef}
           placeholder={'enter name'}
           onChangeText={handleNameChange}
-          containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+          containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
         <custom.InputField
           value={email}
-          label='Email'
+          label="Email"
           innerRef={emailInputRef}
           placeholder={'enter email'}
-          keyboardType='email-address'
+          keyboardType="email-address"
           onChangeText={handleEmailChange}
           editable={user?.email ? false : true}
-          containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+          containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
         <custom.InputField
           value={phoneNumber}
-          label='Phone number'
-          keyboardType='phone-pad'
+          label="Phone number"
+          keyboardType="phone-pad"
           innerRef={phoneNumberInputRef}
           placeholder={'enter phone number'}
           editable={user?.phoneNumber ? false : true}
           onChangeText={handlePhoneNumberChange}
-          containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+          containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
         <custom.InputField
-          label='Location'
+          label="Location"
           value={location}
-          keyboardType='default'
+          keyboardType="default"
           innerRef={locationInputRef}
           placeholder={'enter location'}
           onChangeText={handleLocationChange}
-          containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+          containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
       </View>
     );
   };
 
   const renderButton = (): JSX.Element => {
+    const updatedUser = { name, email, phoneNumber, location };
     return (
       <components.Button
-        title='Save changes'
+        title="Save changes"
         loading={loading}
         onPress={() => {
           validation(updatedUser) ? handleUpdate() : null;
         }}
-        containerStyle={{paddingHorizontal: 20}}
+        containerStyle={{ paddingHorizontal: 20 }}
       />
     );
   };
@@ -172,3 +178,136 @@ const EditProfile: React.FC = () => {
 };
 
 export default EditProfile;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

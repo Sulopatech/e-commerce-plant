@@ -1,12 +1,12 @@
 // const LOCALHOST = 'http://127.0.0.1:8000/';
-const LOCALHOST = 'http://192.168.1.55:3000/';
+const LOCALHOST = 'http://192.168.1.38:3000/';
 // const DOMAIN = 'https://everbloom.rn-admin.site/';
 
 export const BASE_URL = LOCALHOST;
 
 // ############ GET DATA ############ //
 export const GET_USER = `${BASE_URL}api/user`;
-export const GET_ORDERS = `${BASE_URL}api/order`;
+export const GET_ORDERS = `${BASE_URL}api/order`; 
 export const GET_PLANTS = `${BASE_URL}api/plants`;
 export const GET_COLORS = `${BASE_URL}api/colors`;
 export const GET_REVIEWS = `${BASE_URL}api/reviews`;

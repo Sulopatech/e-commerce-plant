@@ -26,6 +26,7 @@
     "react-native-flash-message": "^0.4.2",
     "react-native-image-progress": "^1.2.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-keychain": "^8.2.0",
     "react-native-modal": "^13.0.1",
     "react-native-orientation-locker": "^1.6.0",
     "react-native-responsive-dimensions": "^3.1.1",

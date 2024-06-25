@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useRef, useState} from 'react';
 import {View, TouchableOpacity, TextInput} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {showMessage} from 'react-native-flash-message';
 
 import {text} from '../text';
 import {alert} from '../alert';
@@ -17,10 +18,10 @@ import {validation} from '../validation';
 import {ENDPOINTS, CONFIG} from '../config';
 import {validateEmail} from '../validation/validateEmail';
 import {handleTextChange} from '../utils/handleTextChange';
-import { useMutation } from '@apollo/client';
-import { LOGIN_MUTATION } from "../Api/login_gql";
-import { setScreen } from '../store/slices/tabSlice';
-
+import {useMutation} from '@apollo/client';
+import {LOGIN_MUTATION} from '../Api/login_gql';
+import {setScreen} from '../store/slices/tabSlice';
+import Home from './tabs/Home';
 
 const SignIn: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -41,10 +42,6 @@ const SignIn: React.FC = () => {
 
   const [SignIn, {error}] = useMutation(LOGIN_MUTATION);
 
-  // console.log("Test : ",email, "pass: ", password, "remeber ? ",rememberMe);
-  
-
-
   useEffect(() => {
     if (loading) {
       emailInputRef.current?.blur();
@@ -52,37 +49,53 @@ const SignIn: React.FC = () => {
     }
   }, [loading]);
 
-
   const handleSignIn = async () => {
-    console.log("Inside handleSignIn"); // Debugging log
+   
     setLoading(true);
     try {
-      const { data } = await SignIn({
+      const {data} = await SignIn({
         variables: {
           username: email,
           password: password,
           rememberMe: rememberMe,
-        },  
+        },
       });
 
-      const signInResponse = data.login; 
+      console.log('API response:', data);
 
-      if (signInResponse.token) {
-        await AsyncStorage.setItem('token', signInResponse.token);
-        console.log('Token stored successfully:', signInResponse.token);
+      if (data.authenticate && data.authenticate.__typename === 'CurrentUser') {
+        const channels = data.authenticate.channels;
+        if (channels && channels.length > 0) {
+          const token = channels[0].token;
+          
+          await AsyncStorage.clear();
+          await AsyncStorage.setItem('userToken', token);
+          const userData: any = {
+            email: email,
+            password: password,
+          };
+          dispatch(actions.setUser(userData));
+          showMessage({
+            message: 'Login Successful',
+            type: 'success',
+          });
+          navigation.navigate('TabNavigator');
+        } else {
+          console.log('No channels found');
+        }
       } else {
-        console.error('Token not found in login response');
+        showMessage({
+          message: 'Invalid Crendentials',
+          type: 'danger',
+        });
       }
-
     } catch (error) {
-      console.error('Error during login:',error );
+      console.error('Error during login:', error);
     } finally {
       setLoading(false);
-      console.log("Exiting handleSignIn");
+      
     }
   };
-  
-
 
   const renderHeader = (): JSX.Element => {
     return <components.Header goBackIcon={true} />;
@@ -104,10 +117,7 @@ const SignIn: React.FC = () => {
 
   const renderDescription = (): JSX.Element => {
     return (
-      <text.T16
-        style={{marginBottom: utils.responsiveHeight(40)}}
-        numberOfLines={1}
-      >
+      <text.T16 style={{marginBottom: utils.responsiveHeight(40)}} numberOfLines={1}>
         Sign in to your account
       </text.T16>
     );
@@ -189,14 +199,7 @@ const SignIn: React.FC = () => {
 
   const renderButton = (): JSX.Element => {
     return (
-      <components.Button
-        title='Sign in'
-        onPress={() => {
-          handleSignIn()
-        }}
-        loading={loading}
-        
-      />
+      <components.Button title='Sign in' onPress={() => handleSignIn()} loading={loading} />
     );
   };
 
@@ -214,13 +217,7 @@ const SignIn: React.FC = () => {
   };
 
   const renderHeight = (): JSX.Element => {
-    return (
-      <View
-        style={{
-          height: utils.responsiveHeight(70, true),
-        }}
-      />
-    );
+    return <View style={{height: utils.responsiveHeight(70, true)}} />;
   };
 
   const renderContent = (): JSX.Element => {
@@ -253,4 +250,3 @@ const SignIn: React.FC = () => {
 };
 
 export default SignIn;
-

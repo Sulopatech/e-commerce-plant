@@ -38,13 +38,13 @@ const SignUpAccountCreated: React.FC<SignUpAccountCreatedScreenProps> = ({
         return;
       }
 
-      alert.somethingWentWrong();
+      alert.somethingWentWrong("");
     } catch (error: any) {
       navigation.reset({
         index: 0,
         routes: [{name: 'SignIn'}],
       });
-      alert.somethingWentWrong();
+      alert.somethingWentWrong("");
     } finally {
       setLoading(false);
     }
