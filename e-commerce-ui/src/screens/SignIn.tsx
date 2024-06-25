@@ -17,10 +17,9 @@ import {validation} from '../validation';
 import {ENDPOINTS, CONFIG} from '../config';
 import {validateEmail} from '../validation/validateEmail';
 import {handleTextChange} from '../utils/handleTextChange';
-import { useMutation } from '@apollo/client';
-import { LOGIN_MUTATION } from "../Api/login_gql";
-import { setScreen } from '../store/slices/tabSlice';
-
+import {useMutation} from '@apollo/client';
+import {LOGIN_MUTATION} from '../Api/login_gql';
+import {setScreen} from '../store/slices/tabSlice';
 
 const SignIn: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -42,8 +41,6 @@ const SignIn: React.FC = () => {
   const [SignIn, {error}] = useMutation(LOGIN_MUTATION);
 
   // console.log("Test : ",email, "pass: ", password, "remeber ? ",rememberMe);
-  
-
 
   useEffect(() => {
     if (loading) {
@@ -52,20 +49,20 @@ const SignIn: React.FC = () => {
     }
   }, [loading]);
 
-
   const handleSignIn = async () => {
-    console.log("Inside handleSignIn"); // Debugging log
+    console.log('Inside handleSignIn'); // Debugging log
     setLoading(true);
     try {
-      const { data } = await SignIn({
+      const {data} = await SignIn({
         variables: {
           username: email,
           password: password,
           rememberMe: rememberMe,
-        },  
+        },
       });
-
-      const signInResponse = data.login; 
+      console.log('data', data);
+      navigation.navigate('SignUp');
+      const signInResponse = data.login;
 
       if (signInResponse.token) {
         await AsyncStorage.setItem('token', signInResponse.token);
@@ -73,16 +70,13 @@ const SignIn: React.FC = () => {
       } else {
         console.error('Token not found in login response');
       }
-
     } catch (error) {
-      console.error('Error during login:',error );
+      console.error('Error during login:', error);
     } finally {
       setLoading(false);
-      console.log("Exiting handleSignIn");
+      console.log('Exiting handleSignIn');
     }
   };
-  
-
 
   const renderHeader = (): JSX.Element => {
     return <components.Header goBackIcon={true} />;
@@ -192,10 +186,9 @@ const SignIn: React.FC = () => {
       <components.Button
         title='Sign in'
         onPress={() => {
-          handleSignIn()
+          handleSignIn();
         }}
         loading={loading}
-        
       />
     );
   };
@@ -253,4 +246,3 @@ const SignIn: React.FC = () => {
 };
 
 export default SignIn;
-
