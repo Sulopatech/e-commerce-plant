@@ -1,27 +1,33 @@
 import { gql } from '@apollo/client';
 
 export const LOGIN_MUTATION = gql`
-  mutation Login($username: String!, $password: String!, $rememberMe: Boolean!) {
-    login( username: $username, password: $password, rememberMe: $rememberMe ) {
-      ... on CurrentUser {
+mutation LOGIN($username: String!, $password: String!) {
+  authenticate(input: {
+    native: {
+      username: $username,
+      password: $password
+    }
+  }, rememberMe: true) {
+    ... on CurrentUser {
+      id
+      identifier
+      channels {
         id
-        identifier
-        channels {
-          id
-        }
-      }
-      ... on InvalidCredentialsError {
-        errorCode
-        message
-      }
-      ... on NotVerifiedError {
-        errorCode
-        message
-      }
-      ... on NativeAuthStrategyError {
-        errorCode
-        message
+        token
+        code
+        permissions
+        __typename
       }
     }
+    ... on InvalidCredentialsError {
+      errorCode
+      message
+    }
+    ... on NotVerifiedError {
+      errorCode
+      message
+    }
   }
+}
+
 `;

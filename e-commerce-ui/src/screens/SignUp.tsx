@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {View, TextInput, TouchableOpacity} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
+import {showMessage} from 'react-native-flash-message';
 import {text} from '../text';
 import {alert} from '../alert';
 import {hooks} from '../hooks';
@@ -18,6 +19,7 @@ import {SIGNUP} from '../Api/signup_gql';
 import {LOGIN_USER} from '../config';
 import {Image} from 'react-native-svg';
 import SignIn from './SignIn';
+import SignUpAccountCreated from './SignUpAccountCreated';
 
 const SignUp: React.FC = () => {
   const navigation = hooks.useAppNavigation();
@@ -54,7 +56,6 @@ const SignUp: React.FC = () => {
 
   const handleCreateUser = async () => {
     setLoading(true);
-    console.log('coming');
     try {
       const {data} = await signupAPI({
         variables: {
@@ -63,17 +64,24 @@ const SignUp: React.FC = () => {
           password: confirmPassword,
         },
       });
-      console.log('data', data);
-      // if (data && data.signup) {
-      //   navigation.navigate('SignIn');
-      // }
-      navigation.navigate('SignIn');
+      showMessage({
+        message: 'Signup Successful',
+        description: 'You have successfully signed up!',
+        type: 'success',
+      });
+      navigation.navigate('TabNavigator');
     } catch (error) {
-      console.error('Signup error', error);
+      showMessage({
+        message: 'Signup Error',
+        description: 'An error occurred during signup. Please try again.',
+        type: 'danger',
+      });
+      console.log(error);
     } finally {
       setLoading(false);
     }
   };
+
   const renderHeader = (): JSX.Element => {
     return <components.Header goBackIcon={true} />;
   };
