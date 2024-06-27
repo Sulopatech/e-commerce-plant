@@ -1,8 +1,10 @@
-import axios from 'axios';
-import { useSelector } from 'react-redux';
-import { View, ScrollView, TextInput } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
 
+import React, { useEffect, useRef, useState } from 'react';
+import { View, ScrollView, TextInput } from 'react-native';
+import { useMutation, useQuery } from '@apollo/client';
+import { useSelector, useDispatch } from 'react-redux';
+import { UPDATE_USER } from '../Api/editprofile_gql';
+import { GET_CUSTOMER_PROFILE } from '../Api/getcustomer_gql';
 import { alert } from '../alert';
 import { hooks } from '../hooks';
 import { utils } from '../utils';
@@ -12,44 +14,45 @@ import { RootState } from '../store';
 import { validation } from '../validation';
 import { actions } from '../store/actions';
 import { components } from '../components';
-import { ENDPOINTS, CONFIG } from '../config';
 import { handleTextChange } from '../utils/handleTextChange';
-import { UPDATE_USER } from '../Api/updateuser_gql';
-import { useMutation } from '@apollo/client';
+import { setUser } from '../store/slices/userSlice';
 
 const EditProfile: React.FC = () => {
-  const dispatch = hooks.useAppDispatch();
+  const dispatch = useDispatch();
   const navigation = hooks.useAppNavigation();
 
-  const user: UserType | null = useSelector(
-    (state: RootState) => state.userSlice.user,
-  );
+  const user: UserType | null = useSelector((state: RootState) => state.userSlice.user);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [name, setName] = useState<string>(user?.name || '');
   const [email, setEmail] = useState<string>(user?.email || '');
-  const [phoneNumber, setPhoneNumber] = useState<string>(
-    user?.phoneNumber || '',
-  );
-  const [location, setLocation] = useState<string>(user?.location || '');
+  const [phoneNumber, setPhoneNumber] = useState<string>(user?.phoneNumber || '');
 
   const handleNameChange = handleTextChange(setName);
   const handleEmailChange = handleTextChange(setEmail);
-  const handleLocationChange = handleTextChange(setLocation);
   const handlePhoneNumberChange = handleTextChange(setPhoneNumber);
 
   const [updateUserMutation] = useMutation(UPDATE_USER);
 
   const nameInputRef = useRef<TextInput>(null);
   const emailInputRef = useRef<TextInput>(null);
-  const locationInputRef = useRef<TextInput>(null);
   const phoneNumberInputRef = useRef<TextInput>(null);
+
+  const { loading: queryLoading, error: queryError, data: queryData, refetch } = useQuery(GET_CUSTOMER_PROFILE);
+
+  useEffect(() => {
+    if (queryData && queryData.activeCustomer) {
+      const { firstName, emailAddress, phoneNumber } = queryData.activeCustomer;
+      setName(firstName);
+      setEmail(emailAddress);
+      setPhoneNumber(phoneNumber);
+    }
+  }, [queryData]);
 
   useEffect(() => {
     if (loading) {
       nameInputRef.current?.blur();
       emailInputRef.current?.blur();
-      locationInputRef.current?.blur();
       phoneNumberInputRef.current?.blur();
     }
   }, [loading]);
@@ -61,15 +64,22 @@ const EditProfile: React.FC = () => {
       const response = await updateUserMutation({
         variables: {
           input: {
-            name,
-            phoneNumber
-            
+            firstName: name,
+            phoneNumber,
           },
         },
       });
 
       if (response.data && response.data.updateCustomer) {
-        dispatch(actions.setUser(response.data.updateCustomer));
+        const updatedUser = response.data.updateCustomer;
+
+        setName(updatedUser.firstName);
+        setEmail(updatedUser.email);
+        setPhoneNumber(updatedUser.phoneNumber);
+
+        // dispatch(setUser(updatedUser)); 
+        await refetch(); 
+
         navigation.navigate('InfoSaved');
       } else {
         alert.somethingWentWrong('Failed to update user.');
@@ -88,9 +98,7 @@ const EditProfile: React.FC = () => {
 
   const renderUserInfo = (): JSX.Element => {
     return (
-      <components.UserData
-        containerStyle={{ marginBottom: utils.responsiveHeight(40) }}
-      />
+      <components.UserData containerStyle={{ marginBottom: utils.responsiveHeight(40) }} />
     );
   };
 
@@ -102,18 +110,19 @@ const EditProfile: React.FC = () => {
           value={name}
           keyboardType="default"
           innerRef={nameInputRef}
-          placeholder={'enter name'}
+          placeholder="Enter name"
           onChangeText={handleNameChange}
+          editable={true}
           containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
         <custom.InputField
           value={email}
           label="Email"
           innerRef={emailInputRef}
-          placeholder={'enter email'}
+          placeholder="Enter email"
           keyboardType="email-address"
           onChangeText={handleEmailChange}
-          editable={user?.email ? false : true}
+          editable={false}
           containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
         <custom.InputField
@@ -121,18 +130,9 @@ const EditProfile: React.FC = () => {
           label="Phone number"
           keyboardType="phone-pad"
           innerRef={phoneNumberInputRef}
-          placeholder={'enter phone number'}
-          editable={user?.phoneNumber ? false : true}
+          placeholder="Enter phone number"
           onChangeText={handlePhoneNumberChange}
-          containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
-        />
-        <custom.InputField
-          label="Location"
-          value={location}
-          keyboardType="default"
-          innerRef={locationInputRef}
-          placeholder={'enter location'}
-          onChangeText={handleLocationChange}
+          editable={true}
           containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         />
       </View>
@@ -140,7 +140,7 @@ const EditProfile: React.FC = () => {
   };
 
   const renderButton = (): JSX.Element => {
-    const updatedUser = { name, email, phoneNumber, location };
+    const updatedUser = { name, email, phoneNumber };
     return (
       <components.Button
         title="Save changes"
@@ -178,136 +178,3 @@ const EditProfile: React.FC = () => {
 };
 
 export default EditProfile;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
