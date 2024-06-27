@@ -1,4 +1,12 @@
-export type  = {
+export type pe = {
+  // id?: number;
+  name?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
+  location?: string;
+  phoneNumber?: string;
+  otp?: string;
+  // phoneVerified?: boolean;
+  // emailVerified?: boolean;
 };
