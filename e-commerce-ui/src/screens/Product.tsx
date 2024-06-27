@@ -23,6 +23,8 @@ import {queryHooks} from '../store/slices/apiSlice';
 import {addToCart} from '../store/slices/cartSlice';
 import {ProductScreenProps} from '../types/ScreenProps';
 import {ProductType, ViewableItemsChanged} from '../types';
+import {useQuery} from '@apollo/client';
+import {GET_ALL_PRODUCTS} from '../Api/get_products';
 
 const Product: React.FC<ProductScreenProps> = ({route}) => {
   const {item} = route.params;
@@ -47,8 +49,36 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
   const exist = (item: ProductType) => cart.find(i => i.id === item.id);
 
-  // ############ QUERIES ############ //
+  console.log('product screen');
 
+  // ############ QUERIES ############ //
+  try {
+    const {data, loading, error} = useQuery(GET_ALL_PRODUCTS, {
+      variables: {
+        options: {
+          filter: {
+            category: 'Electronics',
+          },
+          items: {
+            id: 'id',
+            name: 'name',
+            price: 'price',
+            image: 'image',
+            description: 'description',
+            category: 'category',
+            rating: 'rating',
+            featuredAsset: {
+              preview: 'default_image_uri',
+            },
+          },
+        },
+      },
+    });
+    console.log(data);
+    console.log('This is a error', error);
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
   const {
     data: colorsData,
     error: colorsError,

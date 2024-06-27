@@ -25,6 +25,7 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
   const {title, products} = route.params;
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
+  console.log('This is a product', products);
 
   const [sort, setSort] = useState(sortingBy[0]);
   const [showModal, setShowModal] = useState(false);
@@ -49,65 +50,66 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
     state => state.filterSlice.selectedCategories,
   );
 
-  const filteredProducts = products.filter(product => {
-    // Фильтрация по типу горшка
-    const potTypeMatch =
-      selectedPotTypes.length === 0
-        ? true
-        : selectedPotTypes.some(potType => product.potTypes.includes(potType));
+  // Error
+  // const filteredProducts = products.filter(product => {
+  //   // Фильтрация по типу горшка
+  //   const potTypeMatch =
+  //     selectedPotTypes.length === 0
+  //       ? true
+  //       : selectedPotTypes.some(potType => product.potTypes.includes(potType));
 
-    // Фильтрация по типу растения
-    const plantTypeMatch =
-      selectedPlantTypes.length === 0
-        ? true
-        : selectedPlantTypes.some(plantType =>
-            product.plantTypes.includes(plantType),
-          );
+  //   // Фильтрация по типу растения
+  //   const plantTypeMatch =
+  //     selectedPlantTypes.length === 0
+  //       ? true
+  //       : selectedPlantTypes.some(plantType =>
+  //           product.plantTypes.includes(plantType),
+  //         );
 
-    // Фильтрация по цвету
-    const colorMatch =
-      selectedColors.length === 0
-        ? true
-        : selectedColors.some(color => product.colors.includes(color));
+  //   // Фильтрация по цвету
+  //   const colorMatch =
+  //     selectedColors.length === 0
+  //       ? true
+  //       : selectedColors.some(color => product.colors.includes(color));
 
-    // Фильтрация по рейтингу
-    const roundedRating = Math.floor(product.rating);
-    const ratingMatch =
-      selectedRatings.length === 0
-        ? true
-        : selectedRatings.includes(roundedRating);
+  //   // Фильтрация по рейтингу
+  //   const roundedRating = Math.floor(product.rating);
+  //   const ratingMatch =
+  //     selectedRatings.length === 0
+  //       ? true
+  //       : selectedRatings.includes(roundedRating);
 
-    // Filter by category
-    const statusMatch =
-      selectedCategories.length === 0
-        ? true
-        : (product.isNew && selectedCategories.includes('new')) ||
-          (product.isTop && selectedCategories.includes('top')) ||
-          (product.oldPrice && selectedCategories.includes('sale'));
+  //   // Filter by category
+  //   const statusMatch =
+  //     selectedCategories.length === 0
+  //       ? true
+  //       : (product.isNew && selectedCategories.includes('new')) ||
+  //         (product.isTop && selectedCategories.includes('top')) ||
+  //         (product.oldPrice && selectedCategories.includes('sale'));
 
-    return (
-      potTypeMatch && plantTypeMatch && colorMatch && ratingMatch && statusMatch
-    );
-  });
+  //   return (
+  //     potTypeMatch && plantTypeMatch && colorMatch && ratingMatch && statusMatch
+  //   );
+  // });
 
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sort.title) {
-      case 'Price: low to high':
-        return a.price - b.price;
-      case 'Price: high to low':
-        return b.price - a.price;
-      case 'Newest':
-        return a.isNew === b.isNew ? 0 : a.isNew ? -1 : 1;
-      case 'Top':
-        return a.isTop === b.isTop ? 0 : a.isTop ? -1 : 1;
-      case 'Sale':
-        return a.oldPrice === b.oldPrice ? 0 : a.oldPrice ? -1 : 1;
-      case 'Featured':
-        return a.isFeatured === b.isFeatured ? 0 : a.isFeatured ? -1 : 1;
-      default:
-        return 0;
-    }
-  });
+  // const sortedProducts = [...filteredProducts].sort((a, b) => {
+  //   switch (sort.title) {
+  //     case 'Price: low to high':
+  //       return a.price - b.price;
+  //     case 'Price: high to low':
+  //       return b.price - a.price;
+  //     case 'Newest':
+  //       return a.isNew === b.isNew ? 0 : a.isNew ? -1 : 1;
+  //     case 'Top':
+  //       return a.isTop === b.isTop ? 0 : a.isTop ? -1 : 1;
+  //     case 'Sale':
+  //       return a.oldPrice === b.oldPrice ? 0 : a.oldPrice ? -1 : 1;
+  //     case 'Featured':
+  //       return a.isFeatured === b.isFeatured ? 0 : a.isFeatured ? -1 : 1;
+  //     default:
+  //       return 0;
+  //   }
+  // });
 
   const renderHeader = (): JSX.Element => {
     return (
@@ -166,25 +168,25 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
     );
   };
 
-  const renderContent = (): JSX.Element | null => {
-    if (filteredProducts.length === 0) return <components.NoData />;
+  // const renderContent = (): JSX.Element | null => {
+  //   if (filteredProducts.length === 0) return <components.NoData />;
 
-    return (
-      <FlatList
-        data={sortedProducts}
-        renderItem={({item}) => {
-          return <items.ProductCard version={1} item={item} />;
-        }}
-        columnWrapperStyle={{justifyContent: 'space-between'}}
-        numColumns={2}
-        horizontal={false}
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          flexGrow: 1,
-        }}
-      />
-    );
-  };
+  //   return (
+  //     <FlatList
+  //       data={sortedProducts}
+  //       renderItem={({item}) => {
+  //         return <items.ProductCard version={1} item={item} />;
+  //       }}
+  //       columnWrapperStyle={{justifyContent: 'space-between'}}
+  //       numColumns={2}
+  //       horizontal={false}
+  //       contentContainerStyle={{
+  //         paddingHorizontal: 20,
+  //         flexGrow: 1,
+  //       }}
+  //     />
+  //   );
+  // };
 
   const renderModal = () => {
     return (
@@ -271,7 +273,7 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
     <custom.SafeAreaView insets={['top', 'bottom']}>
       {renderHeader()}
       {renderOptions()}
-      {renderContent()}
+      {/* {renderContent()} */}
       {renderModal()}
     </custom.SafeAreaView>
   );
