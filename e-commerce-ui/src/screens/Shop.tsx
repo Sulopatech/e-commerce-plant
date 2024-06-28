@@ -1,6 +1,7 @@
-// import React, {useState} from 'react';
+// import React, {useState, useEffect} from 'react';
 // import Modal from 'react-native-modal';
 // import {View, FlatList, TouchableOpacity, Platform} from 'react-native';
+// import {useQuery} from '@apollo/client';
 
 // import {text} from '../text';
 // import {hooks} from '../hooks';
@@ -292,7 +293,7 @@
 // export default Shop;
 
 // -------------------------------- First updated code ------------------
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {gql, useQuery} from '@apollo/client';
 import Modal from 'react-native-modal';
 import {
@@ -323,18 +324,26 @@ const sortingBy = [
   {id: 5, title: 'Sale'},
 ];
 
-const GET_ALL_PRODUCTS = gql`
-  query GetProducts($options: ProductListOptions) {
-    products(options: $options) {
+const GETPRODUCTCATEGORY = gql`
+  query GetCategory($name: String!) {
+    collections(options: {filter: {name: {contains: $name}}}) {
       items {
         id
         name
+        createdAt
+        languageCode
+        updatedAt
         slug
-        featuredAsset {
-          preview
+        position
+        description
+        productVariants {
+          items {
+            id
+            name
+            price
+          }
         }
       }
-      totalItems
     }
   }
 `;
@@ -346,9 +355,22 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
   const [sort, setSort] = useState(sortingBy[0]);
   const [showModal, setShowModal] = useState(false);
 
-  const {loading, error, data} = useQuery(GET_ALL_PRODUCTS, {
-    variables: {options: {}},
+  const {loading, error, data} = useQuery(GETPRODUCTCATEGORY, {
+    variables: {name: title},
   });
+
+  console.log('shop filter product:', data);
+  const products = data?.collections?.items?.[0]?.productVariants?.items || [];
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching data:', error);
+    }
+  }, [error]);
+
+  const selectedColors = hooks.useAppSelector(
+    state => state.filterSlice.selectedColors,
+  );
 
   if (loading) {
     return <ActivityIndicator size='large' color={theme.colors.mainColor} />;
@@ -362,27 +384,10 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
     );
   }
 
-  const products = data?.products?.items || [];
+  // const products = data?.products?.items || [];
 
   const filteredProducts = products.filter(_product => {
     return true;
-  });
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sort.title) {
-      case 'Price: low to high':
-        return a.price - b.price;
-      case 'Price: high to low':
-        return b.price - a.price;
-      case 'Newest':
-        return a.isNew === b.isNew ? 0 : a.isNew ? -1 : 1;
-      case 'Top':
-        return a.isTop === b.isTop ? 0 : a.isTop ? -1 : 1;
-      case 'Sale':
-        return a.oldPrice === b.oldPrice ? 0 : a.oldPrice ? -1 : 1;
-      default:
-        return 0;
-    }
   });
 
   const renderHeader = (): JSX.Element => {
@@ -443,18 +448,22 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
   };
 
   const renderContent = (): JSX.Element | null => {
-    if (filteredProducts.length === 0) return <components.NoData />;
+    // if (loading) return <components.Loading />;
+    if (products.length === 0) return <components.NoData />;
 
     return (
       <FlatList
-        data={sortedProducts}
+        data={products}
         renderItem={({item}) => {
-          return <PlantCard version={1} item={item} />;
+          return <items.ProductCard item={item} />;
         }}
         columnWrapperStyle={{justifyContent: 'space-between'}}
         numColumns={2}
         horizontal={false}
-        contentContainerStyle={{paddingHorizontal: 20, flexGrow: 1}}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          flexGrow: 1,
+        }}
       />
     );
   };

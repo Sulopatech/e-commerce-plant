@@ -15,7 +15,7 @@ const Profile: React.FC = () => {
   const emailVerified = user?.emailVerified || false;
   const phoneVerified = user?.phoneVerified || false;
 
-  console.log('user', JSON.stringify(user, null, 2));
+  console.log('user', JSON.stringify( null));
 
   const phoneVerifiedAlert = (): void => {
     Alert.alert(
@@ -53,10 +53,10 @@ const Profile: React.FC = () => {
     return (
       <components.UserData
         onPress={() => {
-          if (user?.emailVerified && user?.phoneVerified) {
+          // if (user?.emailVerified && user?.phoneVerified) {
             navigation.navigate('EditProfile');
-            return;
-          }
+          //   return;
+          // }
 
           Alert.alert(
             'Please verify your email and phone number',
@@ -92,24 +92,7 @@ const Profile: React.FC = () => {
         <items.ProfileItem
           title={'My orders'}
           onPress={() => {
-            if (phoneVerified && emailVerified) {
               navigation.navigate('OrderHistory');
-              return;
-            }
-
-            Alert.alert(
-              'Please verify your email and phone number',
-              'You need to verify your email and phone number to see your orders.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                  },
-                },
-              ],
-              {cancelable: false},
-            );
           }}
           containerStyle={{
             marginBottom: utils.responsiveHeight(10),

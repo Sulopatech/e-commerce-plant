@@ -161,6 +161,11 @@ const StackNavigator: React.FC = () => {
             component={screens.SendEmailOtp}
             options={{headerShown: false}}
           />
+          {/* <RootStack.Screen
+            name='OrderHistory'
+            component={screens.OrderList}
+            options={{headerShown: false}}
+          /> */}
           <RootStack.Screen
             name='SendPhoneOtp'
             component={screens.SendPhoneOtp}
