@@ -11,35 +11,45 @@ import {theme} from '../constants';
 import {components} from '../components';
 import {actions} from '../store/actions';
 import {CONFIG, ENDPOINTS} from '../config';
+import { gql,useMutation } from '@apollo/client';
+
+const DELETE_CUSTOMER_MUTATION = gql`
+  mutation DeleteCustomerMutation($id: ID!) {
+    DeleteCustomerMutation(id: $id) {
+      result
+    }
+  }
+`;
 
 const DeleteAccount: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
 
   const [loading, setLoading] = useState<boolean>(false);
-
   const user = hooks.useAppSelector(state => state.userSlice.user);
+
+  const [deleteCustomerMutation] = useMutation(DELETE_CUSTOMER_MUTATION);
 
   const handleDeleteAccount = async () => {
     try {
       setLoading(true);
 
-      const response = await axios({
-        method: 'delete',
-        headers: CONFIG.headers,
-        url: `${ENDPOINTS.DELETE_ACCOUNT}/${user?.id}`,
+      const response = await deleteCustomerMutation({
+        variables: { id: user?.id },
       });
 
-      if (response.status === 200) {
+      console.log("delete user id:", user?.id)
+
+      if (response.data.DeleteCustomerMutation.result) {
         dispatch(actions.logOut());
         alert.userDeleted();
         return;
       }
 
-      alert.somethingWentWrong();
+      alert.somethingWentWrong('');
     } catch (error: any) {
       navigation.goBack();
-      alert.somethingWentWrong();
+      alert.somethingWentWrong('');
     } finally {
       setLoading(false);
     }
@@ -80,23 +90,21 @@ const DeleteAccount: React.FC = () => {
 
   const renderButtons = (): JSX.Element => {
     return (
-      <View style={{padding: 20}}>
+      <View style={{ padding: 20 }}>
         <components.Button
-          title='cancel'
-          containerStyle={{marginBottom: utils.responsiveHeight(14)}}
-          touchableOpacityStyle={{backgroundColor: theme.colors.steelTeal}}
+          title="cancel"
+          containerStyle={{ marginBottom: utils.responsiveHeight(14) }}
+          touchableOpacityStyle={{ backgroundColor: theme.colors.steelTeal }}
           onPress={() => {
             navigation.goBack();
           }}
         />
         <components.Button
-          title='Sure'
+          title="Sure"
           loading={loading}
-          touchableOpacityStyle={{backgroundColor: theme.colors.pastelMint}}
-          onPress={() => {
-            handleDeleteAccount();
-          }}
-          textStyle={{color: theme.colors.steelTeal}}
+          touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
+          onPress={handleDeleteAccount}
+          textStyle={{ color: theme.colors.steelTeal }}
         />
       </View>
     );
