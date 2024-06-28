@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useRef, useState } from 'react';
 import { View, ScrollView, TextInput } from 'react-native';
 import { useMutation, useQuery } from '@apollo/client';
@@ -38,7 +39,9 @@ const EditProfile: React.FC = () => {
   const emailInputRef = useRef<TextInput>(null);
   const phoneNumberInputRef = useRef<TextInput>(null);
 
-  const { loading: queryLoading, error: queryError, data: queryData, refetch } = useQuery(GET_CUSTOMER_PROFILE);
+  const { loading: queryLoading, error: queryError, data: queryData, refetch } = useQuery(GET_CUSTOMER_PROFILE, {
+    fetchPolicy: 'cache-and-network', // Ensure fresh data on mount
+  });
 
   useEffect(() => {
     if (queryData && queryData.activeCustomer) {
@@ -48,14 +51,6 @@ const EditProfile: React.FC = () => {
       setPhoneNumber(phoneNumber);
     }
   }, [queryData]);
-
-  useEffect(() => {
-    if (loading) {
-      nameInputRef.current?.blur();
-      emailInputRef.current?.blur();
-      phoneNumberInputRef.current?.blur();
-    }
-  }, [loading]);
 
   const handleUpdate = async () => {
     try {
@@ -94,12 +89,6 @@ const EditProfile: React.FC = () => {
 
   const renderHeader = (): JSX.Element => {
     return <components.Header title="Edit personal info" goBackIcon={true} />;
-  };
-
-  const renderUserInfo = (): JSX.Element => {
-    return (
-      <components.UserData containerStyle={{ marginBottom: utils.responsiveHeight(40) }} />
-    );
   };
 
   const renderInputFields = (): JSX.Element => {
@@ -162,7 +151,6 @@ const EditProfile: React.FC = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {renderUserInfo()}
         {renderInputFields()}
         {renderButton()}
       </ScrollView>
