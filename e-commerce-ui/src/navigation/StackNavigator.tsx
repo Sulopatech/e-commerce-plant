@@ -2,7 +2,7 @@ import React from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {RootStackParamList} from '../types/RootStackParamList';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
-
+import TabNavigator from './TabNavigator'; // Import TabNavigator
 
 
 import {screens} from '../screens';

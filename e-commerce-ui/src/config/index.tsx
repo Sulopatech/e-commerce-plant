@@ -1,5 +1,5 @@
 // const LOCALHOST = 'http://127.0.0.1:8000/';
-const LOCALHOST = 'http://192.168.1.38:3000/';
+const LOCALHOST = 'http://192.168.1.55:3000/';
 // const DOMAIN = 'https://everbloom.rn-admin.site/';
 
 export const BASE_URL = LOCALHOST;
