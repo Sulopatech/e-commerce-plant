@@ -1,39 +1,47 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState } from 'react';
 import Accordion from 'react-native-collapsible/Accordion';
-import {View, TouchableOpacity, Text, ScrollView, Platform} from 'react-native';
+import { View, TouchableOpacity, Text, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { gql, useQuery } from '@apollo/client';
+import { text } from '../text';
+import { hooks } from '../hooks';
+import { utils } from '../utils';
+import { custom } from '../custom';
+import { theme } from '../constants';
+import { components } from '../components';
+import { actions } from '../store/actions';
 
-import {text} from '../text';
-import {hooks} from '../hooks';
-import {utils} from '../utils';
-import {custom} from '../custom';
-import {theme} from '../constants';
-import {components} from '../components';
-import {actions} from '../store/actions';
-import {queryHooks} from '../store/slices/apiSlice';
+const GET_ORDERS = gql`
+  query GETORDERS {
+    activeCustomer {
+      id
+      firstName
+      orders {
+        totalItems
+        items {
+          id
+          type
+          lines {
+            id
+            unitPriceWithTax
+            quantity
+            linePriceWithTax
+            productVariant {
+              id
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 const OrderHistory: React.FC = () => {
+  const { loading, error, data } = useQuery(GET_ORDERS);
+  const [activeSections, setActiveSections] = useState([]);
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
-  const user = hooks.useAppSelector(state => state.userSlice.user);
 
-  const {
-    data: userData,
-    error: userError,
-    isLoading: userLoading,
-  } = queryHooks.useGetUserQuery(user?.id || 0);
-
-  const {
-    data: ordersData,
-    error: ordersError,
-    isLoading: ordersLoading,
-    refetch: refetchOrders,
-  } = queryHooks.useGetOrdersQuery(user?.id || 0);
-
-  useEffect(() => {
-    refetchOrders();
-  }, []);
-
-  const [activeSections, setActiveSections] = useState([]);
   const setSections = (sections: any) => {
     setActiveSections(sections.includes(undefined) ? [] : sections);
   };
@@ -61,22 +69,8 @@ const OrderHistory: React.FC = () => {
           <text.H5 numberOfLines={1}>#{section.id}</text.H5>
           <text.H5 numberOfLines={1}>${section.total}</text.H5>
         </View>
-        <View style={{...theme.flex.rowCenterSpaceBetween}}>
-          {section.orderStatus === 'shipping' && (
-            <Text style={{color: '#FFA462'}}>Shipping</Text>
-          )}
-          {section.orderStatus === 'delivered' && (
-            <Text style={{color: '#00824B'}}>Delivered</Text>
-          )}
-          {section.orderStatus === 'canceled' && (
-            <Text style={{color: '#F84C6B'}}>Canceled</Text>
-          )}
-          {section.orderStatus === 'pending' && (
-            <Text style={{color: '#FFA462'}}>Pending</Text>
-          )}
-          {section.orderStatus === 'processing' && (
-            <Text style={{color: '#28a745'}}>Processing</Text>
-          )}
+        <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
+          <Text style={{ color: '#FFA462' }}>{section.orderStatus}</Text>
           <Text
             style={{
               fontSize: Platform.OS === 'ios' ? 12 : 10,
@@ -94,28 +88,26 @@ const OrderHistory: React.FC = () => {
 
   const accordionContent = (section: any): JSX.Element => {
     return (
-      <View style={{marginHorizontal: 20}}>
+      <View style={{ marginHorizontal: 20 }}>
         <components.Container
-          containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+          containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         >
-          {section.products.map((item: any, index: number, array: any) => {
-            const lastItem = index === array.length - 1;
-
-            return (
-              <View
-                key={item.id}
-                style={{
-                  marginBottom: utils.responsiveHeight(10),
-                  ...theme.flex.rowCenterSpaceBetween,
-                }}
-              >
-                <text.T14 numberOfLines={1}>{item.name}</text.T14>
-                <text.T14 numberOfLines={1}>
-                  {item.quantity} x ${item.price}
-                </text.T14>
-              </View>
-            );
-          })}
+          {section.products.map((item: any) => (
+            <View
+              key={item.id}
+              style={{
+                marginBottom: utils.responsiveHeight(10),
+                ...theme.flex.rowCenterSpaceBetween,
+              }}
+            >
+              <text.T14 numberOfLines={1} style={{color: 'black'}}>
+                {item.name}
+              </text.T14>
+              <text.T14 numberOfLines={1}>
+                {item.quantity} x ${item.price}
+              </text.T14>
+            </View>
+          ))}
           <View
             style={{
               borderBottomWidth: 1,
@@ -125,14 +117,14 @@ const OrderHistory: React.FC = () => {
               borderBottomColor: theme.colors.antiFlashWhite,
             }}
           >
-            <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+            <text.T14 style={{ textTransform: 'capitalize' }} numberOfLines={1}>
               Delivery
             </text.T14>
-            <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+            <text.T14 style={{ textTransform: 'capitalize' }} numberOfLines={1}>
               {section.delivery}$
             </text.T14>
           </View>
-          <View style={{...theme.flex.rowCenterSpaceBetween}}>
+          <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
             <text.T14
               style={{
                 textTransform: 'capitalize',
@@ -142,7 +134,7 @@ const OrderHistory: React.FC = () => {
             >
               Total
             </text.T14>
-            <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+            <text.T14 style={{ textTransform: 'capitalize' }} numberOfLines={1}>
               {section.total}$
             </text.T14>
           </View>
@@ -152,6 +144,23 @@ const OrderHistory: React.FC = () => {
   };
 
   const renderAccordion = (): JSX.Element | null => {
+    if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
+    if (error) return <Text>Error: {error.message}</Text>;
+
+    const sections = data.activeCustomer.orders.items.map((order: any) => ({
+      id: order.id,
+      total: order.lines.reduce((acc: number, line: any) => acc + line.linePriceWithTax, 0),
+      orderStatus: 'delivered', // Placeholder status
+      createdAt: '2024-06-27', // Placeholder date
+      products: order.lines.map((line: any) => ({
+        id: line.id,
+        name: line.productVariant.name,
+        quantity: line.quantity,
+        price: line.unitPriceWithTax / 100,
+      })),
+      delivery: 5, // Placeholder delivery fee
+    }));
+
     return (
       <Accordion
         duration={400}
@@ -159,35 +168,24 @@ const OrderHistory: React.FC = () => {
         activeSections={activeSections}
         renderHeader={accordionHeader}
         renderContent={accordionContent}
-        sections={ordersData?.orders || []}
+        sections={sections}
         touchableComponent={TouchableOpacity}
       />
     );
   };
 
   const renderContent = (): JSX.Element | null => {
-    const isError = userError || ordersError;
-    const isLoading = userLoading || ordersLoading;
-
-    if (isError) return <components.Error />;
-    if (isLoading) return <components.Loader />;
-    if (!ordersData.orders.length) return <components.NoData />;
-
-    if (ordersData.orders.length > 0) {
-      return (
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingTop: utils.responsiveHeight(15),
-          }}
-          showsVerticalScrollIndicator={false}
-        >
-          {renderAccordion()}
-        </ScrollView>
-      );
-    }
-
-    return null;
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: utils.responsiveHeight(15),
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderAccordion()}
+      </ScrollView>
+    );
   };
 
   const renderButton = (): JSX.Element => {
@@ -197,9 +195,9 @@ const OrderHistory: React.FC = () => {
           title='My Profile'
           onPress={() => {
             dispatch(actions.setScreen('Profile'));
-            navigation.reset({index: 0, routes: [{name: 'TabNavigator'}]});
+            navigation.reset({ index: 0, routes: [{ name: 'TabNavigator' }] });
           }}
-          containerStyle={{padding: 20}}
+          containerStyle={{ padding: 20 }}
         />
       </View>
     );
