@@ -312,6 +312,7 @@ import {svg} from '../assets/svg';
 import {theme} from '../constants';
 import {actions} from '../store/actions';
 import {components} from '../components';
+import PlantCard from '../items/ProductCard';
 import {ShopScreenProps} from '../types/ScreenProps';
 
 const sortingBy = [
@@ -363,8 +364,7 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
 
   const products = data?.products?.items || [];
 
-  const filteredProducts = products.filter(() => {
-    // Apply your filtering logic here
+  const filteredProducts = products.filter(_product => {
     return true;
   });
 
@@ -380,8 +380,6 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
         return a.isTop === b.isTop ? 0 : a.isTop ? -1 : 1;
       case 'Sale':
         return a.oldPrice === b.oldPrice ? 0 : a.oldPrice ? -1 : 1;
-      case 'Featured':
-        return a.isFeatured === b.isFeatured ? 0 : a.isFeatured ? -1 : 1;
       default:
         return 0;
     }
@@ -451,7 +449,7 @@ const Shop: React.FC<ShopScreenProps> = ({route}) => {
       <FlatList
         data={sortedProducts}
         renderItem={({item}) => {
-          return <items.ProductCard item={item} />;
+          return <PlantCard version={1} item={item} />;
         }}
         columnWrapperStyle={{justifyContent: 'space-between'}}
         numColumns={2}
