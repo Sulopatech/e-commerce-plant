@@ -1,4 +1,4 @@
-import axios from 'axios';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, {useEffect, useRef, useState} from 'react';
 import {View, TouchableOpacity, TextInput} from 'react-native';
