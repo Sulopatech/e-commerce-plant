@@ -256,13 +256,13 @@ const styles = StyleSheet.create({
     height: 150,
     alignItems: 'center',
     justifyContent: 'center',
-    // backgroundColor: theme.colors.lightGray,
+    backgroundColor: theme.colors.lightGray,
   },
   name: {
     padding: 10,
     textAlign: 'center',
     fontSize: 16,
-    // color: theme.colors.darkGray,
+    color: theme.colors.darkGray,
   },
 });
 
