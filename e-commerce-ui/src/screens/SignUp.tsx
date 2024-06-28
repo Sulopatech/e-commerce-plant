@@ -69,7 +69,7 @@ const SignUp: React.FC = () => {
         description: 'You have successfully signed up!',
         type: 'success',
       });
-      navigation.navigate('TabNavigator');
+      navigation.navigate('SignIn');
     } catch (error) {
       showMessage({
         message: 'Signup Error',

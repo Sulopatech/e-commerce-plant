@@ -1,9 +1,13 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {UserType} from '../../types/UserType';
 
-type UserState = {user: UserType | null; rememberMe: boolean};
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { UserType } from '../../types/UserType';
 
-const initialState: UserState = {user: null, rememberMe: false};
+type UserState = {
+  user: UserType | null;
+  rememberMe: boolean;
+};
+
+const initialState: UserState = { user: null, rememberMe: false };
 
 const userSlice = createSlice({
   name: 'user',
@@ -22,6 +26,5 @@ const userSlice = createSlice({
   },
 });
 
-export const {setUser, logOut, setRememberMe} = userSlice.actions;
-
-export {userSlice};
+export const { setUser, logOut, setRememberMe } = userSlice.actions;
+export { userSlice };
