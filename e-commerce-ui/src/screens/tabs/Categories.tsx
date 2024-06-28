@@ -15,7 +15,7 @@ import {custom} from '../../custom';
 import {theme} from '../../constants';
 import {components} from '../../components';
 import {buildCollectionsQuery} from '../../Api/get_collectiongql';
-import { items } from '../../items';
+import {items} from '../../items';
 
 const GET_COLLECTIONS = buildCollectionsQuery();
 
