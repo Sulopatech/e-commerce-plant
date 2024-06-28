@@ -225,6 +225,9 @@ export const GETCATEGORY = gql`
             price
           }
         }
+          featuredAsset{
+        preview
+      }
       }
     }
   }

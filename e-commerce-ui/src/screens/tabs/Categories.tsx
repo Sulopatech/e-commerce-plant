@@ -74,7 +74,7 @@ const Categories: React.FC = () => {
             >
               <custom.ImageBackground
                 source={{
-                  uri: item.featuredAsset?.source ?? 'default_image_uri',
+                  uri: item.featuredAsset?.preview ?? 'default_image_uri',
                 }}
                 style={{
                   flex: 1,
