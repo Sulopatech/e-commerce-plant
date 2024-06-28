@@ -57,7 +57,6 @@ const Profile: React.FC = () => {
     //         navigation.navigate('EditProfile');
     //         return;
     //       }
-
     //       Alert.alert(
     //         'Please verify your email and phone number',
     //         'You need to verify your email and phone number to edit your profile.',
@@ -92,24 +91,21 @@ const Profile: React.FC = () => {
         <items.ProfileItem
           title={'My orders'}
           onPress={() => {
-            if (phoneVerified && emailVerified) {
-              navigation.navigate('OrderHistory');
-              return;
-            }
+            navigation.navigate('OrderHistory');
 
-            Alert.alert(
-              'Please verify your email and phone number',
-              'You need to verify your email and phone number to see your orders.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                  },
-                },
-              ],
-              {cancelable: false},
-            );
+            // Alert.alert(
+            //   'Please verify your email and phone number',
+            //   'You need to verify your email and phone number to see your orders.',
+            //   [
+            //     {
+            //       text: 'OK',
+            //       onPress: () => {
+            //         console.log('OK Pressed');
+            //       },
+            //     },
+            //   ],
+            //   {cancelable: false},
+            // );
           }}
           containerStyle={{
             marginBottom: utils.responsiveHeight(10),
@@ -193,5 +189,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
-
