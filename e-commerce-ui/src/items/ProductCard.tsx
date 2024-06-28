@@ -10,21 +10,21 @@ import {ProductType} from '../types';
 
 type Props = {version: 1 | 2 | 3; item: ProductType; isLast?: boolean};
 
-const PlantCard: React.FC<Props> = ({
+const ProductCard: React.FC<Props> = ({
   version,
   item,
   isLast,
 }): JSX.Element | null => {
   const navigation = hooks.useAppNavigation();
 
-  const cart = hooks.useAppSelector(state => state.cartSlice.list);
+  // const cart = hooks.useAppSelector(state => state.cartSlice.list);
 
   const onPress = () => {
     navigation.navigate('Product', {item});
   };
 
-  const ifInCart = cart.find(i => i.id === item.id);
-  const quantity = ifInCart ? ifInCart.quantity : 0;
+  // const ifInCart = cart.find(i => i.id === item.id);
+  // const quantity = ifInCart ? ifInCart.quantity : 0;
 
   // ############ SHOP > PRODUCTS ############ //
   if (version === 1) {
@@ -38,7 +38,7 @@ const PlantCard: React.FC<Props> = ({
         onPress={onPress}
       >
         <custom.ImageBackground
-          source={{uri: item.image}}
+          source={{uri: item.featuredAsset.preview}}
           style={{
             width: '100%',
             aspectRatio: 160 / 200,
@@ -57,7 +57,7 @@ const PlantCard: React.FC<Props> = ({
             containerStyle={{marginBottom: 'auto', padding: 10}}
           />
 
-          {quantity !== undefined && quantity === 0 && (
+          {/* {quantity !== undefined && quantity === 0 && (
             <product.ProductInCart
               item={item}
               version={1}
@@ -69,8 +69,8 @@ const PlantCard: React.FC<Props> = ({
               quantity={quantity}
               containerStyle={{padding: 10}}
             />
-          )}
-          {item.oldPrice && (
+          )} */}
+          {/* {item.oldPrice && (
             <product.ProductSaleBadge
               containerStyle={{
                 position: 'absolute',
@@ -79,7 +79,7 @@ const PlantCard: React.FC<Props> = ({
                 left: 0,
               }}
             />
-          )}
+          )} */}
         </custom.ImageBackground>
         <View
           style={{
@@ -98,7 +98,7 @@ const PlantCard: React.FC<Props> = ({
     return (
       <TouchableOpacity onPress={onPress}>
         <custom.ImageBackground
-          source={{uri: item.image}}
+          source={{uri: item.featuredAsset.preview}}
           style={{
             width: utils.responsiveWidth(138, true),
             aspectRatio: 138 / 170,
@@ -120,7 +120,7 @@ const PlantCard: React.FC<Props> = ({
             }}
           />
 
-          {quantity !== undefined && quantity === 0 && (
+          {/* {quantity !== undefined && quantity === 0 && (
             <product.ProductInCart
               item={item}
               containerStyle={{
@@ -141,7 +141,7 @@ const PlantCard: React.FC<Props> = ({
                 right: 0,
               }}
             />
-          )}
+          )} */}
         </custom.ImageBackground>
         <View style={{width: utils.rsHeight(138, true)}}>
           <product.ProductName item={item} style={{marginBottom: 3}} />
@@ -158,7 +158,7 @@ const PlantCard: React.FC<Props> = ({
     return (
       <TouchableOpacity onPress={onPress}>
         <custom.ImageBackground
-          source={{uri: item.image}}
+          source={{uri: item.featuredAsset.preview}}
           style={{
             width: width,
             aspectRatio: 200 / 250,
@@ -188,7 +188,7 @@ const PlantCard: React.FC<Props> = ({
               right: 0,
             }}
           />
-          {quantity !== undefined && quantity > 0 && (
+          {/* {quantity !== undefined && quantity > 0 && (
             <product.ProductQuantity
               quantity={quantity}
               containerStyle={{
@@ -198,7 +198,7 @@ const PlantCard: React.FC<Props> = ({
                 right: 0,
               }}
             />
-          )}
+          )} */}
         </custom.ImageBackground>
         <View style={{width: width}}>
           <product.ProductName item={item} style={{marginBottom: 3}} />
@@ -211,4 +211,4 @@ const PlantCard: React.FC<Props> = ({
   return null;
 };
 
-export default PlantCard;
+export default ProductCard;

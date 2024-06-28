@@ -14,20 +14,19 @@ import {hooks} from '../../hooks';
 import {custom} from '../../custom';
 import {theme} from '../../constants';
 import {components} from '../../components';
-import {buildCollectionsQuery} from '../../Api/get_collectiongql';
-import { items } from '../../items';
-
-const GET_COLLECTIONS = buildCollectionsQuery();
+import {GETCATEGORY} from '../../Api/get_collectiongql';
+import {items} from '../../items';
 
 const Categories: React.FC = () => {
   const navigation = hooks.useAppNavigation();
 
-  const {data, error, loading, refetch} = useQuery(GET_COLLECTIONS, {
+  const {data, error, loading, refetch} = useQuery(GETCATEGORY, {
     variables: {
       options: {skip: 0, take: 10},
     },
   });
 
+  console.log('data in category:', data);
   const [refreshing, setRefreshing] = useState(false);
 
   let collections = data?.collections?.items ?? [];
@@ -75,7 +74,7 @@ const Categories: React.FC = () => {
             >
               <custom.ImageBackground
                 source={{
-                  uri: item.featuredAsset?.source ?? 'default_image_uri',
+                  uri: item.featuredAsset?.preview ?? 'default_image_uri',
                 }}
                 style={{
                   flex: 1,

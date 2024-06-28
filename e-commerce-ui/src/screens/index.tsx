@@ -30,6 +30,8 @@ import ShippingAndPaymentInfo from './ShippingAndPaymentInfo';
 import ForgotPasswordSentEmail from './ForgotPasswordSentEmail';
 import VerifyEmailForgot from './verification/VerifyEmailForgot';
 import SendEmailOtpForgot from './verification/SendEmailOtpForgot';
+import OrderList from './Order';
+
 
 export const screens = {
   Shop,
@@ -64,4 +66,5 @@ export const screens = {
   SignUpAccountCreated,
   ShippingAndPaymentInfo,
   ForgotPasswordSentEmail,
+  OrderList
 };
