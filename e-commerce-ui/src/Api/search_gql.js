@@ -1,5 +1,5 @@
 import { gql } from "@apollo/client";
-const SEARCH_PRODUCTS = gql`
+export const SEARCH_PRODUCTS = gql`
   query SearchProducts(
     $term: String
     $facetValueFilters: [FacetValueFilterInput!]

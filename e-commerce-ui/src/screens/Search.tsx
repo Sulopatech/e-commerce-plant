@@ -213,6 +213,8 @@ import {ProductType} from '../types';
 import {components} from '../components';
 import {queryHooks} from '../store/slices/apiSlice';
 import {handleTextChange} from '../utils/handleTextChange';
+import {SEARCH_PRODUCTS} from '../Api/search_gql';
+import {gql, useQuery} from '@apollo/client';
 
 const Search: React.FC = () => {
   const navigation = hooks.useAppNavigation();
@@ -223,6 +225,7 @@ const Search: React.FC = () => {
     ref.current?.focus();
   }, []);
 
+  const {data, loading, error} = useQuery(SEARCH_PRODUCTS, {});
   const {
     data: plantsData,
     error: plantsError,
