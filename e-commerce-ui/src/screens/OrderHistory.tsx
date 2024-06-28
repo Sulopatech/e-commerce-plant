@@ -147,9 +147,9 @@ const OrderHistory: React.FC = () => {
     if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
     if (error) return <Text>Error: {error.message}</Text>;
 
-    const sections = data.activeCustomer.orders.items.map((order: any) => ({
-      id: order.id,
-      total: order.lines.reduce((acc: number, line: any) => acc + line.linePriceWithTax, 0),
+    const sections = data?.activeCustomer?.orders?.items?.map((order: any) => ({
+      id: order?.id,
+      total: order?.lines?.reduce((acc: number, line: any) => acc + line.linePriceWithTax, 0),
       orderStatus: 'delivered', // Placeholder status
       createdAt: '2024-06-27', // Placeholder date
       products: order.lines.map((line: any) => ({
