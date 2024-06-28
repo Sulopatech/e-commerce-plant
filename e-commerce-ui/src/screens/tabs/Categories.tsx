@@ -14,7 +14,7 @@ import {hooks} from '../../hooks';
 import {custom} from '../../custom';
 import {theme} from '../../constants';
 import {components} from '../../components';
-import { GETCATEGORY  } from "../../Api/get_collectiongql";
+import {GETCATEGORY} from '../../Api/get_collectiongql';
 import {items} from '../../items';
 
 const Categories: React.FC = () => {
@@ -26,7 +26,7 @@ const Categories: React.FC = () => {
     },
   });
 
-  console.log("data in category:", data,)
+  console.log('data in category:', data);
   const [refreshing, setRefreshing] = useState(false);
 
   let collections = data?.collections?.items ?? [];
