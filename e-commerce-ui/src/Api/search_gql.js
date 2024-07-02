@@ -1,28 +1,24 @@
-import { gql } from "@apollo/client";
-export const SEARCH_PRODUCTS = gql`
-  query SearchProducts(
-    $term: String
-    $facetValueFilters: [FacetValueFilterInput!]
-    $collectionId: ID
-    $collectionSlug: String
-    $groupByProduct: Boolean
-    $take: Int
-    $skip: Int
-    $sort: SearchResultSortParameter
-    $inStock: Boolean
-  ) {
-    search(input: {
-      term: $term
-      facetValueFilters: $facetValueFilters
-      collectionId: $collectionId
-      collectionSlug: $collectionSlug
-      groupByProduct: $groupByProduct
-      take: $take
-      skip: $skip
-      sort: $sort
-      inStock: $inStock
-    }) {
-      totalItems
+import { gql } from '@apollo/client';
+
+// Define your GraphQL query using gql
+export const SEARCH_QUERY = gql`
+  query Search($input: SearchInput!) {
+    search(input: $input) {
+      collections {
+        collection {
+          id
+          name
+        }
+      }
+      items {
+        collectionIds
+        productId
+        productName
+        productAsset {
+          id
+          preview
+        }
+      }
     }
   }
 `;
