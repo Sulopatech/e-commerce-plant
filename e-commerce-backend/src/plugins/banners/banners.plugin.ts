@@ -1,0 +1,34 @@
+import { PluginCommonModule, Type, VendurePlugin } from '@vendure/core';
+
+import { BANNERS_PLUGIN_OPTIONS } from './constants';
+import { PluginInitOptions } from './types';
+import { Banners } from './entities/banners.entity';
+import { BannersService } from './services/banners.service';
+import { BannersAdminResolver } from './api/banners-admin.resolver';
+import { adminApiExtensions } from './api/api-extensions';
+
+@VendurePlugin({
+    imports: [PluginCommonModule],
+    providers: [{ provide: BANNERS_PLUGIN_OPTIONS, useFactory: () => BannersPlugin.options }, BannersService],
+    configuration: config => {
+        // Plugin-specific configuration
+        // such as custom fields, custom permissions,
+        // strategies etc. can be configured here by
+        // modifying the `config` object.
+        return config;
+    },
+    compatibility: '^2.0.0',
+    entities: [Banners],
+    adminApiExtensions: {
+        schema: adminApiExtensions,
+        resolvers: [BannersAdminResolver]
+    },
+})
+export class BannersPlugin {
+    static options: PluginInitOptions;
+
+    static init(options: PluginInitOptions): Type<BannersPlugin> {
+        this.options = options;
+        return BannersPlugin;
+    }
+}
