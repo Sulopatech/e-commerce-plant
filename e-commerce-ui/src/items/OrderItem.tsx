@@ -1,22 +1,25 @@
-import {View, Text, TouchableOpacity, Platform} from 'react-native';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
 import React from 'react';
 
-import {hooks} from '../hooks';
-import {custom} from '../custom';
-import {product} from '../product';
-import {theme} from '../constants';
-import {ProductType} from '../types';
+import { hooks } from '../hooks';
+import { custom } from '../custom';
+import { product } from '../product';
+import { theme } from '../constants';
+import { ProductType } from '../types';
 
-type Props = {item: ProductType; isLast: boolean};
+type Props = { item: ProductType; isLast: boolean };
 
-const OrderItem: React.FC<Props> = ({item, isLast}) => {
+const OrderItem: React.FC<Props> = ({ item, isLast }) => {
   const navigation = hooks.useAppNavigation();
+
+  // Extract the preview URL from the featuredAsset
+  const imageUrl = item.featuredAsset?.preview || '';
 
   const renderImage = () => {
     return (
       <custom.ImageBackground
-        source={{uri: item.image}}
-        style={{width: 100, height: '100%'}}
+        source={{ uri: imageUrl }}
+        style={{ width: 100, height: '100%' }}
         imageStyle={{
           borderTopLeftRadius: 10,
           borderBottomLeftRadius: 10,
@@ -59,7 +62,7 @@ const OrderItem: React.FC<Props> = ({item, isLast}) => {
             paddingBottom: 14,
           }}
         >
-          <product.ProductName item={item} style={{marginBottom: 3}} />
+          <product.ProductName item={item} style={{ marginBottom: 3 }} />
           <product.ProductPrice item={item} />
           {item.color && (
             <View
@@ -94,7 +97,7 @@ const OrderItem: React.FC<Props> = ({item, isLast}) => {
         height: 100,
         marginBottom: isLast ? 0 : 14,
       }}
-      onPress={() => navigation.navigate('Product', {item})}
+      onPress={() => navigation.navigate('Product', { item })}
     >
       {renderImage()}
       {renderInfo()}

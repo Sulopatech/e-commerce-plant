@@ -1,18 +1,48 @@
-import React, {useState} from 'react';
-import {View, Text, Platform, Alert, RefreshControl} from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, Platform, Alert, RefreshControl } from 'react-native';
+import { gql, useQuery } from '@apollo/client';
+import { text } from '../../text';
+import { hooks } from '../../hooks';
+import { items } from '../../items';
+import { utils } from '../../utils';
+import { custom } from '../../custom';
+import { theme } from '../../constants';
+import { useAppSelector } from '../../store';
+import { actions } from '../../store/actions';
+import { components } from '../../components';
+import { queryHooks } from '../../store/slices/apiSlice';
+import { useChangeHandler } from '../../utils/useChangeHandler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-import {text} from '../../text';
-import {hooks} from '../../hooks';
-import {items} from '../../items';
-import {utils} from '../../utils';
-import {custom} from '../../custom';
-import {theme} from '../../constants';
-import {useAppSelector} from '../../store';
-import {actions} from '../../store/actions';
-import {components} from '../../components';
-import {queryHooks} from '../../store/slices/apiSlice';
-import {useChangeHandler} from '../../utils/useChangeHandler';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+const GET_ORDERS = gql`
+  query GETORDERS {
+    activeCustomer {
+      id
+      firstName
+      orders {
+        totalItems
+        items {
+          id
+          type
+          lines {
+            id
+            unitPriceWithTax
+            quantity
+            linePriceWithTax
+            productVariant {
+              id
+              name
+              price
+            }
+              featuredAsset{
+              preview
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 const Order: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -25,6 +55,8 @@ const Order: React.FC = () => {
   const discount = useAppSelector(state => state.cartSlice.discount);
   const subtotal = useAppSelector(state => state.cartSlice.subtotal);
   const promoCode = useAppSelector(state => state.cartSlice.promoCode);
+
+  const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ORDERS);
 
   const {
     data: plantsData,
@@ -40,8 +72,8 @@ const Order: React.FC = () => {
     refetch: refetchPromocodes,
   } = queryHooks.useGetPromocodesQuery();
 
-  const isError = plantsError || promocodesError;
-  const isLoading = plantsLoading || promocodesLoading;
+  const isError = plantsError || promocodesError || ordersError;
+  const isLoading = plantsLoading || promocodesLoading || ordersLoading;
 
   const handlePromocodeChange = useChangeHandler(actions.setPromoCode);
 
@@ -51,9 +83,9 @@ const Order: React.FC = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    Promise.all([refetchPlants(), refetchPromocodes()])
+    Promise.all([refetchPlants(), refetchPromocodes(), refetchOrders()])
       .then(() => setRefreshing(false))
       .catch(error => {
         console.error(error);
@@ -64,7 +96,7 @@ const Order: React.FC = () => {
   const renderProducts = (): JSX.Element | null => {
     if (cart.length > 0) {
       return (
-        <View style={{paddingLeft: 20, marginBottom: utils.rsHeight(30)}}>
+        <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
           {cart.map((item, index, array) => {
             const isLast = index === array.length - 1;
             return <items.OrderItem key={index} item={item} isLast={isLast} />;
@@ -115,7 +147,7 @@ const Order: React.FC = () => {
                       },
                     },
                   ],
-                  {cancelable: false},
+                  { cancelable: false },
                 );
                 return;
               }
@@ -131,7 +163,7 @@ const Order: React.FC = () => {
                       },
                     },
                   ],
-                  {cancelable: false},
+                  { cancelable: false },
                 );
                 return;
               }
@@ -148,7 +180,7 @@ const Order: React.FC = () => {
                       },
                     },
                   ],
-                  {cancelable: false},
+                  { cancelable: false },
                 );
               }
 
@@ -185,8 +217,8 @@ const Order: React.FC = () => {
             }}
           >
             <text.H5>Subtotal</text.H5>
-            <text.T14 style={{color: theme.colors.mainColor}}>
-              ${subtotal.toFixed(2)}
+            <text.T14 style={{ color: theme.colors.mainColor }}>
+              ${subtotal?.toFixed(2)}
             </text.T14>
           </View>
           {/* DELIVERY */}
@@ -215,9 +247,9 @@ const Order: React.FC = () => {
             </View>
           )}
           {/* TOTAL */}
-          <View style={{...theme.flex.rowCenterSpaceBetween}}>
+          <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
             <text.H4>Total</text.H4>
-            <text.H4>${total.toFixed(2)}</text.H4>
+            <text.H4>${total?.toFixed(2)}</text.H4>
             {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
           </View>
         </View>
@@ -230,7 +262,7 @@ const Order: React.FC = () => {
   const renderEmpty = (): JSX.Element | null => {
     if (cart.length === 0) {
       return (
-        <View style={{flexGrow: 1, padding: 20, justifyContent: 'center'}}>
+        <View style={{ flexGrow: 1, padding: 20, justifyContent: 'center' }}>
           <custom.Image
             source={require('../../assets/icons/04.png')}
             style={{
@@ -240,7 +272,7 @@ const Order: React.FC = () => {
             }}
           />
           <text.H2
-            style={{marginBottom: utils.responsiveHeight(14)}}
+            style={{ marginBottom: utils.responsiveHeight(14) }}
             numberOfLines={1}
           >
             Your cart is empty!
@@ -257,14 +289,14 @@ const Order: React.FC = () => {
     return (
       <components.Button
         title={cart.length > 0 ? 'Shipping & Payment info' : 'Shop now'}
-        containerStyle={{padding: 20}}
-        touchableOpacityStyle={{backgroundColor: theme.colors.pastelMint}}
-        textStyle={{color: theme.colors.steelTeal}}
+        containerStyle={{ padding: 20 }}
+        touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
+        textStyle={{ color: theme.colors.steelTeal }}
         onPress={() => {
           if (cart.length === 0) {
             navigation.navigate('Shop', {
               title: 'Shop',
-              products: plantsData?.plants ?? [],
+              // products: plantsData?.plants ?? [],
             });
             return;
           }
@@ -287,10 +319,37 @@ const Order: React.FC = () => {
     );
   };
 
-  const renderContent = (): JSX.Element => {
-    if (isLoading) return <components.Loader />;
-    if (isError) return <components.Error />;
+  const renderOrders = (): JSX.Element | null => {
+    if (ordersLoading) return <components.Loader />;
+    if (ordersError) return <components.Error />;
 
+    if (ordersData && ordersData.activeCustomer && ordersData.activeCustomer.orders.items.length > 0) {
+      return (
+        <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
+          {ordersData.activeCustomer.orders.items.map((order, index) => {
+            const isLast = index === ordersData.activeCustomer.orders.items.length - 1;
+            return (
+              <View key={order.id} style={{ marginBottom: isLast ? 0 : 20 }}>
+                <Text>Order ID: {order.id}</Text>
+                {order.lines.map(line => (
+                  <View key={line.id} style={{ marginVertical: 10 }}>
+                    <Text>Product: {line.productVariant.name}</Text>
+                    <Text>Quantity: {line.productVariant.price}</Text>
+                    <Text>Price: ${line.unitPriceWithTax / 100}</Text>
+                    <Text>Total: ${line.linePriceWithTax / 100}</Text>
+                  </View>
+                ))}
+              </View>
+            );
+          })}
+        </View>
+      );
+    }
+
+    return null;
+  };
+
+  const renderContent = (): JSX.Element => {
     return (
       <KeyboardAwareScrollView
         enableOnAndroid={true}
@@ -306,6 +365,7 @@ const Order: React.FC = () => {
         {renderEnterVoucher()}
         {renderTotal()}
         {renderEmpty()}
+        {renderOrders()}
       </KeyboardAwareScrollView>
     );
   };

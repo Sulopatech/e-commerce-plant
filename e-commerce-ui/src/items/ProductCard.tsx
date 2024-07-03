@@ -1,30 +1,33 @@
-import {View, TouchableOpacity, Text} from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import React from 'react';
 
-import {hooks} from '../hooks';
-import {utils} from '../utils';
-import {custom} from '../custom';
-import {theme} from '../constants';
-import {product} from '../product';
-import {ProductType} from '../types';
+import { hooks } from '../hooks';
+import { utils } from '../utils';
+import { custom } from '../custom';
+import { theme } from '../constants';
+import { product } from '../product';
+import { ProductType } from '../types';
 
-type Props = {version: 1 | 2 | 3; item: ProductType; isLast?: boolean};
+type Props = { version: 1 | 2 | 3; item: any; isLast?: boolean };
 
-const ProductCard: React.FC<Props> = ({
-  version,
-  item,
-  isLast,
-}): JSX.Element | null => {
+const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | null => {
   const navigation = hooks.useAppNavigation();
-
-  // const cart = hooks.useAppSelector(state => state.cartSlice.list);
+  const cart = hooks.useAppSelector(state => state.cartSlice.list);
 
   const onPress = () => {
-    navigation.navigate('Product', {item});
+    navigation.navigate('Product', { item });
   };
 
-  // const ifInCart = cart.find(i => i.id === item.id);
-  // const quantity = ifInCart ? ifInCart.quantity : 0;
+  const ifInCart = cart.find(i => i.id === item.id);
+  const quantity = ifInCart ? ifInCart.quantity : 0;
+
+  const previewUrl = item.product.featuredAsset?.preview;
+
+  const inStock = item.stockLevel === "IN_STOCK";
+
+  if (!previewUrl) {
+    return null;
+  }
 
   // ############ SHOP > PRODUCTS ############ //
   if (version === 1) {
@@ -38,7 +41,7 @@ const ProductCard: React.FC<Props> = ({
         onPress={onPress}
       >
         <custom.ImageBackground
-          source={{uri: item.featuredAsset.preview}}
+          source={{ uri: previewUrl }}
           style={{
             width: '100%',
             aspectRatio: 160 / 200,
@@ -54,23 +57,23 @@ const ProductCard: React.FC<Props> = ({
           <product.ProductInWishlist
             item={item}
             version={1}
-            containerStyle={{marginBottom: 'auto', padding: 10}}
+            containerStyle={{ marginBottom: 'auto', padding: 10 }}
           />
 
-          {/* {quantity !== undefined && quantity === 0 && (
+          {quantity === 0 && (
             <product.ProductInCart
               item={item}
               version={1}
-              containerStyle={{padding: 10}}
+              containerStyle={{ padding: 10 }}
             />
           )}
-          {quantity !== undefined && quantity > 0 && (
+          {/* {quantity > 0 && (
             <product.ProductQuantity
               quantity={quantity}
-              containerStyle={{padding: 10}}
+              containerStyle={{ padding: 10 }}
             />
           )} */}
-          {/* {item.oldPrice && (
+          {item.oldPrice && (
             <product.ProductSaleBadge
               containerStyle={{
                 position: 'absolute',
@@ -79,14 +82,14 @@ const ProductCard: React.FC<Props> = ({
                 left: 0,
               }}
             />
-          )} */}
+          )}
         </custom.ImageBackground>
         <View
           style={{
             width: utils.responsiveWidth(160, true),
           }}
         >
-          <product.ProductName item={item} style={{marginBottom: 3}} />
+          <product.ProductName item={item} style={{ marginBottom: 3 }} />
           <product.ProductPrice item={item} />
         </View>
       </TouchableOpacity>
@@ -98,7 +101,7 @@ const ProductCard: React.FC<Props> = ({
     return (
       <TouchableOpacity onPress={onPress}>
         <custom.ImageBackground
-          source={{uri: item.featuredAsset.preview}}
+          source={{ uri: previewUrl }}
           style={{
             width: utils.responsiveWidth(138, true),
             aspectRatio: 138 / 170,
@@ -120,7 +123,7 @@ const ProductCard: React.FC<Props> = ({
             }}
           />
 
-          {/* {quantity !== undefined && quantity === 0 && (
+          {quantity === 0 && (
             <product.ProductInCart
               item={item}
               containerStyle={{
@@ -131,7 +134,7 @@ const ProductCard: React.FC<Props> = ({
               }}
             />
           )}
-          {quantity !== undefined && quantity > 0 && (
+          {/* {quantity > 0 && (
             <product.ProductQuantity
               quantity={quantity}
               containerStyle={{
@@ -143,8 +146,8 @@ const ProductCard: React.FC<Props> = ({
             />
           )} */}
         </custom.ImageBackground>
-        <View style={{width: utils.rsHeight(138, true)}}>
-          <product.ProductName item={item} style={{marginBottom: 3}} />
+        <View style={{ width: utils.rsHeight(138, true) }}>
+          <product.ProductName item={item} style={{ marginBottom: 3 }} />
           <product.ProductPrice item={item} />
         </View>
       </TouchableOpacity>
@@ -158,7 +161,7 @@ const ProductCard: React.FC<Props> = ({
     return (
       <TouchableOpacity onPress={onPress}>
         <custom.ImageBackground
-          source={{uri: item.featuredAsset.preview}}
+          source={{ uri: previewUrl }}
           style={{
             width: width,
             aspectRatio: 200 / 250,
@@ -188,7 +191,7 @@ const ProductCard: React.FC<Props> = ({
               right: 0,
             }}
           />
-          {/* {quantity !== undefined && quantity > 0 && (
+          {/* {quantity > 0 && (
             <product.ProductQuantity
               quantity={quantity}
               containerStyle={{
@@ -200,8 +203,8 @@ const ProductCard: React.FC<Props> = ({
             />
           )} */}
         </custom.ImageBackground>
-        <View style={{width: width}}>
-          <product.ProductName item={item} style={{marginBottom: 3}} />
+        <View style={{ width: width }}>
+          <product.ProductName item={item} style={{ marginBottom: 3 }} />
           <product.ProductPrice item={item} />
         </View>
       </TouchableOpacity>

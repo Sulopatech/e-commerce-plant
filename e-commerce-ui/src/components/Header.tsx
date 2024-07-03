@@ -385,7 +385,7 @@ const Header: React.FC<HeaderType> = ({
               }}
               numberOfLines={1}
             >
-              {cart.length > 0 ? `$${subtotal.toFixed(2)}` : '$0'}
+              {cart.length > 0 ? `$${subtotal?.toFixed(2)}` : '$0'}
             </Text>
           </View>
           <svg.BasketSvg />

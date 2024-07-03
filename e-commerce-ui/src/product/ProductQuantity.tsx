@@ -4,7 +4,7 @@ import {View, Text, ViewStyle, Platform} from 'react-native';
 import {theme} from '../constants';
 
 type Props = {
-  quantity: number;
+  quantity: string;
   containerStyle?: ViewStyle;
 };
 
@@ -30,7 +30,7 @@ const ProductQuantity: React.FC<Props> = ({quantity, containerStyle}) => {
             ...theme.fonts.DM_Sans_700Bold,
           }}
         >
-          {quantity}
+          In stock
         </Text>
       </View>
     </View>

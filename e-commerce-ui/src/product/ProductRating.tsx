@@ -46,7 +46,7 @@ const ProductRating: React.FC<Props> = ({rating, style}) => {
         }}
         numberOfLines={1}
       >
-        {rating.toFixed(1).replace('.', ',')}
+        {rating?.toFixed(1).replace('.', ',')}
       </Text>
     );
   };

@@ -233,34 +233,43 @@ export const GETCATEGORY = gql`
   }
 `;
 
-export const GETPRODUCTCATEGORY = gql`
-  query GetCategory($name: String!) {
-    collections(
-      options: {
-        filter: {
-          name: {
-            contains: $name
-          }
-        }
-      }
-    ) {
-      items {
+export const GET_ALL_PRODUCTS = (slug) => gql`
+  query collection {
+    collection(slug: "${slug}") {
+      children {
         id
         name
-        createdAt
-        languageCode
-        updatedAt
         slug
-        position
-        description
-        productVariants {
-          items {
-            id
-            name
-            price
-          }
+        createdAt
+        __typename
+        featuredAsset {
+          id
+          createdAt
+          name
+          preview
         }
       }
+      name
+      productVariants {
+        items {
+          name
+          productId
+          price
+          product {
+            id
+            name
+            slug
+            featuredAsset {
+              id
+              preview
+            }
+          }
+        }
+        totalItems
+      }
+    }
+    activeOrder {
+      totalQuantity
     }
   }
 `;

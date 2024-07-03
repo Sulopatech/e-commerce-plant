@@ -1,4 +1,4 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,31 +7,69 @@ import {
   Platform,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
+import { useMutation } from '@apollo/client';
+import { text } from '../text';
+import { alert } from '../alert';
+import { hooks } from '../hooks';
+import { items } from '../items';
+import { utils } from '../utils';
+import { custom } from '../custom';
+import { svg } from '../assets/svg';
+import { theme } from '../constants';
+import { product } from '../product';
+import { components } from '../components';
+import { queryHooks } from '../store/slices/apiSlice';
+import { addToCart } from '../store/slices/cartSlice';
+import { ProductScreenProps } from '../types/ScreenProps';
+import { ProductType, ViewableItemsChanged } from '../types';
+import { gql, useQuery } from '@apollo/client';
+import { GET_ALL_PRODUCTS } from '../Api/get_products';
 
-import {text} from '../text';
-import {alert} from '../alert';
-import {hooks} from '../hooks';
-import {items} from '../items';
-import {utils} from '../utils';
-import {custom} from '../custom';
-import {svg} from '../assets/svg';
-import {theme} from '../constants';
-import {product} from '../product';
-import {components} from '../components';
-import {queryHooks} from '../store/slices/apiSlice';
-import {addToCart} from '../store/slices/cartSlice';
-import {ProductScreenProps} from '../types/ScreenProps';
-import {ProductType, ViewableItemsChanged} from '../types';
-import {useQuery} from '@apollo/client';
-import {GET_ALL_PRODUCTS} from '../Api/get_products';
+export const ADDTOCART = gql`
+  mutation AddItemToOrder($productVariantId: ID!, $quantity: Int!) {
+    addItemToOrder(productVariantId: $productVariantId, quantity: $quantity) {
+      __typename
+      ...ActiveOrder
+    }
+  }
+  fragment ActiveOrder on Order {
+    id
+    code
+    state
+    couponCodes
+    subTotalWithTax
+    shippingWithTax
+    totalWithTax
+    totalQuantity
+    lines {
+      id
+      productVariant {
+        id
+        name
+      }
+      featuredAsset {
+        id
+        preview
+      }
+      quantity
+      linePriceWithTax
+    }
+  }
+`;
 
-const Product: React.FC<ProductScreenProps> = ({route}) => {
-  const {item} = route.params;
-  const {responsiveHeight} = utils;
+const Product: React.FC<ProductScreenProps> = ({ route }) => {
+  const { item } = route.params;
+  const { responsiveHeight } = utils;
+  const prodSlug = item?.product?.slug;
+  const { data } = useQuery(GET_ALL_PRODUCTS(prodSlug));
+  const productDesc = data?.product;
+  // console.log("data in product desc:", productDesc?.featuredAsset?.preview);
+
+  console.log("prduct datas", item?.featuredAsset?.preview)
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
-
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
 
@@ -49,48 +87,12 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
   const exist = (item: ProductType) => cart.find(i => i.id === item.id);
 
-  console.log('product screen');
-
-  // ############ QUERIES ############ //
-  try {
-    const {data, loading, error} = useQuery(GET_ALL_PRODUCTS, {
-      variables: {
-        options: {
-          filter: {
-            category: 'Electronics',
-          },
-          items: {
-            id: 'id',
-            name: 'name',
-            price: 'price',
-            image: 'image',
-            description: 'description',
-            category: 'category',
-            rating: 'rating',
-            featuredAsset: {
-              preview: 'default_image_uri',
-            },
-          },
-        },
-      },
-    });
-    console.log(data);
-    console.log('This is a error', error);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-  const {
-    data: colorsData,
-    error: colorsError,
-    isLoading: colorsLoading,
-  } = queryHooks.useGetColorsQuery();
-
   const {
     data: reviewsData,
     error: reviewsError,
     isLoading: reviewsLoading,
     refetch: refetchReviews,
-  } = queryHooks.useGetReviewsQuery(item?.id || 0);
+  } = queryHooks.useGetReviewsQuery(productDesc?.id || 0);
 
   const {
     data: ordersData,
@@ -99,7 +101,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   } = queryHooks.useGetOrdersQuery(user?.id || 0);
 
   const ifInOrderExist = ordersData?.orders.find((order: any) =>
-    order.products.find((product: ProductType) => product.id === item.id),
+    order.products.find((product: ProductType) => product.id === productDesc?.id),
   );
 
   useEffect(() => {
@@ -110,20 +112,28 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     return unsubscribe;
   }, [navigation]);
 
-  // ############ STATUS ############ //
+  const modifedItem = { ...productDesc };
 
-  const isError = colorsError || reviewsError;
-  const isLoading = colorsLoading || reviewsLoading;
+  const [addItemToOrder] = useMutation(ADDTOCART, {
+    onCompleted: (data) => {
+      Alert.alert("Success", "Item added to order successfully!");
+    },
+    onError: (error) => {
+      Alert.alert("Error", "Failed to add item to order.");
+    },
+  });
 
-  const [selectedColor, setSelectedColor] = useState<string>(item.color || '');
+  const handleAddToCart = () => {
+    const productVariantId = productDesc?.variants[0]?.id;
+    const quantity = 1;
 
-  const colors = colorsData?.colors?.filter(color =>
-    item.colors?.includes(color.name),
-  );
-
-  const modifedItem = {...item, color: selectedColor};
-
-  // ############ COMPONENTS ############ //
+    if (!exist(productDesc)) {
+      dispatch(addToCart(modifedItem));
+      addItemToOrder({ variables: { productVariantId, quantity } });
+    } else {
+      alert.alreadyAdded();
+    }
+  };
 
   const renderHeader = (): JSX.Element => {
     return (
@@ -141,17 +151,17 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
       <FlatList
         bounces={false}
         horizontal={true}
-        data={item.images}
+        data={productDesc?.featuredAsset?.preview}
         pagingEnabled={true}
-        style={{flexGrow: 0}}
+        style={{ flexGrow: 0 }}
         viewabilityConfig={viewabilityConfig}
         showsHorizontalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
-        renderItem={({item}) => {
+        renderItem={({ item }) => {
           return (
             <custom.Image
               resizeMode='contain'
-              source={{uri: item}}
+              source={{ uri: item }}
               style={{
                 aspectRatio: 375 / 500,
                 width: theme.sizes.deviceWidth,
@@ -166,7 +176,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
 
   const renderCarousel = (): JSX.Element | null => {
     const renderIndicator = (): JSX.Element | null => {
-      if (item.images.length > 1) {
+      if (productDesc?.featuredAsset?.preview?.length > 1) {
         return (
           <View
             style={{
@@ -177,29 +187,12 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
               alignSelf: 'center',
             }}
           >
-            {item.images.map((_, current, array) => {
-              const last = current === array.length - 1;
-              return (
-                <View
-                  key={current}
-                  style={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 5,
-                    backgroundColor:
-                      activeIndex === current
-                        ? theme.colors.mainColor
-                        : theme.colors.white,
-                    borderColor:
-                      activeIndex === current
-                        ? theme.colors.mainColor
-                        : theme.colors.antiFlashWhite,
-                    marginRight: last ? 0 : 10,
-                    borderWidth: 1,
-                  }}
-                />
-              );
-            })}
+            <Image
+              source={{
+                uri: productDesc?.featuredAsset?.preview || item?.featuredAsset?.preview,
+              }}
+              style={{ width: 430, height: 500 }}
+            />
           </View>
         );
       }
@@ -210,7 +203,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     const renderInWishlist = (): JSX.Element => {
       return (
         <product.ProductInWishlist
-          item={item}
+          item={productDesc}
           containerStyle={{
             position: 'absolute',
             right: 0,
@@ -223,9 +216,9 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
       );
     };
 
-    if (item.images.length > 0) {
+    if (productDesc?.featuredAsset?.preview?.length > 0) {
       return (
-        <View style={{marginBottom: utils.rsHeight(30)}}>
+        <View style={{ marginBottom: utils.rsHeight(30) }}>
           {renderImages()}
           {renderIndicator()}
           {renderInWishlist()}
@@ -245,8 +238,8 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{item.name}</text.H3>
-        <product.ProductRating rating={item.rating} />
+        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name}</text.H3>
+        <product.ProductRating rating={productDesc?.rating || item?.rating} />
       </View>
     );
   };
@@ -274,64 +267,9 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
             color: theme.colors.mainColor,
           }}
         >
-          ${item.price}
+          ${productDesc?.variants[0]?.price}
         </Text>
         <product.ProductCounterInner item={modifedItem} />
-      </View>
-    );
-  };
-
-  const renderColors = (): JSX.Element => {
-    return (
-      <View
-        style={{
-          paddingHorizontal: 20,
-          marginBottom: utils.responsiveHeight(30),
-        }}
-      >
-        <text.H5
-          style={{
-            color: theme.colors.mainColor,
-            marginRight: 32,
-            marginTop: 10,
-            marginBottom: utils.rsHeight(20),
-          }}
-        >
-          Color
-        </text.H5>
-        <View style={{flexDirection: 'row', alignItems: 'center', gap: 10}}>
-          {colors?.map((color, index) => {
-            const colorItem = colorsData?.colors.find(
-              item => item.name === color.name,
-            );
-            const code: string = colorItem ? colorItem.code : '';
-            return (
-              <TouchableOpacity
-                key={index}
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: code,
-                  justifyContent: 'center',
-                }}
-                onPress={() => {
-                  if (!exist(item)) {
-                    setSelectedColor(color.name);
-                  }
-
-                  if (exist(item)) {
-                    alert.alreadyAdded();
-                  }
-                }}
-              >
-                {selectedColor === color.name && <svg.CheckSvg />}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
       </View>
     );
   };
@@ -344,7 +282,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           marginBottom: 30,
         }}
       >
-        <text.H5 style={{marginBottom: 14, color: theme.colors.mainColor}}>
+        <text.H5 style={{ marginBottom: 14, color: theme.colors.mainColor }}>
           Description
         </text.H5>
         <text.T16
@@ -354,13 +292,13 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           }}
           numberOfLines={6}
         >
-          {item.description}
+          {productDesc?.description || item?.description}
         </text.T16>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('Description', {
-              description: item.description,
-              title: item.name,
+              description: productDesc?.description,
+              title: productDesc?.name,
             });
           }}
         >
@@ -377,12 +315,12 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     const slice = reversedReviews.slice(0, 2);
 
     return (
-      <View style={{paddingLeft: 20}}>
+      <View style={{ paddingLeft: 20 }}>
         <components.BlockHeading
           title={`Reviews (${reviewsData?.reviews.length})`}
-          containerStyle={{marginRight: 20, marginBottom: responsiveHeight(20)}}
+          containerStyle={{ marginRight: 20, marginBottom: responsiveHeight(20) }}
           viewAllOnPress={() => {
-            navigation.navigate('Reviews', {reviews: reviewsData?.reviews});
+            navigation.navigate('Reviews', { reviews: reviewsData?.reviews });
           }}
           viewAllVisible={reversedReviews.length > 2}
         />
@@ -402,17 +340,10 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
 
   const renderButton = (): JSX.Element => {
     return (
-      <View style={{padding: 20}}>
+      <View style={{ padding: 20 }}>
         <components.Button
-          title='+ ADd to cart'
-          onPress={() => {
-            if (exist(item)) {
-              alert.alreadyAdded();
-            }
-            if (!exist(item)) {
-              dispatch(addToCart(modifedItem));
-            }
-          }}
+          title='+ ADD to cart'
+          onPress={handleAddToCart}
           containerStyle={{
             paddingBottom: ifInOrderExist ? responsiveHeight(14) : 0,
           }}
@@ -420,11 +351,11 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
         {ifInOrderExist && (
           <components.Button
             title='Leave a review'
-            touchableOpacityStyle={{backgroundColor: theme.colors.pastelMint}}
+            touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
             onPress={() => {
-              navigation.navigate('LeaveAReview', {productId: item.id});
+              navigation.navigate('LeaveAReview', { productId: productDesc?.id });
             }}
-            textStyle={{color: theme.colors.steelTeal}}
+            textStyle={{ color: theme.colors.steelTeal }}
           />
         )}
       </View>
@@ -432,26 +363,20 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   };
 
   const renderContent = (): JSX.Element => {
-    if (isError) return <components.Error />;
-    if (isLoading) return <components.Loader />;
-
     return (
       <ScrollView
-        contentContainerStyle={{flexGrow: 1}}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
         {renderCarousel()}
         {renderNameWithRating()}
         {renderPriceWithQuantity()}
-        {renderColors()}
         {renderDescription()}
         {renderReviews()}
         {renderButton()}
       </ScrollView>
     );
   };
-
-  // ############ RENDER ############ //
 
   return (
     <custom.SafeAreaView insets={['top', 'bottom']}>

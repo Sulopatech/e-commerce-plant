@@ -20,7 +20,7 @@ export type RootStackParamList = {
   OrderFailed: undefined;
   Plant: {plant: ProductType};
   OrderHistory: undefined;
-  Shop: {title: string; products: ProductType[]};
+  Shop: {title: string};
   MyPromocodes: undefined;
   TabNavigator: undefined;
   LeaveAReview: {productId: number};
@@ -58,5 +58,5 @@ export type RootStackParamList = {
   DeleteAccount: undefined;
   VerifyEmailForgot: {email?: string};
   SendEmailOtpForgot: undefined;
-  Product: {item: ProductType};
+  Product: {item: any};
 };
