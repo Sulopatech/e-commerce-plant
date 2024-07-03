@@ -67,8 +67,7 @@ const Categories: React.FC = () => {
               }}
               onPress={() => {
                 navigation.navigate('Shop', {
-                  title: item.name,
-                  products: item,
+                  title: item.slug,
                 });
               }}
             >

@@ -7,6 +7,8 @@ import {ProductType} from '../types';
 type Props = PropsWithChildren<{item: ProductType; containerStyle?: ViewStyle}>;
 
 const ProductPrice: React.FC<Props> = ({item, containerStyle}): JSX.Element => {
+
+  console.log("products", item)
   return (
     <View
       style={{
