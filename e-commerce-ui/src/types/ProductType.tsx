@@ -1,6 +1,7 @@
 import {ReviewType} from './ReviewType';
 
 export type ProductType = {
+  featuredAsset: any;
   id: number;
   name: string;
   price: number;

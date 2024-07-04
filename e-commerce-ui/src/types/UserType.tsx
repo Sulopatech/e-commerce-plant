@@ -1,5 +1,5 @@
-export type UserType = {
-  id?: number;
+export type pe = {
+  // id?: number;
   name?: string;
   email?: string;
   password?: string;
@@ -7,6 +7,6 @@ export type UserType = {
   location?: string;
   phoneNumber?: string;
   otp?: string;
-  phoneVerified?: boolean;
-  emailVerified?: boolean;
+  // phoneVerified?: boolean;
+  // emailVerified?: boolean;
 };

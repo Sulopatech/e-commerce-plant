@@ -30,6 +30,6 @@
     "@vendure/cli": "^2.2.6",
     "@vendure/ui-devkit": "2.2.6",
     "concurrently": "8.2.2",
-    "typescript": "5.3.3"
+    "typescript": "5.5.2"
   }
 }

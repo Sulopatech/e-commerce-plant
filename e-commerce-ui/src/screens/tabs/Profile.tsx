@@ -50,31 +50,30 @@ const Profile: React.FC = () => {
   };
 
   const renderUserInfo = (): JSX.Element => {
-    return (
-      <components.UserData
-        onPress={() => {
-          if (user?.emailVerified && user?.phoneVerified) {
-            navigation.navigate('EditProfile');
-            return;
-          }
-
-          Alert.alert(
-            'Please verify your email and phone number',
-            'You need to verify your email and phone number to edit your profile.',
-            [
-              {
-                text: 'OK',
-                onPress: () => {
-                  console.log('OK Pressed');
-                },
-              },
-            ],
-            {cancelable: false},
-          );
-        }}
-        containerStyle={{marginBottom: utils.responsiveHeight(30)}}
-      />
-    );
+    // return (
+    //   <components.UserData
+    //     onPress={() => {
+    //       if (user?.emailVerified && user?.phoneVerified) {
+    //         navigation.navigate('EditProfile');
+    //         return;
+    //       }
+    //       Alert.alert(
+    //         'Please verify your email and phone number',
+    //         'You need to verify your email and phone number to edit your profile.',
+    //         [
+    //           {
+    //             text: 'OK',
+    //             onPress: () => {
+    //               console.log('OK Pressed');
+    //             },
+    //           },
+    //         ],
+    //         {cancelable: false},
+    //       );
+    //     }}
+    //     containerStyle={{marginBottom: utils.responsiveHeight(30)}}
+    //   />
+    // );
   };
 
   const renderMenu = (): JSX.Element => {
@@ -92,24 +91,21 @@ const Profile: React.FC = () => {
         <items.ProfileItem
           title={'My orders'}
           onPress={() => {
-            if (phoneVerified && emailVerified) {
-              navigation.navigate('OrderHistory');
-              return;
-            }
+            navigation.navigate('OrderHistory');
 
-            Alert.alert(
-              'Please verify your email and phone number',
-              'You need to verify your email and phone number to see your orders.',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => {
-                    console.log('OK Pressed');
-                  },
-                },
-              ],
-              {cancelable: false},
-            );
+            // Alert.alert(
+            //   'Please verify your email and phone number',
+            //   'You need to verify your email and phone number to see your orders.',
+            //   [
+            //     {
+            //       text: 'OK',
+            //       onPress: () => {
+            //         console.log('OK Pressed');
+            //       },
+            //     },
+            //   ],
+            //   {cancelable: false},
+            // );
           }}
           containerStyle={{
             marginBottom: utils.responsiveHeight(10),
