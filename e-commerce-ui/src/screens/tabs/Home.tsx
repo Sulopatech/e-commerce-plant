@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,15 +11,18 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-import {text} from '../../text';
-import {items} from '../../items';
-import {hooks} from '../../hooks';
-import {utils} from '../../utils';
-import {custom} from '../../custom';
-import {svg} from '../../assets/svg';
-import {theme} from '../../constants';
-import {components} from '../../components';
-import {queryHooks} from '../../store/slices/apiSlice';
+import { text } from '../../text';
+import { items } from '../../items';
+import { hooks } from '../../hooks';
+import { utils } from '../../utils';
+import { custom } from '../../custom';
+import { svg } from '../../assets/svg';
+import { theme } from '../../constants';
+import { components } from '../../components';
+import { queryHooks } from '../../store/slices/apiSlice';
+import { GETCATEGORY, GET_ALL_PRODUCTS } from '../../Api/get_collectiongql';
+import { useQuery } from '@apollo/client';
+import Categories from './Categories';
 
 type ViewableItemsChanged = {
   viewableItems: Array<ViewToken>;
@@ -43,12 +46,16 @@ const Home: React.FC = () => {
     refetch: refetchBanners,
   } = queryHooks.useGetBannersQuery();
 
-  const {
-    data: categoriesData,
-    error: categoriesError,
-    isLoading: categoriesLoading,
-    refetch: refetchCategories,
-  } = queryHooks.useGetCategoriesQuery();
+  const { data, error: categoriesError, loading: categoriesLoading, refetch: refetchCategories } = useQuery(GETCATEGORY, {
+    variables: {
+      options: { skip: 0, take: 10 },
+    },
+  });
+
+  console.log("data :", data?.collections);
+  console.log("error :", categoriesError);
+  console.log("loading :", categoriesLoading);
+  console.log("refetch :", refetchCategories);
 
   const {
     data: carouselData,
@@ -76,15 +83,9 @@ const Home: React.FC = () => {
 
   let carousel = carouselData?.carousel || [];
 
-  let categories = categoriesData?.categories || [];
+  let categories = data?.collections?.items ?? [];
 
   let banner = bannersData?.banners || [];
-
-  // banner = [];
-  // featured = [];
-  // carousel = [];
-  // categories = [];
-  // bestSellers = [];
 
   const isData =
     banner.length === 0 &&
@@ -92,14 +93,16 @@ const Home: React.FC = () => {
     categories.length === 0 &&
     bestSellers.length === 0 &&
     carousel.length === 0;
+
   const isError =
     plantsError || bannersError || categoriesError || carouselError;
+
   const isLoading =
     bannersLoading || plantsLoading || categoriesLoading || carouselLoading;
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
     Promise.all([
       refetchPlants(),
@@ -112,9 +115,9 @@ const Home: React.FC = () => {
         console.error(error);
         setRefreshing(false);
       });
-  }, []);
+  }, [refetchPlants, refetchBanners, refetchCarousel, refetchCategories]);
 
-  const renderCarouselItem = ({item}) => {
+  const renderCarouselItem = ({ item }) => {
     const products = plantsData?.plants.filter(plant => {
       return plant.promotion === item.promotion;
     });
@@ -145,7 +148,7 @@ const Home: React.FC = () => {
         }}
       >
         <custom.ImageBackground
-          source={{uri: item.image}}
+          source={{ uri: item.image }}
           style={{
             width: theme.sizes.deviceWidth,
             aspectRatio: 375 / 500,
@@ -154,13 +157,13 @@ const Home: React.FC = () => {
             paddingBottom: 20,
             justifyContent: 'space-between',
           }}
-          imageStyle={{backgroundColor: theme.colors.imageBackground}}
+          imageStyle={{ backgroundColor: theme.colors.imageBackground }}
         >
-          <View style={{marginBottom: 30}}>
-            <text.H1 style={{textTransform: 'capitalize'}}>
+          <View style={{ marginBottom: 30 }}>
+            <text.H1 style={{ textTransform: 'capitalize' }}>
               {item.title_line_1}
             </text.H1>
-            <text.H1 style={{textTransform: 'capitalize'}}>
+            <text.H1 style={{ textTransform: 'capitalize' }}>
               {item.title_line_2}
             </text.H1>
             <View
@@ -203,7 +206,7 @@ const Home: React.FC = () => {
         pagingEnabled={true}
         bounces={false}
         showsHorizontalScrollIndicator={false}
-        style={{flexGrow: 0}}
+        style={{ flexGrow: 0 }}
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
         renderItem={renderCarouselItem}
@@ -267,6 +270,13 @@ const Home: React.FC = () => {
   };
 
   const renderCategories = (): JSX.Element => {
+    console.log("Rendering categories:", categories);
+  
+    if (!categories || categories.length === 0) {
+      console.log("No categories data available");
+      return <View />;
+    }
+  
     return (
       <ScrollView
         horizontal={true}
@@ -283,11 +293,17 @@ const Home: React.FC = () => {
         }}
       >
         {categories.map((item, index, array) => {
-          const isLast = index === array.length - 1;
+          console.log(`Rendering category item: ${item.name}`);
+          const isLast = index === array.length -1;
+          
+         
           const dataFilter = plantsData?.plants.filter(
-            e => e && e.categories.includes(item.name),
+            e => e.categories.includes(item.name),
           );
+  
+          console.log(`Filtered products for ${item.name}:`, dataFilter);
           const qty = dataFilter?.length ?? 0;
+  
           return (
             <items.CategoryItem
               item={item}
@@ -301,12 +317,13 @@ const Home: React.FC = () => {
       </ScrollView>
     );
   };
+  
 
   const renderBestSellers = (): JSX.Element | null => {
     if (bestSellers?.length === 0) return null;
 
     return (
-      <View style={{marginBottom: utils.responsiveHeight(50)}}>
+      <View style={{ marginBottom: utils.responsiveHeight(50) }}>
         <components.BlockHeading
           title='Best sellers'
           containerStyle={{
@@ -355,7 +372,7 @@ const Home: React.FC = () => {
     if (bannerLength > 0) {
       return (
         <TouchableOpacity
-          style={{marginBottom: utils.responsiveHeight(50)}}
+          style={{ marginBottom: utils.responsiveHeight(50) }}
           onPress={() => {
             if (products.length === 0) {
               Alert.alert('No data', 'No data available for this promotion');
@@ -369,7 +386,7 @@ const Home: React.FC = () => {
           }}
         >
           <custom.Image
-            source={{uri: banner[0]?.image}}
+            source={{ uri: banner[0]?.image }}
             style={{
               width: theme.sizes.deviceWidth - 20,
               aspectRatio: 355 / 200,
@@ -392,7 +409,7 @@ const Home: React.FC = () => {
     if (featured?.length === 0) return null;
 
     return (
-      <View style={{marginBottom: utils.responsiveHeight(20)}}>
+      <View style={{ marginBottom: utils.responsiveHeight(20) }}>
         <components.BlockHeading
           title='Featured products'
           containerStyle={{
@@ -429,30 +446,23 @@ const Home: React.FC = () => {
     );
   };
 
-  const renderContent = (): JSX.Element => {
-    if (isError) return <components.Error />;
-    if (isData) return <components.NoData />;
-    if (isLoading) return <components.Loader />;
-
-    return (
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingBottom: utils.responsiveHeight(20),
-        }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {renderCarousel()}
-        {renderCategories()}
-        {renderBestSellers()}
-        {renderBanner()}
-        {renderFeatured()}
-      </ScrollView>
-    );
-  };
+ const renderContent = (): JSX.Element => {
+  return (
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingTop: 20,
+        paddingHorizontal: 20,
+      }}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      {renderCategories()}
+    </ScrollView>
+  );
+};
 
   return renderContent();
 };
