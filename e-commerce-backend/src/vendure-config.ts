@@ -1,3 +1,4 @@
+import { compileUiExtensions } from '@vendure/ui-devkit/compiler';
 import {
     dummyPaymentHandler,
     DefaultJobQueuePlugin,
@@ -9,10 +10,16 @@ import { AssetServerPlugin } from '@vendure/asset-server-plugin';
 import { AdminUiPlugin } from '@vendure/admin-ui-plugin';
 import 'dotenv/config';
 import path from 'path';
+import { otpEmailVerificationHandler } from './email-handlers/otp-email-handler';
+import { ProductreviewPlugin } from './plugins/productreview/productreview.plugin';
+import { DeletecustomerPlugin } from './plugins/deletecustomer/deletecustomer.plugin';
+import { ExtendedcollectionPlugin } from './plugins/extendedcollection/extendedcollection.plugin';
+import { BannersPlugin } from './plugins/banners/banners.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
 export const config: VendureConfig = {
+    
     apiOptions: {
         hostname:"0.0.0.0",
         port: 3000,
@@ -77,12 +84,21 @@ export const config: VendureConfig = {
             devMode: true,
             outputPath: path.join(__dirname, '../static/email/test-emails'),
             route: 'mailbox',
-            handlers: defaultEmailHandlers,
+            handlers: [otpEmailVerificationHandler],
+            transport: {
+                type: 'smtp',
+                host: 'smtp.sulopa.com',
+                port: 587,
+                auth: {
+                  user: 'username',
+                  pass: 'password',
+                }
+              },
             templatePath: path.join(__dirname, '../static/email/templates'),
             globalTemplateVars: {
                 // The following variables will change depending on your storefront implementation.
                 // Here we are assuming a storefront running at http://localhost:8080.
-                fromAddress: '"example" <noreply@example.com>',
+                fromAddress: 'rishikumar@sulopa.com',
                 verifyEmailAddressUrl: 'http://localhost:8080/verify',
                 passwordResetUrl: 'http://localhost:8080/password-reset',
                 changeEmailAddressUrl: 'http://localhost:8080/verify-email-address-change'
@@ -94,6 +110,17 @@ export const config: VendureConfig = {
             adminUiConfig: {
                 apiPort: 3000,
             },
+            app: compileUiExtensions({
+                outputPath: path.join(__dirname, '../admin-ui'),
+                extensions: [
+                    ProductreviewPlugin.ui,
+                ],
+                devMode: true,
+            }),
         }),
+        ProductreviewPlugin.init({}),
+        DeletecustomerPlugin.init({allowDeleteWithOrders:true}),
+        ExtendedcollectionPlugin.init({}),
+        BannersPlugin.init({}),
     ],
 };
