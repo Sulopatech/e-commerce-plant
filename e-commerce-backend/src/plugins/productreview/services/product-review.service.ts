@@ -14,7 +14,6 @@ import {
     assertFound,
     Customer,
     Product as p,
-    Product,
     ProductVariant,
 } from '@vendure/core';
 import { 
@@ -139,7 +138,7 @@ export class ProductReviewService {
         // let reviewList=custom?.customFields.featuredReview||[]
 
         // Save the updated product
-        await this.connection.getRepository(ctx, Product).save(product);
+        await this.connection.getRepository(ctx, p).save(product);
         // let l=product.customFields.featuredReview||[]
         // console.log(product.customFields.featuredReview)
         let productVariant = undefined;
@@ -181,14 +180,6 @@ export class ProductReviewService {
         return assertFound(this.findOne(ctx, newReview.id));
     }
 
-    // async update(ctx: RequestContext, input: UpdateProductReviewInput): Promise<ProductReview> {
-    //     const review = await this.connection.getEntityOrThrow(ctx, ProductReview, input.id);
-    //     const updatedReview = patchEntity(review, input);
-    //     await this.connection.getRepository(ctx, ProductReview).save(updatedReview, { reload: false });
-    //     await this.customFieldRelationService.updateRelations(ctx, ProductReview, input, updatedReview);
-    //     await this.updateProductReviewMetrics(ctx, review.product.id);
-    //     return assertFound(this.findOne(ctx, updatedReview.id));
-    // }
     async update(ctx: RequestContext, input: UpdateProductReviewInput): Promise<ProductReview> {
         const review = await this.connection.getEntityOrThrow(ctx, ProductReview, input.id);
         
@@ -242,24 +233,11 @@ export class ProductReviewService {
             skip,
           });
 
-          const [pitems, ptotalItems]=await this.connection.getRepository(ctx,Product).findAndCount({
-            where:{variants:{
-                collections:{
-                    id:2
-                }
-            }},
-            
-        })
-        console.log("this is items",pitems)
         return {
           items,
           totalItems,
         };
     }  
-
-
-
-
 
     private async updateProductReviewMetrics(ctx: RequestContext, productId: ID): Promise<void> {
         const reviews = await this.connection.getRepository(ctx, ProductReview).find({
