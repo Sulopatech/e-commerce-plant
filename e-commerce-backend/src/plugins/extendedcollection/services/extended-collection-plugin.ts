@@ -6,6 +6,7 @@ import {
   Product,
   ProductVariant,
   ListQueryBuilder,
+  ListQueryOptions,
 } from '@vendure/core';``
 import { ProductList } from '../gql/generated';
 
@@ -19,19 +20,35 @@ export class CollectionService {
   async getProductListForCollection(
     ctx: RequestContext,
     collectionId: string | number,
-    args: any
+    options?: ListQueryOptions<Product>
   ): Promise<{ items: Product[]; totalItems: number }> {
-    console.log(collectionId)
-    const [items, totalItems]=await this.connection.getRepository(ctx,Product).findAndCount({
-        where:{variants:{
-            collections:{
-                id:collectionId
-            }
-        }
-        
-    },
+    // console.log(options)
+    // const [items, totalItems]=await this.connection.getRepository(ctx,Product).findAndCount({  
+    //   where:{variants:{
+    //         collections:{
+    //             id:collectionId
+    //         }
+    //     }},
+    // })
+    // const [p,c] = await this.connection
+    //   .getRepository(ctx, Product)
+    //   .createQueryBuilder('product')
+    //   .leftJoinAndSelect('product.variants', 'variant')
+    //   .leftJoinAndSelect('variant.collections', 'collection')
+    //   .where('collection.id = :collectionId', { collectionId }).getManyAndCount();
 
-    })
+ 
+    const [items,totalItems]=await this.listQueryBuilder.build(Product, options || {}, {
+      where:{variants:{
+        collections:{
+            id:collectionId
+        }
+      }},
+      relations:[],
+      channelId: ctx.channelId,
+      ctx: ctx,
+    }).getManyAndCount();
+    console.log(items)
     return {
       items,
       totalItems,

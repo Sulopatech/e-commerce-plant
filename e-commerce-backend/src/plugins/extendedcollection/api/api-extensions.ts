@@ -8,10 +8,8 @@ const extendedCollectionshopApiExtensions = gql`
     totalItems: Int!
   }
 
-
-
   extend type Collection {
-      FilteredProduct: FilteredProductList!
+      FilteredProduct(options: ProductListOptions): FilteredProductList!
   }
 
 `;
