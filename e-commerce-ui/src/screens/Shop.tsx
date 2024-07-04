@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { gql, useQuery } from '@apollo/client';
 import Modal from 'react-native-modal';
 import {
@@ -53,10 +53,15 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
 
   const products = data?.collection?.productVariants?.items || [];
 
-  const filteredProducts = products.filter(() => {
-    // Apply your filtering logic here
-    return true;
-  });
+  const applyFilters = (products) => {
+    // Add your filtering logic here, for example:
+    return products.filter((product) => {
+      // Example filter: Return all products (Modify this logic based on actual filters)
+      return true;
+    });
+  };
+
+  const filteredProducts = applyFilters(products);
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sort.title) {
