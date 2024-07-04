@@ -5,7 +5,8 @@ import { PluginInitOptions } from './types';
 import { Banners } from './entities/banners.entity';
 import { BannersService } from './services/banners.service';
 import { BannersAdminResolver } from './api/banners-admin.resolver';
-import { adminApiExtensions } from './api/api-extensions';
+import { adminApiExtensions, shopApiExtensions } from './api/api-extensions';
+import { BannersShopResolver } from './api/banners-shop.resolver';
 
 @VendurePlugin({
     imports: [PluginCommonModule],
@@ -23,6 +24,10 @@ import { adminApiExtensions } from './api/api-extensions';
         schema: adminApiExtensions,
         resolvers: [BannersAdminResolver]
     },
+    shopApiExtensions:{
+        schema:shopApiExtensions,
+        resolvers:[BannersShopResolver]
+    }
 })
 export class BannersPlugin {
     static options: PluginInitOptions;

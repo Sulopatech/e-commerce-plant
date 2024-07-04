@@ -39,7 +39,7 @@ export class BannersAdminResolver {
     constructor(private bannersService: BannersService) {}
 
     @Query()
-    @Allow(Permission.SuperAdmin)
+    @Allow(Permission.Authenticated)
     async banner(
         @Ctx() ctx: RequestContext,
         @Args() args: { id: ID },
@@ -49,7 +49,7 @@ export class BannersAdminResolver {
     }
 
     @Query()
-    @Allow(Permission.SuperAdmin)
+    @Allow(Permission.Authenticated)
     async banners(
         @Ctx() ctx: RequestContext,
         @Args() args: { options: ListQueryOptions<Banners> },
@@ -60,29 +60,26 @@ export class BannersAdminResolver {
 
     @Mutation()
     @Transaction()
-    @Allow(Permission.SuperAdmin)
     async createBanners(
         @Ctx() ctx: RequestContext,
         @Args() args: { input: CreateBannersInput },
         @Args('file') file: any
     ): Promise<Banners> {
-        return this.bannersService.create(ctx, args.input);
+        return this.bannersService.create(ctx, args.input,file);
     }
 
     @Mutation()
     @Transaction()
-    @Allow(Permission.SuperAdmin)
     async updateBanners(
         @Ctx() ctx: RequestContext,
         @Args() args: { input: UpdateBannersInput },
-        @Args('file') file?: any
     ): Promise<Banners> {
         return this.bannersService.update(ctx, args.input);
     }
 
     @Mutation()
     @Transaction()
-    @Allow(Permission.SuperAdmin)
+    @Allow(Permission.Authenticated)
     async deleteBanners(@Ctx() ctx: RequestContext, @Args() args: { id: ID }): Promise<DeletionResponse> {
         return this.bannersService.delete(ctx, args.id);
     }

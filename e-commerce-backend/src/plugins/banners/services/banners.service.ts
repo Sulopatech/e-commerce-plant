@@ -3,12 +3,15 @@ import { DeletionResponse, DeletionResult } from '@vendure/common/lib/generated-
 import { ID, PaginatedList } from '@vendure/common/lib/shared-types';
 import {
     Asset,
+    AssetService,
+    DeepPartial,
     ListQueryBuilder,
     ListQueryOptions,
     RelationPaths,
     RequestContext,
     TransactionalConnection,
     assertFound,
+    isGraphQlErrorResult,
     patchEntity
 } from '@vendure/core';
 import { BANNERS_PLUGIN_OPTIONS } from '../constants';
@@ -30,7 +33,6 @@ interface UpdateBannersInput {
     isActive?: boolean;
     description?: string;
     link?: string;
-    asset:Asset;
     // Define the input fields here
 }
 
@@ -38,6 +40,7 @@ interface UpdateBannersInput {
 export class BannersService {
     constructor(
         private connection: TransactionalConnection,
+        private assetService:AssetService,
         private listQueryBuilder: ListQueryBuilder, @Inject(BANNERS_PLUGIN_OPTIONS) private options: PluginInitOptions
     ) {}
 
@@ -50,6 +53,9 @@ export class BannersService {
             .build(Banners, options, {
                 relations,
                 ctx,
+                where:{
+                    isActive:true
+                }
             }
             ).getManyAndCount().then(([items, totalItems]) => {
                 return {
@@ -68,13 +74,32 @@ export class BannersService {
         return this.connection
             .getRepository(ctx, Banners)
             .findOne({
-                where: { id },
+                where: { id ,isActive:true},
                 relations,
             });
     }
 
-    async create(ctx: RequestContext, input: CreateBannersInput): Promise<Banners> {
-        const newEntity = await this.connection.getRepository(ctx, Banners).save(input);
+    async create(ctx: RequestContext, input: CreateBannersInput, file:any): Promise<Banners> {
+        // Create an Asset from the uploaded file
+        const asset = await this.assetService.create(ctx, {
+            file: file,
+            tags: ['Banner'],
+        });
+        // Check to make sure there was no error when
+        // creating the Asset
+        if (isGraphQlErrorResult(asset)) {
+            // MimeTypeError
+            throw asset;
+        }
+        const bannerData = {
+            name: input.name,
+            isActive: input.isActive,
+            description: input.description,
+            link: input.link,
+            asset: asset // Associate the asset using its ID
+        };
+        const newEntity = await this.connection.getRepository(ctx, Banners).save(bannerData);
+        console.log(newEntity)
         return assertFound(this.findOne(ctx, newEntity.id));
     }
 

@@ -9,7 +9,7 @@ const bannersAdminApiExtensions = gql`
     isActive: Boolean!
     description: String!
     link: String!
-    bannerfile:Asset!
+    asset:Asset!
   }
 
   type BannersList implements PaginatedList {
@@ -42,7 +42,7 @@ const bannersAdminApiExtensions = gql`
 
   extend type Mutation {
     createBanners(input: CreateBannersInput!, file: Upload!): Banners!
-    updateBanners(input: UpdateBannersInput!, file: Upload): Banners!
+    updateBanners(input: UpdateBannersInput!): Banners!
     deleteBanners(id: ID!): DeletionResponse!
   }
 `;
@@ -59,6 +59,7 @@ export const shopApiExtensions = gql`
     isActive: Boolean!
     description: String!
     link: String!
+    asset:Asset!
   }
 
   type BannersList implements PaginatedList {
