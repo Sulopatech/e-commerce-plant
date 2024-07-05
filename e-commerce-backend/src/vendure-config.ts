@@ -15,6 +15,7 @@ import { ProductreviewPlugin } from './plugins/productreview/productreview.plugi
 import { DeletecustomerPlugin } from './plugins/deletecustomer/deletecustomer.plugin';
 import { ExtendedcollectionPlugin } from './plugins/extendedcollection/extendedcollection.plugin';
 import { BannersPlugin } from './plugins/banners/banners.plugin';
+import { MultivendorPlugin } from './plugins/multivendor-plugin/multivendor.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -122,5 +123,6 @@ export const config: VendureConfig = {
         DeletecustomerPlugin.init({allowDeleteWithOrders:true}),
         ExtendedcollectionPlugin.init({}),
         BannersPlugin.init({}),
+        MultivendorPlugin.init({platformFeePercent: 10, platformFeeSKU: 'FEE',}),
     ],
 };
