@@ -47,38 +47,27 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   }).current;
 
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
-  const exist = (item: ProductType) => cart.find(i => i.id === item.id);
+  const exist = (item: ProductType) =>
+    cart.find(i => i.productId === item.productId);
 
   console.log('product screen');
 
   // ############ QUERIES ############ //
-  try {
-    const {data, loading, error} = useQuery(GET_ALL_PRODUCTS, {
-      variables: {
-        options: {
-          filter: {
-            category: 'Electronics',
-          },
-          items: {
-            id: 'id',
-            name: 'name',
-            price: 'price',
-            image: 'image',
-            description: 'description',
-            category: 'category',
-            rating: 'rating',
-            featuredAsset: {
-              preview: 'default_image_uri',
-            },
-          },
-        },
+  const {data, loading, error} = useQuery(GET_ALL_PRODUCTS, {
+    variables: {
+      options: {
+        take: 56,
       },
-    });
-    console.log(data);
-    console.log('This is a error', error);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
+    },
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error fetching data:', error);
+    }
+  }, [error]);
+
+  console.log('product screen', data);
   const {
     data: colorsData,
     error: colorsError,
@@ -90,7 +79,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     error: reviewsError,
     isLoading: reviewsLoading,
     refetch: refetchReviews,
-  } = queryHooks.useGetReviewsQuery(item?.id || 0);
+  } = queryHooks.useGetReviewsQuery(item?.productId || 0);
 
   const {
     data: ordersData,
@@ -99,7 +88,9 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   } = queryHooks.useGetOrdersQuery(user?.id || 0);
 
   const ifInOrderExist = ordersData?.orders.find((order: any) =>
-    order.products.find((product: ProductType) => product.id === item.id),
+    order.products.find(
+      (product: ProductType) => product.productId === item.productId,
+    ),
   );
 
   useEffect(() => {
@@ -245,7 +236,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{item.name}</text.H3>
+        <text.H3 numberOfLines={1}>{item.productName}</text.H3>
         <product.ProductRating rating={item.rating} />
       </View>
     );
@@ -360,7 +351,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           onPress={() => {
             navigation.navigate('Description', {
               description: item.description,
-              title: item.name,
+              title: item.productName,
             });
           }}
         >
@@ -422,7 +413,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
             title='Leave a review'
             touchableOpacityStyle={{backgroundColor: theme.colors.pastelMint}}
             onPress={() => {
-              navigation.navigate('LeaveAReview', {productId: item.id});
+              navigation.navigate('LeaveAReview', {productId: item.productId});
             }}
             textStyle={{color: theme.colors.steelTeal}}
           />

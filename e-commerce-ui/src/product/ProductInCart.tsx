@@ -19,7 +19,8 @@ const ProductInCart: React.FC<Props> = ({
 }): JSX.Element => {
   const dispatch = hooks.useAppDispatch();
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
-  const exist = (item: ProductType) => cart.find(i => i.id === item.id);
+  const exist = (item: ProductType) =>
+    cart.find(i => i.productId === item.productId);
 
   return (
     <TouchableOpacity
