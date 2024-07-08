@@ -1,11 +1,11 @@
-import {View, Text, TouchableOpacity, Platform, Alert} from 'react-native';
+import { View, Text, TouchableOpacity, Platform, Alert } from 'react-native';
 import React from 'react';
 
-import {utils} from '../utils';
-import {hooks} from '../hooks';
-import {custom} from '../custom';
-import {theme} from '../constants';
-import {ProductType, CategoryType} from '../types';
+import { utils } from '../utils';
+import { hooks } from '../hooks';
+import { custom } from '../custom';
+import { theme } from '../constants';
+import { ProductType, CategoryType } from '../types';
 
 type Props = {
   qty: number;
@@ -14,7 +14,7 @@ type Props = {
   dataFilter: ProductType[] | undefined;
 };
 
-const CategoryItem: React.FC<Props> = ({item, isLast, qty, dataFilter}) => {
+const CategoryItem: React.FC<Props> = ({ item, isLast, qty, dataFilter }) => {
   const navigation = hooks.useAppNavigation();
 
   const onPress = () => {
@@ -23,8 +23,7 @@ const CategoryItem: React.FC<Props> = ({item, isLast, qty, dataFilter}) => {
         title: item.name,
         products: dataFilter ?? [],
       });
-    }
-    if (qty === 0) {
+    } else {
       Alert.alert('No data', 'No data available for this category');
     }
   };
@@ -39,7 +38,7 @@ const CategoryItem: React.FC<Props> = ({item, isLast, qty, dataFilter}) => {
       onPress={onPress}
     >
       <custom.ImageBackground
-        source={{uri: item.image ?? 'default_image_uri'}}
+        source={{ uri: item.image ?? 'default_image_uri' }}
         style={{
           flex: 1,
           width: '100%',

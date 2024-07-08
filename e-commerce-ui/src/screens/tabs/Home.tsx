@@ -20,9 +20,11 @@ import { svg } from '../../assets/svg';
 import { theme } from '../../constants';
 import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
-import { GETCATEGORY, GET_ALL_PRODUCTS } from '../../Api/get_collectiongql';
+import { GETCATEGORY} from '../../Api/get_collectiongql';
 import { useQuery } from '@apollo/client';
 import Categories from './Categories';
+import CategoryItem from '../../items/CategoryItem';
+import { GET_ALL_PRODUCTS } from '../../Api/get_products';
 
 type ViewableItemsChanged = {
   viewableItems: Array<ViewToken>;
@@ -269,10 +271,9 @@ const Home: React.FC = () => {
     return null;
   };
 
-  const renderCategories = (): JSX.Element => {
-    console.log("Rendering categories:", categories);
-  
-    if (!categories || categories.length === 0) {
+
+  const renderCategories = (): JSX.Element | null => {
+    if (!categories?.length) {
       console.log("No categories data available");
       return <View />;
     }
@@ -286,39 +287,118 @@ const Home: React.FC = () => {
         }}
         style={{
           marginBottom: utils.responsiveHeight(50),
-          marginTop: carouselData?.carousel.length
-            ? 0
-            : utils.responsiveHeight(20),
+          marginTop: carouselData?.carousel.length ? 0 : utils.responsiveHeight(20),
           flexGrow: 0,
         }}
       >
         {categories.map((item, index, array) => {
-          console.log(`Rendering category item: ${item.name}`);
-          const isLast = index === array.length -1;
-          
-         
-          const dataFilter = plantsData?.plants.filter(
-            e => e.categories.includes(item.name),
-          );
+          const isLast = index === array.length - 1;
+          const collection = data?.collections.items.find(e => e.name === item.name);
+          const dataFilter = data?.collections?.items ?? [];
+          const qty = dataFilter.length;
   
-          console.log(`Filtered products for ${item.name}:`, dataFilter);
-          const qty = dataFilter?.length ?? 0;
   
           return (
-            <items.CategoryItem
-              item={item}
-              isLast={isLast}
-              qty={qty}
-              key={item.id.toString()}
-              dataFilter={dataFilter}
-            />
+            <TouchableOpacity
+              key={index}
+              style={{
+                width: utils.responsiveWidth(120, true),
+                height: utils.responsiveWidth(120, true),
+                marginRight: 14, 
+                borderRadius: 10, // Added border radius
+                overflow: 'hidden', 
+                justifyContent: 'space-between',
+              }}
+              onPress={() => {
+                navigation.navigate('Shop', {
+                  title: item.slug,
+                });
+              }}
+            >
+              <custom.ImageBackground
+                source={{
+                  uri: item.featuredAsset?.preview ?? 'default_image_uri',
+                }}
+                style={{
+                  flex: 1,
+                  width: '100%',
+                  height: '100%',
+                  alignItems: 'flex-start', 
+                  justifyContent: 'space-between',
+                  paddingHorizontal: 14,
+                  paddingTop: 14,
+                  paddingBottom: 12,
+                  borderRadius: 12,
+                  backgroundColor: theme.colors.imageBackground,
+                }}
+                resizeMode='cover'
+              >
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontSize: Platform.OS === 'ios' ? 14 : 12,
+                    color: theme.colors.mainColor,
+                    textTransform: 'capitalize',
+                    ...theme.fonts.DM_Sans_400Regular,
+                  }}
+                >
+                  {item.name}
+                </Text>
+              </custom.ImageBackground>
+            </TouchableOpacity>
           );
         })}
       </ScrollView>
     );
   };
-  
 
+  // const renderCategories = (): JSX.Element => {
+  //   if (!categories || categories.length === 0) {
+  //     console.log("No categories data available");
+  //     return <View />;
+  //   }
+  
+    // return (
+    //   <ScrollView
+    //     horizontal={true}
+    //     showsHorizontalScrollIndicator={false}
+    //     contentContainerStyle={{
+    //       paddingLeft: 20,
+    //     }}
+    //     style={{
+    //       marginBottom: utils.responsiveHeight(50),
+    //       marginTop: carouselData?.carousel.length ? 0 : utils.responsiveHeight(20),
+    //       flexGrow: 0,
+    //     }}
+    //   >
+  //       {categories.map((item, index, array) => {
+  //         const isLast = index === array.length - 1;
+  //         const collection = data?.collections.items.find(e => e.name === item.name);
+  //         const dataFilter = data?.collections?.items ?? [];
+  //         const qty = dataFilter.length;
+  
+  //         // console.log("Categories:", categories);
+  //         // console.log("Filtered Products:", dataFilter);
+  //         console.log("helooooo");
+          
+  
+  //         return (
+  //           <items.CategoryItem
+  //             item={item}
+  //             isLast={isLast}
+
+  //             qty={qty}
+  //             key={item.id.toString()}
+  //             dataFilter={dataFilter}
+  //           />
+  //         );
+  //       })}
+  //     </ScrollView>
+  //   );
+  // };
+  
+  
+  
   const renderBestSellers = (): JSX.Element | null => {
     if (bestSellers?.length === 0) return null;
 
@@ -468,3 +548,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
