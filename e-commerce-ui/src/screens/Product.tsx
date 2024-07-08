@@ -8,7 +8,8 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
-
+import {useQuery} from '@apollo/client';
+import {GET_PRODUCT_DETAIL} from '../Api/get_product_details';
 import {text} from '../text';
 import {alert} from '../alert';
 import {hooks} from '../hooks';
@@ -23,17 +24,23 @@ import {queryHooks} from '../store/slices/apiSlice';
 import {addToCart} from '../store/slices/cartSlice';
 import {ProductScreenProps} from '../types/ScreenProps';
 import {ProductType, ViewableItemsChanged} from '../types';
-import {useQuery} from '@apollo/client';
-import {GET_ALL_PRODUCTS} from '../Api/get_products';
 
-const Product: React.FC<ProductScreenProps> = ({route}) => {
-  const {item} = route.params;
+const Product: React.FC<ProductScreenProps> = ({route, navigation}) => {
+  const {params} = route;
+  const slug = params?.slug;
+
+  useEffect(() => {
+    if (!slug) {
+      console.error('Error: slug is not provided');
+    } else {
+      console.log('Slug:', slug);
+    }
+  }, [slug]);
+
   const {responsiveHeight} = utils;
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
-
   const dispatch = hooks.useAppDispatch();
-  const navigation = hooks.useAppNavigation();
 
   const viewabilityConfig = useRef({
     viewAreaCoveragePercentThreshold: 50,
@@ -50,16 +57,12 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   const exist = (item: ProductType) =>
     cart.find(i => i.productId === item.productId);
 
-  console.log('product screen');
-
   // ############ QUERIES ############ //
-  const {data, loading, error} = useQuery(GET_ALL_PRODUCTS, {
-    variables: {
-      options: {
-        take: 56,
-      },
-    },
+  const {data, loading, error} = useQuery(GET_PRODUCT_DETAIL, {
+    variables: {slug: 'Laptop'},
+    skip: !slug,
   });
+  console.log('Prdouct details data: ', data);
 
   useEffect(() => {
     if (error) {
@@ -67,7 +70,9 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     }
   }, [error]);
 
-  console.log('product screen', data);
+  const product = data?.product;
+
+  // Other queries remain unchanged
   const {
     data: colorsData,
     error: colorsError,
@@ -79,7 +84,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     error: reviewsError,
     isLoading: reviewsLoading,
     refetch: refetchReviews,
-  } = queryHooks.useGetReviewsQuery(item?.productId || 0);
+  } = queryHooks.useGetReviewsQuery(product?.id || 0);
 
   const {
     data: ordersData,
@@ -88,9 +93,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
   } = queryHooks.useGetOrdersQuery(user?.id || 0);
 
   const ifInOrderExist = ordersData?.orders.find((order: any) =>
-    order.products.find(
-      (product: ProductType) => product.productId === item.productId,
-    ),
+    order.products.find((prod: ProductType) => prod.productId === product?.id),
   );
 
   useEffect(() => {
@@ -103,16 +106,18 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
 
   // ############ STATUS ############ //
 
-  const isError = colorsError || reviewsError;
-  const isLoading = colorsLoading || reviewsLoading;
+  const isError = colorsError || reviewsError || error;
+  const isLoading = colorsLoading || reviewsLoading || loading;
 
-  const [selectedColor, setSelectedColor] = useState<string>(item.color || '');
-
-  const colors = colorsData?.colors?.filter(color =>
-    item.colors?.includes(color.name),
+  const [selectedColor, setSelectedColor] = useState<string>(
+    product?.color || '',
   );
 
-  const modifedItem = {...item, color: selectedColor};
+  const colors = colorsData?.colors?.filter(color =>
+    product?.colors?.includes(color.name),
+  );
+
+  const modifedItem = {...product, color: selectedColor};
 
   // ############ COMPONENTS ############ //
 
@@ -132,7 +137,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
       <FlatList
         bounces={false}
         horizontal={true}
-        data={item.images}
+        data={product?.assets.map(asset => asset.preview)}
         pagingEnabled={true}
         style={{flexGrow: 0}}
         viewabilityConfig={viewabilityConfig}
@@ -157,7 +162,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
 
   const renderCarousel = (): JSX.Element | null => {
     const renderIndicator = (): JSX.Element | null => {
-      if (item.images.length > 1) {
+      if (product?.assets.length > 1) {
         return (
           <View
             style={{
@@ -168,7 +173,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
               alignSelf: 'center',
             }}
           >
-            {item.images.map((_, current, array) => {
+            {product.assets.map((_, current, array) => {
               const last = current === array.length - 1;
               return (
                 <View
@@ -201,7 +206,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     const renderInWishlist = (): JSX.Element => {
       return (
         <product.ProductInWishlist
-          item={item}
+          item={product}
           containerStyle={{
             position: 'absolute',
             right: 0,
@@ -214,7 +219,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
       );
     };
 
-    if (item.images.length > 0) {
+    if (product?.assets.length > 0) {
       return (
         <View style={{marginBottom: utils.rsHeight(30)}}>
           {renderImages()}
@@ -236,8 +241,8 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{item.productName}</text.H3>
-        <product.ProductRating rating={item.rating} />
+        <text.H3 numberOfLines={1}>{product?.name}</text.H3>
+        <product.ProductRating rating={product?.rating} />
       </View>
     );
   };
@@ -265,7 +270,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
             color: theme.colors.mainColor,
           }}
         >
-          ${item.price}
+          ${product?.price}
         </Text>
         <product.ProductCounterInner item={modifedItem} />
       </View>
@@ -299,26 +304,24 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
             return (
               <TouchableOpacity
                 key={index}
+                activeOpacity={0.7}
+                onPress={() => setSelectedColor(color)}
                 style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 15,
-                  flexDirection: 'row',
-                  alignItems: 'center',
+                  width: 44,
+                  height: 44,
+                  borderRadius: 22,
                   backgroundColor: code,
-                  justifyContent: 'center',
-                }}
-                onPress={() => {
-                  if (!exist(item)) {
-                    setSelectedColor(color.name);
-                  }
-
-                  if (exist(item)) {
-                    alert.alreadyAdded();
-                  }
+                  ...theme.flex.center,
+                  borderColor:
+                    selectedColor === color
+                      ? theme.colors.black
+                      : theme.colors.white,
+                  borderWidth: 2,
                 }}
               >
-                {selectedColor === color.name && <svg.CheckSvg />}
+                {selectedColor === color && (
+                  <svg.TickSvg fill={theme.colors.mainColor} />
+                )}
               </TouchableOpacity>
             );
           })}
@@ -332,7 +335,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
       <View
         style={{
           paddingHorizontal: 20,
-          marginBottom: 30,
+          marginBottom: utils.responsiveHeight(30),
         }}
       >
         <text.H5 style={{marginBottom: 14, color: theme.colors.mainColor}}>
@@ -345,13 +348,13 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
           }}
           numberOfLines={6}
         >
-          {item.description}
+          {product?.description}
         </text.T16>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('Description', {
-              description: item.description,
-              title: item.productName,
+              description: product?.description,
+              title: product?.name,
             });
           }}
         >
@@ -395,12 +398,12 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
     return (
       <View style={{padding: 20}}>
         <components.Button
-          title='+ ADd to cart'
+          title='+ Add to cart'
           onPress={() => {
-            if (exist(item)) {
+            if (exist(product)) {
               alert.alreadyAdded();
             }
-            if (!exist(item)) {
+            if (!exist(product)) {
               dispatch(addToCart(modifedItem));
             }
           }}
@@ -413,7 +416,7 @@ const Product: React.FC<ProductScreenProps> = ({route}) => {
             title='Leave a review'
             touchableOpacityStyle={{backgroundColor: theme.colors.pastelMint}}
             onPress={() => {
-              navigation.navigate('LeaveAReview', {productId: item.productId});
+              navigation.navigate('LeaveAReview', {productId: product?.id});
             }}
             textStyle={{color: theme.colors.steelTeal}}
           />

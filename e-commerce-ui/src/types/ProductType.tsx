@@ -4,6 +4,7 @@ export type ProductType = {
   productAsset: any;
   productId: number;
   productName: string;
+  productSlug: string;
   price: number;
   rating: number;
   image: string;

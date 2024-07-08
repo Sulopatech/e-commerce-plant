@@ -39,7 +39,7 @@ const PlantCounterInner: React.FC<Props> = ({item}) => {
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
 
   const quantityInCart = (item: ProductType, cart: ProductType[]): number => {
-    const ifItemInCart = cart.find(el => el.id === item.id);
+    const ifItemInCart = cart.find(el => el.productId === item.productId);
     const quantity =
       ifItemInCart && ifItemInCart.quantity ? ifItemInCart.quantity : 0;
     return quantity;

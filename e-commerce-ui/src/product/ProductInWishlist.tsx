@@ -21,7 +21,8 @@ const ProductInWishlist: React.FC<Props> = ({
   const dispatch = hooks.useAppDispatch();
 
   const wishlist = hooks.useAppSelector(state => state.wishlistSlice.list);
-  const itemExist = (item: ProductType) => wishlist.find(i => i.id === item.id);
+  const itemExist = (item: ProductType) =>
+    wishlist.find(i => i.productId === item.productId);
 
   const fillColor = itemExist(item)
     ? theme.colors.steelTeal

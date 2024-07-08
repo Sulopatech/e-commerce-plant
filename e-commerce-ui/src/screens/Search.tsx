@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {useQuery} from '@apollo/client';
 import {SEARCH_QUERY} from '../Api/search_gql';
+import {GET_PRODUCT_DETAIL} from '../Api/get_product_details';
 import {hooks} from '../hooks';
 import {custom} from '../custom';
 import {theme} from '../constants';
@@ -185,8 +186,8 @@ const Search: React.FC = () => {
           `${item.productAsset.id}-${item.productName}-${index}`
         }
         contentContainerStyle={{flexGrow: 1}}
-        keyboardShouldPersistTaps='handled' // when user taps on the screen, the keyboard will be hidden
-        keyboardDismissMode='on-drag' // when user drags the screen, the keyboard will be hidden
+        keyboardShouldPersistTaps='handled'
+        keyboardDismissMode='on-drag'
         ListEmptyComponent={() => renderEmptyComponent()}
         renderItem={({item}) => renderItem({item})}
       />

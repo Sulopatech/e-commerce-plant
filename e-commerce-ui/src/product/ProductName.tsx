@@ -8,7 +8,7 @@ import {ProductType} from '../types';
 type Props = {item: ProductType; style?: TextStyle};
 
 const ProductName: React.FC<Props> = ({item, style}) => {
-  return <text.T14 style={style}>{item.name}</text.T14>;
+  return <text.T14 style={style}>{item.productName}</text.T14>;
 };
 
 export default ProductName;
