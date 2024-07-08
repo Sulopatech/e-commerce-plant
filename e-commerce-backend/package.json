@@ -9,18 +9,26 @@
     "build": "tsc",
     "start:server": "node ./dist/index.js",
     "start:worker": "node ./dist/index-worker.js",
-    "start": "concurrently npm:start:*"
+    "start": "concurrently npm:start:*",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
     "@vendure/admin-ui-plugin": "2.2.6",
     "@vendure/asset-server-plugin": "2.2.6",
-    "@vendure/core": "2.2.6",
-    "@vendure/email-plugin": "2.2.6",
+    "@vendure/core": "^2.2.7",
+    "@vendure/email-plugin": "^2.2.6",
     "dotenv": "16.4.5",
-    "mysql": "2.18.1"
+    "mysql": "2.18.1",
+    "otp-generator": "^4.0.1"
   },
   "devDependencies": {
-    "@vendure/cli": "2.2.6",
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/client-preset": "^4.3.0",
+    "@graphql-codegen/typescript": "^4.0.7",
+    "@types/otp-generator": "^4.0.2",
+    "@types/react": "18.3.3",
+    "@vendure/cli": "^2.2.6",
+    "@vendure/ui-devkit": "2.2.6",
     "concurrently": "8.2.2",
     "typescript": "5.5.2"
   }
