@@ -16,6 +16,7 @@ const config: CodegenConfig = {
         './src/plugins/deletecustomer/gql/generated.ts': { plugins: ['typescript'] },
         './src/plugins/extendedcollection/gql/generated.ts': { plugins: ['typescript'] },
         './src/plugins/banners/gql/generated.ts': { plugins: ['typescript'] },
+        './src/plugins/multivendor-plugin/gql/generated.ts': { plugins: ['typescript'] },
     },
 };
 
