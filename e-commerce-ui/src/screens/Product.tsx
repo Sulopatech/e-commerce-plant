@@ -67,7 +67,7 @@ const Product: React.FC<any> = ({ route }) => {
   const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
   const productDesc = data?.collection?.FilteredProduct?.items[0];
 
-  const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset.preview })) || [];
+  const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset?.preview })) || [];
   // console.log("data in product desc:", data?.collection?.productVariants?.items[0]?.name);
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
@@ -88,7 +88,7 @@ const Product: React.FC<any> = ({ route }) => {
   }).current;
 
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
-  const exist = (item: ProductType) => cart.find(i => i.id === item.id);
+  const exist = (item: ProductType) => cart.find(i => i.id === item?.id);
 
   const {
     data: reviewsData,
@@ -103,8 +103,8 @@ const Product: React.FC<any> = ({ route }) => {
     isLoading: ordersLoading,
   } = queryHooks.useGetOrdersQuery(user?.id || 0);
 
-  const ifInOrderExist = ordersData?.orders.find((order: any) =>
-    order.products.find((product: ProductType) => product.id === productDesc?.id),
+  const ifInOrderExist = ordersData?.orders?.find((order: any) =>
+    order?.products?.find((product: ProductType) => product?.id === productDesc?.id),
   );
 
   useEffect(() => {
