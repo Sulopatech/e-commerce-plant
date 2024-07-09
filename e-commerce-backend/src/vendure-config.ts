@@ -4,6 +4,8 @@ import {
     DefaultJobQueuePlugin,
     DefaultSearchPlugin,
     VendureConfig,
+    DefaultLogger,
+    LogLevel,
 } from '@vendure/core';
 import { defaultEmailHandlers, EmailPlugin } from '@vendure/email-plugin';
 import { AssetServerPlugin } from '@vendure/asset-server-plugin';
@@ -16,6 +18,7 @@ import { DeletecustomerPlugin } from './plugins/deletecustomer/deletecustomer.pl
 import { ExtendedcollectionPlugin } from './plugins/extendedcollection/extendedcollection.plugin';
 import { BannersPlugin } from './plugins/banners/banners.plugin';
 import { MultivendorPlugin } from './plugins/multivendor-plugin/multivendor.plugin';
+import { ResponseLoggerPlugin } from './plugins/response-logger/response-logger.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 
@@ -40,6 +43,7 @@ export const config: VendureConfig = {
             shopApiDebug: true,
         } : {}),
     },
+    logger:new DefaultLogger({ level: LogLevel.Debug }),
     authOptions: {
         requireVerification :false,
         tokenMethod: ['bearer', 'cookie'],
@@ -124,5 +128,6 @@ export const config: VendureConfig = {
         ExtendedcollectionPlugin.init({}),
         BannersPlugin.init({}),
         MultivendorPlugin.init({platformFeePercent: 10, platformFeeSKU: 'FEE',}),
+        ResponseLoggerPlugin.init({}),
     ],
 };
