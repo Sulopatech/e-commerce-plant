@@ -19,13 +19,13 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
     navigation.navigate<any>('Product', { item, slug });
   };
 
-  const ifInCart = cart.find(i => i.id === item.id);
-  const quantity = ifInCart ? ifInCart.quantity : 0;
+  const ifInCart = cart.find(i => i?.id === item?.id);
+  const quantity = ifInCart ? ifInCart?.quantity : 0;
 
-  const inStock = item.stockLevel === "IN_STOCK";
+  const inStock = item?.stockLevel === "IN_STOCK";
 
   // Extract the preview URL from the assets
-  const previewUrls = item.assets?.map(asset => ({ uri: asset.preview })) || [];
+  const previewUrls = item?.assets?.map(asset => ({ uri: asset?.preview })) || [];
 
   if (!previewUrls.length) {
     return null;
@@ -85,7 +85,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
             width: utils.responsiveWidth(160, true),
           }}
         >
-          <product.ProductName item={item.name} style={{ marginBottom: 3 }} />
+          <product.ProductName item={item?.name} style={{ marginBottom: 3 }} />
           {/* <product.ProductPrice item={item} /> */}
         </View>
       </TouchableOpacity>
