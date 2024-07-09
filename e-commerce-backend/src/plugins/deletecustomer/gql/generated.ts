@@ -308,7 +308,7 @@ export type AuthenticationResult = CurrentUser | InvalidCredentialsError;
 
 export type Banners = Node & {
   __typename?: 'Banners';
-  bannerfile: Asset;
+  asset: Asset;
   createdAt: Scalars['DateTime']['output'];
   description: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -989,8 +989,12 @@ export type CreateRoleInput = {
   permissions: Array<Permission>;
 };
 
+export type CreateSellerCustomFieldsInput = {
+  connectedAccountId?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type CreateSellerInput = {
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<CreateSellerCustomFieldsInput>;
   name: Scalars['String']['input'];
 };
 
@@ -3747,7 +3751,6 @@ export type MutationUpdateAssetArgs = {
 
 
 export type MutationUpdateBannersArgs = {
-  file?: InputMaybe<Scalars['Upload']['input']>;
   input: UpdateBannersInput;
 };
 
@@ -5880,15 +5883,21 @@ export type SearchResultSortParameter = {
 export type Seller = Node & {
   __typename?: 'Seller';
   createdAt: Scalars['DateTime']['output'];
-  customFields?: Maybe<Scalars['JSON']['output']>;
+  customFields?: Maybe<SellerCustomFields>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type SellerCustomFields = {
+  __typename?: 'SellerCustomFields';
+  connectedAccountId?: Maybe<Scalars['String']['output']>;
+};
+
 export type SellerFilterParameter = {
   _and?: InputMaybe<Array<SellerFilterParameter>>;
   _or?: InputMaybe<Array<SellerFilterParameter>>;
+  connectedAccountId?: InputMaybe<StringOperators>;
   createdAt?: InputMaybe<DateOperators>;
   id?: InputMaybe<IdOperators>;
   name?: InputMaybe<StringOperators>;
@@ -5915,6 +5924,7 @@ export type SellerListOptions = {
 };
 
 export type SellerSortParameter = {
+  connectedAccountId?: InputMaybe<SortOrder>;
   createdAt?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
   name?: InputMaybe<SortOrder>;
@@ -6723,8 +6733,12 @@ export type UpdateRoleInput = {
   permissions?: InputMaybe<Array<Permission>>;
 };
 
+export type UpdateSellerCustomFieldsInput = {
+  connectedAccountId?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateSellerInput = {
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<UpdateSellerCustomFieldsInput>;
   id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
 };
