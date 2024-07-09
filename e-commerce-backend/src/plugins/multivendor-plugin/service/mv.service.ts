@@ -43,59 +43,59 @@ export class MultivendorService {
     async registerNewSeller(ctx: RequestContext, input: { shopName: string; seller: CreateSellerInput }) {
         const superAdminCtx = await this.getSuperAdminContext(ctx);
         const channel = await this.createSellerChannelRoleAdmin(superAdminCtx, input);
-        await this.createSellerShippingMethod(superAdminCtx, input.shopName, channel);
+        // await this.createSellerShippingMethod(superAdminCtx, input.shopName, channel);
         await this.createSellerStockLocation(superAdminCtx, input.shopName, channel);
         return channel;
     }
 
-    private async createSellerShippingMethod(ctx: RequestContext, shopName: string, sellerChannel: Channel) {
-        const defaultChannel = await this.channelService.getDefaultChannel(ctx);
-        const { shippingEligibilityCheckers, shippingCalculators, fulfillmentHandlers } =
-            this.configService.shippingOptions;
-        const shopCode = normalizeString(shopName, '-');
-        const checker = shippingEligibilityCheckers.find(
-            c => c.code === multivendorShippingEligibilityChecker.code,
-        );
-        const calculator = shippingCalculators.find(c => c.code === defaultShippingCalculator.code);
-        const fulfillmentHandler = fulfillmentHandlers.find(h => h.code === manualFulfillmentHandler.code);
-        if (!checker) {
-            throw new InternalServerError(
-                'Could not find a suitable ShippingEligibilityChecker for the seller',
-            );
-        }
-        if (!calculator) {
-            throw new InternalServerError('Could not find a suitable ShippingCalculator for the seller');
-        }
-        if (!fulfillmentHandler) {
-            throw new InternalServerError('Could not find a suitable FulfillmentHandler for the seller');
-        }
-        const shippingMethod = await this.shippingMethodService.create(ctx, {
-            code: `${shopCode}-shipping`,
-            checker: {
-                code: checker.code,
-                arguments: [],
-            },
-            calculator: {
-                code: calculator.code,
-                arguments: [
-                    { name: 'rate', value: '500' },
-                    { name: 'includesTax', value: TaxSetting.auto },
-                    { name: 'taxRate', value: '20' },
-                ],
-            },
-            fulfillmentHandler: fulfillmentHandler.code,
-            translations: [
-                {
-                    languageCode: defaultChannel.defaultLanguageCode,
-                    name: `Standard Shipping for ${shopName}`,
-                },
-            ],
-        });
+    // private async createSellerShippingMethod(ctx: RequestContext, shopName: string, sellerChannel: Channel) {
+    //     const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+    //     const { shippingEligibilityCheckers, shippingCalculators, fulfillmentHandlers } =
+    //         this.configService.shippingOptions;
+    //     const shopCode = normalizeString(shopName, '-');
+    //     const checker = shippingEligibilityCheckers.find(
+    //         c => c.code === multivendorShippingEligibilityChecker.code,
+    //     );
+    //     const calculator = shippingCalculators.find(c => c.code === defaultShippingCalculator.code);
+    //     const fulfillmentHandler = fulfillmentHandlers.find(h => h.code === manualFulfillmentHandler.code);
+    //     if (!checker) {
+    //         throw new InternalServerError(
+    //             'Could not find a suitable ShippingEligibilityChecker for the seller',
+    //         );
+    //     }
+    //     if (!calculator) {
+    //         throw new InternalServerError('Could not find a suitable ShippingCalculator for the seller');
+    //     }
+    //     if (!fulfillmentHandler) {
+    //         throw new InternalServerError('Could not find a suitable FulfillmentHandler for the seller');
+    //     }
+    //     const shippingMethod = await this.shippingMethodService.create(ctx, {
+    //         code: `${shopCode}-shipping`,
+    //         checker: {
+    //             code: checker.code,
+    //             arguments: [],
+    //         },
+    //         calculator: {
+    //             code: calculator.code,
+    //             arguments: [
+    //                 { name: 'rate', value: '500' },
+    //                 { name: 'includesTax', value: TaxSetting.auto },
+    //                 { name: 'taxRate', value: '20' },
+    //             ],
+    //         },
+    //         fulfillmentHandler: fulfillmentHandler.code,
+    //         translations: [
+    //             {
+    //                 languageCode: defaultChannel.defaultLanguageCode,
+    //                 name: `Standard Shipping for ${shopName}`,
+    //             },
+    //         ],
+    //     });
 
-        await this.channelService.assignToChannels(ctx, ShippingMethod, shippingMethod.id, [
-            sellerChannel.id,
-        ]);
-    }
+    //     await this.channelService.assignToChannels(ctx, ShippingMethod, shippingMethod.id, [
+    //         sellerChannel.id,
+    //     ]);
+    // }
 
     private async createSellerStockLocation(ctx: RequestContext, shopName: string, sellerChannel: Channel) {
         const stockLocation = await this.stockLocationService.create(ctx, {
@@ -146,14 +146,7 @@ export class MultivendorService {
                 Permission.UpdateOrder,
                 Permission.DeleteOrder,
                 Permission.ReadCustomer,
-                Permission.ReadPaymentMethod,
-                Permission.ReadShippingMethod,
                 Permission.ReadPromotion,
-                Permission.ReadCountry,
-                Permission.ReadZone,
-                Permission.CreateCustomer,
-                Permission.UpdateCustomer,
-                Permission.DeleteCustomer,
                 Permission.CreateTag,
                 Permission.ReadTag,
                 Permission.UpdateTag,
