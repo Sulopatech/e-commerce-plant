@@ -5,11 +5,11 @@ import {
   Alert,
   FlatList,
   Platform,
-  ScrollView,
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useMutation } from '@apollo/client';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { useMutation, useQuery, gql } from '@apollo/client';
 import { text } from '../text';
 import { alert } from '../alert';
 import { hooks } from '../hooks';
@@ -23,9 +23,8 @@ import { components } from '../components';
 import { queryHooks } from '../store/slices/apiSlice';
 import { addToCart } from '../store/slices/cartSlice';
 import { ProductScreenProps } from '../types/ScreenProps';
+import { GET_PRODUCT_DETAILS } from '../Api/get_collectiongql';
 import { ProductType, ViewableItemsChanged } from '../types';
-import { gql, useQuery } from '@apollo/client';
-import { GET_ALL_PRODUCTS } from '../Api/get_products';
 
 export const ADDTOCART = gql`
   mutation AddItemToOrder($productVariantId: ID!, $quantity: Int!) {
@@ -59,15 +58,17 @@ export const ADDTOCART = gql`
   }
 `;
 
-const Product: React.FC<ProductScreenProps> = ({ route }) => {
-  const { item } = route.params;
+const Product: React.FC<any> = ({ route }) => {
+  const { item, slug } = route.params;
   const { responsiveHeight } = utils;
-  const prodSlug = item?.product?.slug;
-  const { data } = useQuery(GET_ALL_PRODUCTS(prodSlug));
-  const productDesc = data?.product;
-  // console.log("data in product desc:", productDesc?.featuredAsset?.preview);
 
-  console.log("prduct datas", item?.featuredAsset?.preview)
+  const productId = item?.id;
+
+  const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
+  const productDesc = data?.collection?.FilteredProduct?.items[0];
+
+  const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset.preview })) || [];
+  // console.log("data in product desc:", data?.collection?.productVariants?.items[0]?.name);
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
   const dispatch = hooks.useAppDispatch();
@@ -78,6 +79,8 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
   }).current;
 
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [selectedVariant, setSelectedVariant] = useState<string>(data?.collection?.productVariants?.items[0]?.id);
+  const [open, setOpen] = useState(false);
 
   const onViewableItemsChanged = useRef((info: ViewableItemsChanged) => {
     const index = info.viewableItems[0]?.index ?? 0;
@@ -123,15 +126,18 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
     },
   });
 
-  const handleAddToCart = () => {
-    const productVariantId = productDesc?.variants[0]?.id;
+  const handleAddToCart = async () => {
+    const productVariantId = selectedVariant;
     const quantity = 1;
-
-    if (!exist(productDesc)) {
-      dispatch(addToCart(modifedItem));
-      addItemToOrder({ variables: { productVariantId, quantity } });
-    } else {
-      alert.alreadyAdded();
+    try {
+      if (!exist(productDesc)) {
+        dispatch(addToCart(modifedItem));
+        await addItemToOrder({ variables: { productVariantId, quantity } });
+      } else {
+        alert.alreadyAdded();
+      }
+    } catch (error) {
+      console.error("Error during cart: ", error);
     }
   };
 
@@ -151,7 +157,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
       <FlatList
         bounces={false}
         horizontal={true}
-        data={productDesc?.featuredAsset?.preview}
+        data={previewUrls}
         pagingEnabled={true}
         style={{ flexGrow: 0 }}
         viewabilityConfig={viewabilityConfig}
@@ -161,7 +167,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
           return (
             <custom.Image
               resizeMode='contain'
-              source={{ uri: item }}
+              source={{ uri: item.uri }}
               style={{
                 aspectRatio: 375 / 500,
                 width: theme.sizes.deviceWidth,
@@ -176,7 +182,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
 
   const renderCarousel = (): JSX.Element | null => {
     const renderIndicator = (): JSX.Element | null => {
-      if (productDesc?.featuredAsset?.preview?.length > 1) {
+      if (previewUrls.length > 1) {
         return (
           <View
             style={{
@@ -189,7 +195,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
           >
             <Image
               source={{
-                uri: productDesc?.featuredAsset?.preview || item?.featuredAsset?.preview,
+                uri: previewUrls,
               }}
               style={{ width: 430, height: 500 }}
             />
@@ -216,7 +222,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
       );
     };
 
-    if (productDesc?.featuredAsset?.preview?.length > 0) {
+    if (previewUrls.length > 0) {
       return (
         <View style={{ marginBottom: utils.rsHeight(30) }}>
           {renderImages()}
@@ -238,7 +244,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name}</text.H3>
+        <text.H3 numberOfLines={1}>{productDesc?.name}</text.H3>
         <product.ProductRating rating={productDesc?.rating || item?.rating} />
       </View>
     );
@@ -267,9 +273,41 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
             color: theme.colors.mainColor,
           }}
         >
-          ${productDesc?.variants[0]?.price}
+          {/* ${productDesc?.variants[0]?.price} */}
+          $1000
         </Text>
         <product.ProductCounterInner item={modifedItem} />
+      </View>
+    );
+  };
+
+  const renderVariantDropdown = (): JSX.Element => {
+    const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
+      label: variant.name,
+      value: variant.id,
+    })) || [];
+
+    return (
+      <View style={{ marginHorizontal: 20, marginBottom: 30 }}>
+        <Text style={{ marginBottom: 10, color: theme.colors.mainColor }}>Select Variant</Text>
+        <DropDownPicker
+          open={open}
+          value={selectedVariant}
+          items={variantItems}
+          setOpen={setOpen}
+          setValue={setSelectedVariant}
+          setItems={() => { }}
+          style={{
+            borderWidth: 1,
+            borderColor: 'gray',
+            borderRadius: 4,
+            // color: 'black',
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: 'white',
+          }}
+          listMode="SCROLLVIEW"
+        />
       </View>
     );
   };
@@ -292,7 +330,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
           }}
           numberOfLines={6}
         >
-          {productDesc?.description || item?.description}
+          {productDesc?.description}
         </text.T16>
         <TouchableOpacity
           onPress={() => {
@@ -362,26 +400,42 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
     );
   };
 
-  const renderContent = (): JSX.Element => {
-    return (
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {renderCarousel()}
-        {renderNameWithRating()}
-        {renderPriceWithQuantity()}
-        {renderDescription()}
-        {renderReviews()}
-        {renderButton()}
-      </ScrollView>
-    );
-  };
+  // Define data for FlatList
+  const listData = [
+    { key: 'carousel', render: renderCarousel },
+    { key: 'nameWithRating', render: renderNameWithRating },
+    { key: 'priceWithQuantity', render: renderPriceWithQuantity },
+    { key: 'variantDropdown', render: renderVariantDropdown },
+    { key: 'description', render: renderDescription },
+    { key: 'reviews', render: renderReviews },
+    { key: 'button', render: renderButton },
+  ];
+
+  const renderItem = ({ item }: { item: any }) => item.render();
 
   return (
     <custom.SafeAreaView insets={['top', 'bottom']}>
       {renderHeader()}
-      {renderContent()}
+      <FlatList
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={item => item.key}
+        showsVerticalScrollIndicator={false}
+        ListFooterComponent={() => (
+          <View style={{ padding: 20 }}>
+            {ifInOrderExist && (
+              <components.Button
+                title='Leave a review'
+                touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
+                onPress={() => {
+                  navigation.navigate('LeaveAReview', { productId: productDesc?.id });
+                }}
+                textStyle={{ color: theme.colors.steelTeal }}
+              />
+            )}
+          </View>
+        )}
+      />
     </custom.SafeAreaView>
   );
 };

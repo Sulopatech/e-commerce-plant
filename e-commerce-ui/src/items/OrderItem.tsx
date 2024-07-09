@@ -7,7 +7,7 @@ import { product } from '../product';
 import { theme } from '../constants';
 import { ProductType } from '../types';
 
-type Props = { item: ProductType; isLast: boolean };
+type Props = { item: any; isLast: boolean };
 
 const OrderItem: React.FC<Props> = ({ item, isLast }) => {
   const navigation = hooks.useAppNavigation();
@@ -62,8 +62,8 @@ const OrderItem: React.FC<Props> = ({ item, isLast }) => {
             paddingBottom: 14,
           }}
         >
-          <product.ProductName item={item} style={{ marginBottom: 3 }} />
-          <product.ProductPrice item={item} />
+          <product.ProductName item={item?.productVariant?.name} style={{ marginBottom: 3 }} />
+          <product.ProductPrice item={item?.productVariant?.price} />
           {item.color && (
             <View
               style={{

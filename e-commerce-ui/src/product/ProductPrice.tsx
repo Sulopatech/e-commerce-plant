@@ -4,11 +4,9 @@ import {View, Text, ViewStyle, Platform} from 'react-native';
 import {theme} from '../constants';
 import {ProductType} from '../types';
 
-type Props = PropsWithChildren<{item: ProductType; containerStyle?: ViewStyle}>;
+type Props = PropsWithChildren<{item: any; containerStyle?: ViewStyle}>;
 
 const ProductPrice: React.FC<Props> = ({item, containerStyle}): JSX.Element => {
-
-  console.log("products", item)
   return (
     <View
       style={{
@@ -29,7 +27,7 @@ const ProductPrice: React.FC<Props> = ({item, containerStyle}): JSX.Element => {
           }}
           numberOfLines={1}
         >
-          ${item.oldPrice}
+          ${item}
         </Text>
       )}
       <Text
@@ -41,7 +39,7 @@ const ProductPrice: React.FC<Props> = ({item, containerStyle}): JSX.Element => {
         }}
         numberOfLines={1}
       >
-        ${item.price}
+        ${item}
       </Text>
     </View>
   );

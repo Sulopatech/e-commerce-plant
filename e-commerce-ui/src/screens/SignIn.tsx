@@ -61,13 +61,12 @@ const SignIn: React.FC = () => {
         },
       });
 
-      console.log('API response:', data);
-
       if (data.authenticate && data.authenticate.__typename === 'CurrentUser') {
         const channels = data.authenticate.channels;
+        console.log("channel:", channels)
         if (channels && channels.length > 0) {
           const token = channels[0].token;
-
+console.log("token in sign", token)
           await AsyncStorage.clear();
           await AsyncStorage.setItem('userToken', token);
           const userData: any = {

@@ -20,7 +20,7 @@ import { actions } from '../store/actions';
 import { components } from '../components';
 import { ShopScreenProps } from '../types/ScreenProps';
 import ProductCard from '../items/ProductCard';
-import { GET_ALL_PRODUCTS } from '../Api/get_collectiongql';
+import { GET_ALL_PRODUCTS, GET_COLLECTION } from '../Api/get_collectiongql';
 
 const sortingBy = [
   { id: 1, title: 'Top' },
@@ -37,7 +37,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
   const [sort, setSort] = useState(sortingBy[0]);
   const [showModal, setShowModal] = useState(false);
 
-  const { loading, error, data } = useQuery(GET_ALL_PRODUCTS(title));
+  const { loading, error, data } = useQuery(GET_COLLECTION(title));
 
   if (loading) {
     return <ActivityIndicator size='large' color={theme.colors.mainColor} />;
@@ -51,7 +51,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
     );
   }
 
-  const products = data?.collection?.productVariants?.items || [];
+  const products = data?.collection?.FilteredProduct?.items || [];
 
   const applyFilters = (products) => {
     // Add your filtering logic here, for example:
@@ -144,7 +144,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
       <FlatList
         data={sortedProducts}
         renderItem={({ item }) => {
-          return <ProductCard item={item} version={1} />;
+          return <ProductCard item={item} slug={title} version={1} />;
         }}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
         numColumns={2}

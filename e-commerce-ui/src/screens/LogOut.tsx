@@ -1,5 +1,6 @@
 import React from 'react';
 import {View, Text, ScrollView, Platform} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {text} from '../text';
 import {hooks} from '../hooks';
@@ -52,8 +53,13 @@ const LogOut: React.FC = () => {
         <components.Button
           title='Sure'
           touchableOpacityStyle={{backgroundColor: theme.colors.pastelMint}}
-          onPress={() => {
-            dispatch(actions.logOut());
+          onPress={async () => {
+            try {
+              await AsyncStorage.clear();
+              dispatch(actions.logOut());
+            } catch (e) {
+              console.error('Failed to clear AsyncStorage:', e);
+            }
           }}
           textStyle={{color: theme.colors.steelTeal}}
         />

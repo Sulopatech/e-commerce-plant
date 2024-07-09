@@ -149,14 +149,14 @@ const OrderHistory: React.FC = () => {
 
     const sections = data?.activeCustomer?.orders?.items?.map((order: any) => ({
       id: order?.id,
-      total: order?.lines?.reduce((acc: number, line: any) => acc + line.linePriceWithTax, 0),
+      total: order?.lines?.reduce((acc: number, line: any) => acc + line?.linePriceWithTax, 0),
       orderStatus: 'delivered', // Placeholder status
       createdAt: '2024-06-27', // Placeholder date
-      products: order.lines.map((line: any) => ({
-        id: line.id,
-        name: line.productVariant.name,
-        quantity: line.quantity,
-        price: line.unitPriceWithTax / 100,
+      products: order?.lines?.map((line: any) => ({
+        id: line?.id,
+        name: line?.productVariant?.name,
+        quantity: line?.quantity,
+        price: line?.unitPriceWithTax / 100,
       })),
       delivery: 5, // Placeholder delivery fee
     }));

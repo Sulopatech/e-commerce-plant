@@ -1,6 +1,6 @@
 import axios from 'axios';
-import React, {useState} from 'react';
-import {View, ScrollView} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {View, ScrollView, TextInput, StyleSheet} from 'react-native';
 
 import {text} from '../text';
 import {hooks} from '../hooks';
@@ -9,9 +9,12 @@ import {custom} from '../custom';
 import {theme} from '../constants';
 import {components} from '../components';
 import {ENDPOINTS, CONFIG} from '../config';
+import { actions } from '../store/actions';
+import { useChangeHandler } from '../utils/useChangeHandler';
 
 const Checkout: React.FC = () => {
   const navigation = hooks.useAppNavigation();
+  const dispatch = hooks.useAppDispatch();
 
   const [loading, setLoading] = useState(false);
 
@@ -22,9 +25,53 @@ const Checkout: React.FC = () => {
   const delivery = hooks.useAppSelector(state => state.cartSlice.delivery);
   const subtotal = hooks.useAppSelector(state => state.cartSlice.subtotal);
 
-  const {name, address, cardNumber, cardHolderName} = hooks.useAppSelector(
+  const nameInputRef = useRef<TextInput>(null);
+  const addressInputRef = useRef<TextInput>(null);
+  const cardNumberInputRef = useRef<TextInput>(null);
+  const expiryDateInputRef = useRef<TextInput>(null);
+  const cvvInputRef = useRef<TextInput>(null);
+  const cardHolderNameInputRef = useRef<TextInput>(null);
+
+  const handleCvvChange = useChangeHandler(actions.setCvv);
+  const handleNameChange = useChangeHandler(actions.setName);
+  const handleAddressChange = useChangeHandler(actions.setAddress);
+  const handleCardHolderNameChange = useChangeHandler(actions.setCardHolderName);
+
+  const {name, address, cardNumber, cardHolderName, expiryDate, cvv} = hooks.useAppSelector(
     state => state.paymentSlice,
   );
+
+  const handleCardNumberChange = (text: string) => {
+    let newText = '';
+    let count = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] !== ' ') {
+        if (count !== 0 && count % 4 === 0) {
+          newText = newText + ' ';
+        }
+        newText = newText + text[i];
+        count++;
+      }
+    }
+    dispatch(actions.setCardNumber(newText));
+  };
+
+  const handleExpiryDateChange = (text: string) => {
+    let newText = '';
+    let len = text.length;
+    if (len < expiryDate.length) {
+      newText = text;
+    } else {
+      for (let i = 0; i < len; i++) {
+        if (i === 2 && text[i] !== '/') {
+          newText = newText + '/';
+        }
+        newText = newText + text[i];
+      }
+    }
+    dispatch(actions.setExpiryDate(newText));
+  };
 
   const handleConfirmOrder = async () => {
     setLoading(true);
@@ -74,68 +121,124 @@ const Checkout: React.FC = () => {
     return <components.Header title='Checkout' goBackIcon={true} />;
   };
 
-  const renderMyOrder = (): JSX.Element => {
+  // const renderMyOrder = (): JSX.Element => {
+  //   return (
+  //     <View
+  //       style={{
+  //         padding: 20,
+  //         borderRadius: 15,
+  //         marginBottom: utils.responsiveHeight(20),
+  //         backgroundColor: theme.colors.imageBackground,
+  //       }}
+  //     >
+  //       <View
+  //         style={{
+  //           borderBottomWidth: 1,
+  //           ...theme.flex.rowCenterSpaceBetween,
+  //           marginBottom: utils.responsiveHeight(20),
+  //           paddingBottom: utils.responsiveHeight(20),
+  //           borderBottomColor: theme.colors.antiFlashWhite,
+  //         }}
+  //       >
+  //         <text.H4 numberOfLines={1} style={{textTransform: 'capitalize'}}>
+  //           My order
+  //         </text.H4>
+  //         <text.H4 numberOfLines={1} style={{textTransform: 'capitalize'}}>
+  //           ${total?.toFixed(2)}
+  //         </text.H4>
+  //       </View>
+  //       {cart.map((item, index) => {
+  //         return (
+  //           <View
+  //             key={index}
+  //             style={{
+  //               ...theme.flex.rowCenterSpaceBetween,
+  //               marginBottom: utils.responsiveHeight(10),
+  //             }}
+  //           >
+  //             <text.T14 style={{textTransform: 'capitalize'}}>
+  //               {item.name}
+  //             </text.T14>
+  //             <text.T14>${item.price}</text.T14>
+  //           </View>
+  //         );
+  //       })}
+  //       <View
+  //         style={{
+  //           ...theme.flex.rowCenterSpaceBetween,
+  //           marginBottom: utils.responsiveHeight(10),
+  //         }}
+  //       >
+  //         <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+  //           Discount
+  //         </text.T14>
+  //         <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+  //           {discount}%
+  //         </text.T14>
+  //       </View>
+  //       <View style={{...theme.flex.rowCenterSpaceBetween}}>
+  //         <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+  //           Delivery
+  //         </text.T14>
+  //         <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
+  //           ${delivery}
+  //         </text.T14>
+  //       </View>
+  //     </View>
+  //   );
+  // };
+
+  const renderForm = (): JSX.Element => {
+    const regex = /^[a-zA-Zа-яА-Я\s]*$/;
+
     return (
-      <View
-        style={{
-          padding: 20,
-          borderRadius: 15,
-          marginBottom: utils.responsiveHeight(20),
-          backgroundColor: theme.colors.imageBackground,
-        }}
-      >
-        <View
-          style={{
-            borderBottomWidth: 1,
-            ...theme.flex.rowCenterSpaceBetween,
-            marginBottom: utils.responsiveHeight(20),
-            paddingBottom: utils.responsiveHeight(20),
-            borderBottomColor: theme.colors.antiFlashWhite,
-          }}
-        >
-          <text.H4 numberOfLines={1} style={{textTransform: 'capitalize'}}>
-            My order
-          </text.H4>
-          <text.H4 numberOfLines={1} style={{textTransform: 'capitalize'}}>
-            ${total.toFixed(2)}
-          </text.H4>
-        </View>
-        {cart.map((item, index) => {
-          return (
-            <View
-              key={index}
-              style={{
-                ...theme.flex.rowCenterSpaceBetween,
-                marginBottom: utils.responsiveHeight(10),
-              }}
-            >
-              <text.T14 style={{textTransform: 'capitalize'}}>
-                {item.name}
-              </text.T14>
-              <text.T14>${item.price}</text.T14>
-            </View>
-          );
-        })}
-        <View
-          style={{
-            ...theme.flex.rowCenterSpaceBetween,
-            marginBottom: utils.responsiveHeight(10),
-          }}
-        >
-          <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
-            Discount
-          </text.T14>
-          <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
-            {discount}%
-          </text.T14>
-        </View>
-        <View style={{...theme.flex.rowCenterSpaceBetween}}>
-          <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
-            Delivery
-          </text.T14>
-          <text.T14 style={{textTransform: 'capitalize'}} numberOfLines={1}>
-            ${delivery}
-          </text.T14>
+      <View style={styles.container}>
+        <custom.InputField
+          maxLength={19}
+          value={cardNumber}
+          label='card number'
+          keyboardType='number-pad'
+          innerRef={cardNumberInputRef}
+          placeholder='Enter your card number'
+          onChangeText={handleCardNumberChange}
+          containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+        />
+        <View>
+          <View
+            style={{
+              ...theme.flex.rowCenterSpaceBetween,
+              marginBottom: utils.responsiveHeight(20),
+            }}
+          >
+            <custom.InputField
+              maxLength={5}
+              value={expiryDate}
+              label='expiry date'
+              placeholder='MM/YY'
+              keyboardType='number-pad'
+              innerRef={expiryDateInputRef}
+              containerStyle={{width: '48%'}}
+              onChangeText={handleExpiryDateChange}
+            />
+            <custom.InputField
+              keyboardType='number-pad'
+              label='CVV'
+              value={cvv}
+              maxLength={3}
+              innerRef={cvvInputRef}
+              placeholder='Enter your cvv'
+              onChangeText={handleCvvChange}
+              containerStyle={{width: '48%'}}
+            />
+          </View>
+          <custom.InputField
+            label='card holder name'
+            value={cardHolderName}
+            innerRef={cardHolderNameInputRef}
+            onChangeText={handleCardHolderNameChange}
+            placeholder='Enter your card holder name'
+            containerStyle={{marginBottom: utils.responsiveHeight(20)}}
+          />
         </View>
       </View>
     );
@@ -189,7 +292,8 @@ const Checkout: React.FC = () => {
           paddingBottom: utils.responsiveHeight(20),
         }}
       >
-        {renderMyOrder()}
+        {/* {renderMyOrder()} */}
+        {renderForm()}
         {renderShippingAPaymentInfo()}
       </ScrollView>
     );
@@ -214,5 +318,22 @@ const Checkout: React.FC = () => {
     </custom.SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: utils.responsiveHeight(35),
+  },
+  inputContainer: {
+    marginBottom: utils.responsiveHeight(20),
+  },
+  dropdownContainer: {
+    marginBottom: utils.responsiveHeight(20),
+  },
+  buttonContainer: {
+    padding: 20,
+  },
+});
 
 export default Checkout;

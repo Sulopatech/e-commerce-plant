@@ -224,6 +224,7 @@ export const GETCATEGORY = gql`
             name
             price
           }
+            totalItems
         }
           featuredAsset{
         preview
@@ -272,4 +273,86 @@ export const GET_ALL_PRODUCTS = (slug) => gql`
       totalQuantity
     }
   }
+`;
+
+export const GET_COLLECTION = (slug) => gql`
+query collection{
+  collection(slug: "${slug}"){
+    id
+
+FilteredProduct{
+  items{
+    slug
+    id
+    name
+    description
+    assets{
+      id
+      source
+      preview
+    }
+    variants{
+      id
+      createdAt
+    }
+  }
+  totalItems
+}
+productVariants(options:{
+  filter:{
+    productId:{
+      eq:""
+    }
+  }
+}){
+  items{
+    productId
+  }
+  totalItems
+}
+  }
+}
+`
+
+export const GET_PRODUCT_DETAILS = (slug, productId) => gql`
+query product{
+  collection(slug:"${slug}"){
+    id
+
+FilteredProduct(options:{
+  filter:{id:
+    {
+      eq:"${productId}"
+    }
+    
+  }
+}){
+  items{
+    id
+    name
+    description
+    assets{
+      id
+      source
+      preview
+    }
+  }
+  totalItems
+}
+productVariants(options:{
+  filter:{
+    productId:{
+      eq:"${productId}"
+    }
+  }
+}){
+  items{
+  id
+    productId
+    name
+  }
+  totalItems
+}
+  }
+}
 `;

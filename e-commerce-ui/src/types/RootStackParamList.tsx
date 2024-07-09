@@ -59,4 +59,5 @@ export type RootStackParamList = {
   VerifyEmailForgot: {email?: string};
   SendEmailOtpForgot: undefined;
   Product: {item: any};
+  slug: any
 };

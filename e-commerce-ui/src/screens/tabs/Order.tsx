@@ -24,6 +24,15 @@ const GET_ORDERS = gql`
         items {
           id
           type
+          total
+          subTotal
+          totalWithTax
+          totalQuantity
+          discounts{
+            description
+            amount
+            amountWithTax
+          }
           lines {
             id
             unitPriceWithTax
@@ -34,7 +43,7 @@ const GET_ORDERS = gql`
               name
               price
             }
-              featuredAsset{
+            featuredAsset{
               preview
             }
           }
@@ -56,7 +65,9 @@ const Order: React.FC = () => {
   const subtotal = useAppSelector(state => state.cartSlice.subtotal);
   const promoCode = useAppSelector(state => state.cartSlice.promoCode);
 
+  
   const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ORDERS);
+  // console.log("total", ordersData?.activeCustomer.orders.items[0].total)
 
   const {
     data: plantsData,
@@ -94,12 +105,16 @@ const Order: React.FC = () => {
   }, []);
 
   const renderProducts = (): JSX.Element | null => {
-    if (cart.length > 0) {
+    if (ordersData?.activeCustomer?.orders?.items?.length > 0) {
       return (
         <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
-          {cart.map((item, index, array) => {
-            const isLast = index === array.length - 1;
-            return <items.OrderItem key={index} item={item} isLast={isLast} />;
+          {ordersData.activeCustomer.orders.items.map(order => {
+            return order.lines.map((item, index) => {
+              const isLast = index === order.lines.length - 1;
+              return (
+                <items.OrderItem key={item.id} item={item} isLast={isLast} />
+              );
+            });
           })}
         </View>
       );
@@ -218,7 +233,7 @@ const Order: React.FC = () => {
           >
             <text.H5>Subtotal</text.H5>
             <text.T14 style={{ color: theme.colors.mainColor }}>
-              ${subtotal?.toFixed(2)}
+              ${ordersData?.activeCustomer?.orders?.items[0]?.subTotal?.toFixed(2)}
             </text.T14>
           </View>
           {/* DELIVERY */}
@@ -248,8 +263,8 @@ const Order: React.FC = () => {
           )}
           {/* TOTAL */}
           <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
-            <text.H4>Total</text.H4>
-            <text.H4>${total?.toFixed(2)}</text.H4>
+            <text.H4>Total with tax</text.H4>
+            <text.H4>${ordersData?.activeCustomer?.orders?.items[0]?.totalWithTax?.toFixed(2)}</text.H4>
             {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
           </View>
         </View>
@@ -296,16 +311,7 @@ const Order: React.FC = () => {
           if (cart.length === 0) {
             navigation.navigate('Shop', {
               title: 'Shop',
-              // products: plantsData?.plants ?? [],
             });
-            return;
-          }
-
-          if (!user?.emailVerified || !user?.phoneVerified) {
-            Alert.alert(
-              'Verification required',
-              'Please verify your email and phone number before proceeding',
-            );
             return;
           }
 
@@ -317,36 +323,6 @@ const Order: React.FC = () => {
         }}
       />
     );
-  };
-
-  const renderOrders = (): JSX.Element | null => {
-    if (ordersLoading) return <components.Loader />;
-    if (ordersError) return <components.Error />;
-
-    if (ordersData && ordersData.activeCustomer && ordersData.activeCustomer.orders.items.length > 0) {
-      return (
-        <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
-          {ordersData.activeCustomer.orders.items.map((order, index) => {
-            const isLast = index === ordersData.activeCustomer.orders.items.length - 1;
-            return (
-              <View key={order.id} style={{ marginBottom: isLast ? 0 : 20 }}>
-                <Text>Order ID: {order.id}</Text>
-                {order.lines.map(line => (
-                  <View key={line.id} style={{ marginVertical: 10 }}>
-                    <Text>Product: {line.productVariant.name}</Text>
-                    <Text>Quantity: {line.productVariant.price}</Text>
-                    <Text>Price: ${line.unitPriceWithTax / 100}</Text>
-                    <Text>Total: ${line.linePriceWithTax / 100}</Text>
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-        </View>
-      );
-    }
-
-    return null;
   };
 
   const renderContent = (): JSX.Element => {
@@ -365,7 +341,6 @@ const Order: React.FC = () => {
         {renderEnterVoucher()}
         {renderTotal()}
         {renderEmpty()}
-        {renderOrders()}
       </KeyboardAwareScrollView>
     );
   };
