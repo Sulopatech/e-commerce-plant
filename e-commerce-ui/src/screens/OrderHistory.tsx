@@ -9,35 +9,21 @@ import { custom } from '../custom';
 import { theme } from '../constants';
 import { components } from '../components';
 import { actions } from '../store/actions';
+import { GET_ORDERS_HISTORY } from '../Api/order_gql'
 
-const GET_ORDERS = gql`
-  query GETORDERS {
-    activeCustomer {
-      id
-      firstName
-      orders {
-        totalItems
-        items {
-          id
-          type
-          lines {
-            id
-            unitPriceWithTax
-            quantity
-            linePriceWithTax
-            productVariant {
-              id
-              name
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+
+  // Get the day, month, and year
+  const day = date.getDate();
+  const month = date.toLocaleString('default', { month: 'long' }); // Full month name
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
 
 const OrderHistory: React.FC = () => {
-  const { loading, error, data } = useQuery(GET_ORDERS);
+  const { loading, error, data } = useQuery(GET_ORDERS_HISTORY);
   const [activeSections, setActiveSections] = useState([]);
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
@@ -66,11 +52,11 @@ const OrderHistory: React.FC = () => {
             marginBottom: utils.responsiveHeight(8),
           }}
         >
-          <text.H5 numberOfLines={1}>#{section.id}</text.H5>
-          <text.H5 numberOfLines={1}>${section.total}</text.H5>
+          <text.H5 numberOfLines={1}>#{section?.id}</text.H5>
+          <text.H5 numberOfLines={1}>₹{section?.total}</text.H5>
         </View>
         <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
-          <Text style={{ color: '#FFA462' }}>{section.orderStatus}</Text>
+          <Text style={{ color: '#FFA462' }}>{section?.orderStatus}</Text>
           <Text
             style={{
               fontSize: Platform.OS === 'ios' ? 12 : 10,
@@ -79,7 +65,7 @@ const OrderHistory: React.FC = () => {
               color: theme.colors.textColor,
             }}
           >
-            {section.createdAt}
+            {formatDate(section?.createdAt)}
           </Text>
         </View>
       </View>
@@ -92,19 +78,19 @@ const OrderHistory: React.FC = () => {
         <components.Container
           containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
         >
-          {section.products.map((item: any) => (
+          {section?.products?.map((item: any) => (
             <View
-              key={item.id}
+              key={item?.id}
               style={{
                 marginBottom: utils.responsiveHeight(10),
                 ...theme.flex.rowCenterSpaceBetween,
               }}
             >
               <text.T14 numberOfLines={1} style={{color: 'black'}}>
-                {item.name}
+                {item?.name}
               </text.T14>
               <text.T14 numberOfLines={1}>
-                {item.quantity} x ${item.price}
+                {item?.quantity} x ₹{item?.price}
               </text.T14>
             </View>
           ))}
@@ -121,7 +107,7 @@ const OrderHistory: React.FC = () => {
               Delivery
             </text.T14>
             <text.T14 style={{ textTransform: 'capitalize' }} numberOfLines={1}>
-              {section.delivery}$
+            ₹{section?.delivery}
             </text.T14>
           </View>
           <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
@@ -135,7 +121,7 @@ const OrderHistory: React.FC = () => {
               Total
             </text.T14>
             <text.T14 style={{ textTransform: 'capitalize' }} numberOfLines={1}>
-              {section.total}$
+            ₹{section.total}
             </text.T14>
           </View>
         </components.Container>
@@ -150,8 +136,8 @@ const OrderHistory: React.FC = () => {
     const sections = data?.activeCustomer?.orders?.items?.map((order: any) => ({
       id: order?.id,
       total: order?.lines?.reduce((acc: number, line: any) => acc + line?.linePriceWithTax, 0),
-      orderStatus: 'delivered', // Placeholder status
-      createdAt: '2024-06-27', // Placeholder date
+      orderStatus: order?.state, // Placeholder status
+      createdAt: order?.createdAt,
       products: order?.lines?.map((line: any) => ({
         id: line?.id,
         name: line?.productVariant?.name,

@@ -7,48 +7,63 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   Keyboard,
   TouchableWithoutFeedback,
   ScrollView
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { useMutation, gql, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 
 import { hooks } from '../hooks';
 import { utils } from '../utils';
 import { custom } from '../custom';
 import { text } from '../text';
-import { theme } from '../constants';
 import { actions } from '../store/actions';
 import { components } from '../components';
-import { validation } from '../validation';
 import { useChangeHandler } from '../utils/useChangeHandler';
 import { COUNTRIES_LIST, SHIPPING_METHOD, ADD_ADDRESS, ADD_SHIPPING_METHOD, ADD_BILLING_ADDRESS } from '../Api/shipping_gql'
 
 const ShippingAndPaymentInfo: React.FC = () => {
   const navigation = hooks.useAppNavigation();
-  const dispatch = hooks.useAppDispatch();
   const user = hooks.useAppSelector(state => state.userSlice.user);
 
   const { data: countriesData } = useQuery(COUNTRIES_LIST);
   const { data: shippingMethodsData } = useQuery(SHIPPING_METHOD);
+
+  const [addAddress] = useMutation(ADD_ADDRESS);
+  const [addShippingMethod] = useMutation(ADD_SHIPPING_METHOD);
+  const [addingBillingAddress] = useMutation(ADD_BILLING_ADDRESS);
 
   const [countryOpen, setCountryOpen] = useState(false);
   const [countryShippingOpen, setCountryShippingOpen] = useState(false);
   const [countryValue, setCountryValue] = useState<string | null>(null);
   const [countryShippingValue, setCountryShippingValue] = useState<string | null>(null);
   const [countryItems, setCountryItems] = useState<{ label: string; value: string }[]>([]);
-
+  
   const [shippingMethodOpen, setShippingMethodOpen] = useState(false);
   const [shippingMethodValue, setShippingMethodValue] = useState<string | null>(null);
   const [shippingMethodItems, setShippingMethodItems] = useState<{ label: string; value: string }[]>([]);
 
-  const [addAddress] = useMutation(ADD_ADDRESS);
-  const [addShippingMethod] = useMutation(ADD_SHIPPING_METHOD);
-  const [addingBillingAddress] = useMutation(ADD_BILLING_ADDRESS);
-
   const [loading, setLoading] = useState<boolean>(false);
+  
+  const { name, address, streetLine, streetLineShipping, addressShipping, cardNumber, expiryDate, cvv } = hooks.useAppSelector(state => state.paymentSlice);
+
+  const nameInputRef = useRef<TextInput>(null);
+  const emailInputRef = useRef<TextInput>(null);
+  const addressInputRef = useRef<TextInput>(null);
+  const streetInputRef = useRef<TextInput>(null);
+  const addresshippingInputRef = useRef<TextInput>(null);
+  const streetShippingInputRef = useRef<TextInput>(null);
+  const cardNumberInputRef = useRef<TextInput>(null);
+  const expiryDateInputRef = useRef<TextInput>(null);
+  const cvvInputRef = useRef<TextInput>(null);
+  const cardHolderNameInputRef = useRef<TextInput>(null);
+
+  const handleNameChange = useChangeHandler(actions.setName);
+  const handleAddressChange = useChangeHandler(actions.setAddress);
+  const handleStreetChange = useChangeHandler(actions.setStreet);
+  const handleAddressShippingChange = useChangeHandler(actions.setAddressShipping);
+  const handleStreetShippingChange = useChangeHandler(actions.setStreetShipping);
 
   useEffect(() => {
     if (countriesData?.availableCountries) {
@@ -70,28 +85,6 @@ const ShippingAndPaymentInfo: React.FC = () => {
     }
   }, [shippingMethodsData]);
 
-  console.log("change shiping add:",)
-
-  const { name, address, streetLine, streetLineShipping, addressShipping, cardNumber, expiryDate, cvv, cardHolderName } = hooks.useAppSelector(state => state.paymentSlice);
-
-  const nameInputRef = useRef<TextInput>(null);
-  const emailInputRef = useRef<TextInput>(null);
-  const addressInputRef = useRef<TextInput>(null);
-  const streetInputRef = useRef<TextInput>(null);
-  const addresshippingInputRef = useRef<TextInput>(null);
-  const streetShippingInputRef = useRef<TextInput>(null);
-  const cardNumberInputRef = useRef<TextInput>(null);
-  const expiryDateInputRef = useRef<TextInput>(null);
-  const cvvInputRef = useRef<TextInput>(null);
-  const cardHolderNameInputRef = useRef<TextInput>(null);
-
-  const handleCvvChange = useChangeHandler(actions.setCvv);
-  const handleNameChange = useChangeHandler(actions.setName);
-  const handleAddressChange = useChangeHandler(actions.setAddress);
-  const handleStreetChange = useChangeHandler(actions.setStreet);
-  const handleAddressShippingChange = useChangeHandler(actions.setAddressShipping);
-  const handleStreetShippingChange = useChangeHandler(actions.setStreetShipping);
-  const handleCardHolderNameChange = useChangeHandler(actions.setCardHolderName);
 
   useEffect(() => {
     if (cvv.length === 3) {
@@ -123,48 +116,8 @@ const ShippingAndPaymentInfo: React.FC = () => {
     return unsubscribe;
   }, [navigation]);
 
-  const handleCardNumberChange = (text: string) => {
-    let newText = '';
-    let count = 0;
-
-    for (let i = 0; i < text.length; i++) {
-      if (text[i] !== ' ') {
-        if (count !== 0 && count % 4 === 0) {
-          newText = newText + ' ';
-        }
-        newText = newText + text[i];
-        count++;
-      }
-    }
-    dispatch(actions.setCardNumber(newText));
-  };
-
-  const handleExpiryDateChange = (text: string) => {
-    let newText = '';
-    let len = text.length;
-    if (len < expiryDate.length) {
-      newText = text;
-    } else {
-      for (let i = 0; i < len; i++) {
-        if (i === 2 && text[i] !== '/') {
-          newText = newText + '/';
-        }
-        newText = newText + text[i];
-      }
-    }
-    dispatch(actions.setExpiryDate(newText));
-  };
-
   const handleProceedToCheckout = async () => {
     setLoading(true);
-    const addressInput = {
-      fullName: name,
-      streetLine1: address,
-      city: address, // Assuming you meant city here, adjust if needed
-      countryCode: countryValue || '',
-    };
-
-    console.log("data in shipping:", name, address, countryValue)
 
     try {
       await addingBillingAddress({
@@ -192,7 +145,6 @@ const ShippingAndPaymentInfo: React.FC = () => {
       navigation.navigate('Checkout');
     } catch (error) {
       console.error("Error during checkout: ", error);
-      // Handle the error appropriately, e.g., show a message to the user
     } finally {
       setLoading(false);
     }
@@ -213,7 +165,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
 
   const renderContent = (): JSX.Element => {
     const regex = /^[a-zA-Zа-яА-Я\s]*$/;
-  
+
     const contentData = [
       {
         id: 'name',
@@ -374,22 +326,22 @@ const ShippingAndPaymentInfo: React.FC = () => {
         )
       },
     ];
-  
+
     return (
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <FlatList
-            data={contentData}
-            renderItem={({ item }) => item.component}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.container}
-            keyboardShouldPersistTaps="handled" // Move this here
-          />
-        </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <FlatList
+              data={contentData}
+              renderItem={({ item }) => item?.component}
+              keyExtractor={item => item?.id}
+              contentContainerStyle={styles.container}
+              keyboardShouldPersistTaps="handled"
+            />
+          </TouchableWithoutFeedback>
         </ScrollView>
       </KeyboardAvoidingView>
     );
@@ -398,14 +350,14 @@ const ShippingAndPaymentInfo: React.FC = () => {
   const renderButton = (): JSX.Element => {
     return (
       <View style={styles.buttonContainer}>
-          <components.Button
-            title='Proceed to Checkout'
-            onPress={handleProceedToCheckout}
-            loading={loading}
-          />
+        <components.Button
+          title='Proceed to Checkout'
+          onPress={handleProceedToCheckout}
+          loading={loading}
+        />
       </View>
     );
-  };  
+  };
 
   return (
     <custom.SafeAreaView insets={['top', 'bottom']}>
@@ -441,7 +393,7 @@ const styles = StyleSheet.create({
   },
   dropdownLabel: {
     fontSize: 12,
-    paddingLeft:10,
+    paddingLeft: 10,
     color: 'gray',
     marginBottom: 5,
   },

@@ -50,7 +50,6 @@ const SignIn: React.FC = () => {
   }, [loading]);
 
   const handleSignIn = async () => {
-    console.log('Inside handleSignIn'); // Debugging log
     setLoading(true);
     try {
       const {data} = await SignIn({
@@ -63,10 +62,8 @@ const SignIn: React.FC = () => {
 
       if (data.authenticate && data.authenticate.__typename === 'CurrentUser') {
         const channels = data.authenticate.channels;
-        console.log("channel:", channels)
         if (channels && channels.length > 0) {
           const token = channels[0].token;
-console.log("token in sign", token)
           await AsyncStorage.clear();
           await AsyncStorage.setItem('userToken', token);
           const userData: any = {

@@ -1,6 +1,6 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-native-modal';
-import {useRoute} from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -9,18 +9,19 @@ import {
   ViewStyle,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 
 import Loader from './Loader';
-import {utils} from '../utils';
-import {items} from '../items';
-import {hooks} from '../hooks';
-import {svg} from '../assets/svg';
-import {theme} from '../constants';
-import {HeaderType} from '../types';
-import {actions} from '../store/actions';
-import {queryHooks} from '../store/slices/apiSlice';
-import {useAppSelector, useAppDispatch} from '../store';
+import { utils } from '../utils';
+import { items } from '../items';
+import { hooks } from '../hooks';
+import { svg } from '../assets/svg';
+import { theme } from '../constants';
+import { HeaderType } from '../types';
+import { actions } from '../store/actions';
+import { queryHooks } from '../store/slices/apiSlice';
+import { useAppSelector, useAppDispatch } from '../store';
 
 const Header: React.FC<HeaderType> = ({
   title,
@@ -37,7 +38,6 @@ const Header: React.FC<HeaderType> = ({
 
   const user = useAppSelector(state => state.userSlice.user);
   const cart = useAppSelector(state => state.cartSlice.list);
-
   const subtotal = useAppSelector(state => state.cartSlice.subtotal);
 
   const [showModal, setShowModal] = useState(false);
@@ -49,13 +49,9 @@ const Header: React.FC<HeaderType> = ({
   } = queryHooks.useGetPlantsQuery();
 
   const newQuantity = plantsData?.plants.filter(item => item.isNew).length;
-  const featuredQuantity = plantsData?.plants.filter(
-    item => item.isFeatured,
-  ).length;
+  const featuredQuantity = plantsData?.plants.filter(item => item.isFeatured).length;
   const saleQuantity = plantsData?.plants.filter(item => item.oldPrice).length;
-  const bestQuantity = plantsData?.plants.filter(
-    item => item.isBestSeller,
-  ).length;
+  const bestQuantity = plantsData?.plants.filter(item => item.isBestSeller).length;
 
   const route = useRoute();
 
@@ -69,10 +65,7 @@ const Header: React.FC<HeaderType> = ({
     }
     if (cart.length === 0) {
       Alert.alert('Your cart is empty', 'Please add some items to your cart', [
-        {
-          text: 'OK',
-          onPress: () => console.log('OK Pressed'),
-        },
+        { text: 'OK', onPress: () => console.log('OK Pressed') },
       ]);
     }
   };
@@ -80,12 +73,9 @@ const Header: React.FC<HeaderType> = ({
   const renderGoBack = (): JSX.Element | null => {
     if (goBackIcon && navigation.canGoBack()) {
       return (
-        <View style={{position: 'absolute', left: 0}}>
+        <View style={{ position: 'absolute', left: 0 }}>
           <TouchableOpacity
-            style={{
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-            }}
+            style={{ paddingVertical: 12, paddingHorizontal: 20 }}
             onPress={() => navigation.goBack()}
           >
             <svg.GoBackSvg />
@@ -96,12 +86,9 @@ const Header: React.FC<HeaderType> = ({
 
     if (onGoBack && navigation.canGoBack()) {
       return (
-        <View style={{position: 'absolute', left: 0}}>
+        <View style={{ position: 'absolute', left: 0 }}>
           <TouchableOpacity
-            style={{
-              paddingVertical: 12,
-              paddingHorizontal: 20,
-            }}
+            style={{ paddingVertical: 12, paddingHorizontal: 20 }}
             onPress={onGoBack}
           >
             <svg.GoBackSvg />
@@ -118,16 +105,15 @@ const Header: React.FC<HeaderType> = ({
       <Modal
         isVisible={showModal}
         onBackdropPress={() => setShowModal(false)}
-        hideModalContentWhileAnimating={true}
+        hideModalContentWhileAnimating
         backdropTransitionOutTiming={0}
-        style={{margin: 0, padding: 0}}
-        animationIn='slideInLeft'
-        animationOut='slideOutLeft'
+        style={{ margin: 0, padding: 0 }}
+        animationIn="slideInLeft"
+        animationOut="slideOutLeft"
         animationInTiming={500}
         animationOutTiming={500}
         deviceWidth={theme.sizes.deviceWidth}
         deviceHeight={theme.sizes.deviceHeight}
-        // statusBarTranslucent={true}
       >
         <View
           style={{
@@ -140,14 +126,8 @@ const Header: React.FC<HeaderType> = ({
         >
           {/* CLOSE BUTTON */}
           <TouchableOpacity
-            style={{
-              alignSelf: 'flex-end',
-              paddingHorizontal: 10,
-              paddingTop: 10,
-            }}
-            onPress={() => {
-              setShowModal(false);
-            }}
+            style={{ alignSelf: 'flex-end', paddingHorizontal: 10, paddingTop: 10 }}
+            onPress={() => setShowModal(false)}
           >
             <svg.CloseSvg />
           </TouchableOpacity>
@@ -160,8 +140,6 @@ const Header: React.FC<HeaderType> = ({
             showsVerticalScrollIndicator={false}
           >
             {/* USER INFO */}
-            {/* <UserData /> */}
-
             <TouchableOpacity
               style={{
                 paddingHorizontal: 20,
@@ -177,7 +155,6 @@ const Header: React.FC<HeaderType> = ({
                 navigation.navigate('EditProfile');
               }}
             >
-              {/* <Gravatar email={user?.email || ''} size={40 * 2} /> */}
               <View>
                 <Text
                   style={{
@@ -205,7 +182,7 @@ const Header: React.FC<HeaderType> = ({
             </TouchableOpacity>
             {/* MENU */}
             <items.BurgerMenuItem
-              title='>  Categories'
+              title=">  Categories"
               onPress={() => {
                 setShowModal(false);
                 dispatch(actions.setScreen('Category'));
@@ -213,63 +190,55 @@ const Header: React.FC<HeaderType> = ({
             />
             <items.BurgerMenuItem
               qty={`${saleQuantity}`}
-              title={'>  Sale'}
+              title=">  Sale"
               onPress={() => {
                 setShowModal(false);
                 navigation.navigate('Shop', {
                   title: 'Sale',
-                  products:
-                    plantsData?.plants.filter(item => item.oldPrice) ?? [],
+                  // products: plantsData?.plants.filter(item => item.oldPrice) ?? [],
                 });
               }}
             />
             <items.BurgerMenuItem
               qty={`${newQuantity}`}
-              title='>  New arrivals'
+              title=">  New arrivals"
               onPress={() => {
                 setShowModal(false);
                 navigation.navigate('Shop', {
                   title: 'New arrivals',
-                  products: plantsData?.plants.filter(item => item.isNew) ?? [],
+                  // products: plantsData?.plants.filter(item => item.isNew) ?? [],
                 });
               }}
             />
             <items.BurgerMenuItem
               qty={`${bestQuantity}`}
-              title={'>  Best sellers'}
+              title=">  Best sellers"
               onPress={() => {
                 setShowModal(false);
                 navigation.navigate('Shop', {
                   title: 'Best sellers',
-                  products:
-                    plantsData?.plants.filter(item => item.isBestSeller) ?? [],
+                  // products: plantsData?.plants.filter(item => item.isBestSeller) ?? [],
                 });
               }}
             />
             <items.BurgerMenuItem
               qty={`${featuredQuantity}`}
-              title={'>  Featured products'}
+              title=">  Featured products"
               onPress={() => {
                 setShowModal(false);
                 navigation.navigate('Shop', {
                   title: 'Featured products',
-                  products:
-                    plantsData?.plants.filter(item => item.isFeatured) ?? [],
+                  // products: plantsData?.plants.filter(item => item.isFeatured) ?? [],
                 });
               }}
             />
             <items.BurgerMenuItem
-              title={'>  Support'}
+              title=">  Support"
               onPress={() => {
                 Alert.alert(
                   'Contact us',
                   'Please contact us via email at support@everbloom.com',
-                  [
-                    {
-                      text: 'OK',
-                      onPress: () => console.log('OK Pressed'),
-                    },
-                  ],
+                  [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
                 );
               }}
             />
@@ -288,12 +257,18 @@ const Header: React.FC<HeaderType> = ({
             left: 0,
             paddingHorizontal: 20,
             paddingVertical: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
           }}
-          onPress={() => {
-            setShowModal(true);
-          }}
+          onPress={() => setShowModal(true)}
         >
           <svg.BurgerSvg />
+          {!search && !title && (
+            <Image
+              source={require('../assets/images/sulopa.png')}
+              style={{ width: 100, height: 30, marginLeft: 110 }}
+            />
+          )}
         </TouchableOpacity>
       );
     }
@@ -313,7 +288,7 @@ const Header: React.FC<HeaderType> = ({
           }}
           onPress={() => navigation.navigate('Search')}
         >
-          <View style={{marginRight: 7}}>
+          <View style={{ marginRight: 7 }}>
             <svg.SearchSvg />
           </View>
           <Text
@@ -385,7 +360,7 @@ const Header: React.FC<HeaderType> = ({
               }}
               numberOfLines={1}
             >
-              {cart.length > 0 ? `$${13131}` : '$0'}
+              {cart.length > 0 ? `$${subtotal}` : '$0'}
             </Text>
           </View>
           <svg.BasketSvg />
@@ -412,7 +387,7 @@ const Header: React.FC<HeaderType> = ({
     }
 
     return (
-      <View style={{...containerStyle}}>
+      <View style={{ ...containerStyle }}>
         {renderGoBack()}
         {renderBurgerIcon()}
         {renderTitle()}

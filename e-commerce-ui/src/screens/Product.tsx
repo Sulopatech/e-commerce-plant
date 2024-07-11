@@ -62,6 +62,8 @@ const Product: React.FC<any> = ({ route }) => {
   const { item, slug } = route.params;
   const { responsiveHeight } = utils;
 
+  console.log("all items in product:", item?.variantList?.items[0]?.name)
+
   const productId = item?.id;
 
   const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
@@ -78,7 +80,7 @@ const Product: React.FC<any> = ({ route }) => {
   }).current;
 
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [selectedVariant, setSelectedVariant] = useState<string>(data?.collection?.productVariants?.items[0]?.id);
+  const [selectedVariant, setSelectedVariant] = useState<string>(data?.collection?.productVariants?.items[0]?.id || item?.variantList?.items[0]?.id);
   const [open, setOpen] = useState(false);
 
   const onViewableItemsChanged = useRef((info: ViewableItemsChanged) => {
@@ -192,12 +194,20 @@ const Product: React.FC<any> = ({ route }) => {
               alignSelf: 'center',
             }}
           >
-            <Image
-              source={{
-                uri: previewUrls,
-              }}
-              style={{ width: 430, height: 500 }}
-            />
+            {
+              <Image
+                source={{
+                  uri: previewUrls,
+                }}
+                style={{ width: 430, height: 500 }}
+              /> ||
+              <Image
+                source={{
+                  uri: item?.assets[0]?.preview,
+                }}
+                style={{ width: 430, height: 500 }}
+              />
+            }
           </View>
         );
       }
@@ -243,7 +253,7 @@ const Product: React.FC<any> = ({ route }) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{productDesc?.name}</text.H3>
+        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name}</text.H3>
         <product.ProductRating rating={productDesc?.rating || item?.rating} />
       </View>
     );
@@ -275,7 +285,7 @@ const Product: React.FC<any> = ({ route }) => {
             color: theme.colors.mainColor,
           }}
         >
-          ${price / 100}
+          ₹{price}
         </Text>
         <product.ProductCounterInner item={modifedItem} />
       </View>
@@ -283,7 +293,7 @@ const Product: React.FC<any> = ({ route }) => {
   };
 
   const renderVariantDropdown = (): JSX.Element => {
-    const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
+    const variantItems = item?.variantList?.items || data?.collection?.productVariants?.items.map((variant: any) => ({
       label: variant.name,
       value: variant.id,
     })) || [];
@@ -335,12 +345,12 @@ const Product: React.FC<any> = ({ route }) => {
           }}
           numberOfLines={6}
         >
-          {productDesc?.description}
+          {productDesc?.description || item?.description}
         </text.T16>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('Description', {
-              description: productDesc?.description,
+              description: productDesc?.description || item?.description,
               title: productDesc?.name,
             });
           }}

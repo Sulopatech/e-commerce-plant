@@ -27,7 +27,7 @@ const ProductPrice: React.FC<Props> = ({item, containerStyle}): JSX.Element => {
           }}
           numberOfLines={1}
         >
-          ${item}
+          ₹{item}
         </Text>
       )}
       <Text
@@ -39,7 +39,7 @@ const ProductPrice: React.FC<Props> = ({item, containerStyle}): JSX.Element => {
         }}
         numberOfLines={1}
       >
-        ${item}
+        ₹{item}
       </Text>
     </View>
   );

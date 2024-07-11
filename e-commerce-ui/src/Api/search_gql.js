@@ -1,24 +1,24 @@
 import { gql } from '@apollo/client';
 
-// Define your GraphQL query using gql
-export const SEARCH_QUERY = gql`
-  query Search($input: SearchInput!) {
-    search(input: $input) {
-      collections {
-        collection {
+export const GET_PRODUCTS = gql`
+query Query($options: ProductListOptions) {
+  products(options: $options) {
+    items {
+      id
+      name
+      description
+      variantList{
+        items{
           id
           name
+          price
         }
       }
-      items {
-        collectionIds
-        productId
-        productName
-        productAsset {
-          id
-          preview
-        }
+      assets {
+        preview
+        source
       }
     }
   }
+}
 `;

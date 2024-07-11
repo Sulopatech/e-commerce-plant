@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useRef, useState } from 'react';
 import { View, TextInput, StyleSheet, FlatList } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
@@ -9,10 +8,9 @@ import { utils } from '../utils';
 import { custom } from '../custom';
 import { theme } from '../constants';
 import { components } from '../components';
-import { ENDPOINTS, CONFIG } from '../config';
 import { actions } from '../store/actions';
 import { useChangeHandler } from '../utils/useChangeHandler';
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 
 import { ELIGIBLE_PAYMENT_METHOD, NEXT_ORDER_STATE, PAYMENT_INFO, CHANGE_STATE, ADD_PAYMENT } from '../Api/payment_gql'
 
@@ -26,34 +24,21 @@ const Checkout: React.FC = () => {
   const [changeState] = useMutation(CHANGE_STATE)
   const [addPayment] = useMutation(ADD_PAYMENT)
 
-  // console.log('eligible data:', data);
-
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [open, setOpen] = useState(false);
 
-  console.log("payment:", paymentMethod)
-
-  const user = hooks.useAppSelector((state) => state.userSlice.user);
-  const cart = hooks.useAppSelector((state) => state.cartSlice.list);
-  const total = hooks.useAppSelector((state) => state.cartSlice.total);
   const discount = hooks.useAppSelector((state) => state.cartSlice.discount);
-  const delivery = hooks.useAppSelector((state) => state.cartSlice.delivery);
-  const subtotal = hooks.useAppSelector((state) => state.cartSlice.subtotal);
 
-  const nameInputRef = useRef<TextInput>(null);
-  const addressInputRef = useRef<TextInput>(null);
   const cardNumberInputRef = useRef<TextInput>(null);
   const expiryDateInputRef = useRef<TextInput>(null);
   const cvvInputRef = useRef<TextInput>(null);
   const cardHolderNameInputRef = useRef<TextInput>(null);
 
   const handleCvvChange = useChangeHandler(actions.setCvv);
-  const handleNameChange = useChangeHandler(actions.setName);
-  const handleAddressChange = useChangeHandler(actions.setAddress);
   const handleCardHolderNameChange = useChangeHandler(actions.setCardHolderName);
 
-  const { name, address, cardNumber, cardHolderName, expiryDate, cvv } = hooks.useAppSelector(
+  const { cardNumber, cardHolderName, expiryDate, cvv } = hooks.useAppSelector(
     (state) => state.paymentSlice,
   );
 
@@ -89,7 +74,7 @@ const Checkout: React.FC = () => {
     dispatch(actions.setExpiryDate(newText));
   };
 
-  console.log("next order:", nextOrderData?.nextOrderStates[0])
+
   const handleConfirmOrder = async () => {
     navigation.navigate('OrderPreview')
     const nextOrder = nextOrderData?.nextOrderStates[0]
@@ -189,7 +174,7 @@ const Checkout: React.FC = () => {
           }}
         >
           <text.T14>Shipping</text.T14>
-          <text.T14>${paymentInfo?.activeOrder?.shipping}</text.T14>
+          <text.T14>₹{paymentInfo?.activeOrder?.shipping}</text.T14>
         </View>
         <View
           style={{
@@ -198,7 +183,7 @@ const Checkout: React.FC = () => {
           }}
         >
           <text.T14>Subtotal</text.T14>
-          <text.T14>${paymentInfo?.activeOrder?.subTotal?.toFixed(2)}</text.T14>
+          <text.T14>₹{paymentInfo?.activeOrder?.subTotal?.toFixed(2)}</text.T14>
         </View>
         {/* SUBTOTAL */}
         <View
@@ -209,7 +194,7 @@ const Checkout: React.FC = () => {
         >
           <text.H5>Total</text.H5>
           <text.T14 style={{ color: theme.colors.mainColor }}>
-            ${paymentInfo?.activeOrder?.total?.toFixed(2)}
+          ₹{paymentInfo?.activeOrder?.total?.toFixed(2)}
           </text.T14>
         </View>
         {/* DISCOUNT */}
@@ -230,7 +215,7 @@ const Checkout: React.FC = () => {
         {/* TOTAL */}
         <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
           <text.H4>Total with tax</text.H4>
-          <text.H4>${paymentInfo?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
+          <text.H4>₹{paymentInfo?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
           {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
         </View>
       </View>

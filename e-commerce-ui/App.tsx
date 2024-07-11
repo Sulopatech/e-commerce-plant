@@ -53,11 +53,9 @@ const authLink = new ApolloLink((operation, forward) => {
     },
   }));
 
-  console.log("token in header:", token)
   return forward(operation).map(response => {
     const context = operation.getContext();
     const newToken = context.response.headers.get('Vendure-Auth-Token');
-    console.log("NEW TOKEN:", newToken)
     if (newToken) {
       operation.setContext(({ headers = {} }) => ({
         headers: {
@@ -65,7 +63,6 @@ const authLink = new ApolloLink((operation, forward) => {
           authorization: newToken ? `Bearer ${newToken}` : '',
         },
       }));
-      console.log('New Vendure-Auth-Token:', newToken);
       Keychain.setGenericPassword('authToken', newToken).catch(error => {
         console.error('Keychain Error:', error);
       });

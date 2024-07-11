@@ -233,7 +233,7 @@ const Order: React.FC = () => {
           >
             <text.H5>Subtotal</text.H5>
             <text.T14 style={{ color: theme.colors.mainColor }}>
-              ${ordersData?.activeOrder?.subTotal?.toFixed(2)}
+            ₹{ordersData?.activeOrder?.subTotal?.toFixed(2)}
             </text.T14>
           </View>
           {/* DISCOUNT */}
@@ -254,7 +254,7 @@ const Order: React.FC = () => {
           {/* TOTAL */}
           <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
             <text.H4>Subtotal with tax</text.H4>
-            <text.H4>${ordersData?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
+            <text.H4>₹{ordersData?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
             {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
           </View>
         </View>

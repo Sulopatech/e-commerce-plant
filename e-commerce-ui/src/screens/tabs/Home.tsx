@@ -192,8 +192,8 @@ const Home: React.FC = () => {
   };
 
   const renderFlatList = () => {
-    console.log("*****COMING TO FLAT LIST")
-    console.log("*****carousel********",carousel)
+    // console.log("*****COMING TO FLAT LIST")
+    // console.log("*****carousel********",carousel)
     return (
       <FlatList
         data={[{"id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!"},
@@ -278,13 +278,13 @@ const Home: React.FC = () => {
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
-          paddingLeft: 20,
+          paddingLeft: 0,
         }}
         style={{
           marginBottom: utils.responsiveHeight(50),
           marginTop: carouselData?.carousel.length
             ? 0
-            : utils.responsiveHeight(20),
+            : utils.responsiveHeight(0),
           flexGrow: 0,
         }}
       >
