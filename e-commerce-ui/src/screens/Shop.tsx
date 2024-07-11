@@ -39,9 +39,10 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
 
   const { loading, error, data } = useQuery(GET_COLLECTION(title));
 
-  if (loading) {
-    return <ActivityIndicator size='large' color={theme.colors.mainColor} />;
-  }
+  const isLoading = loading;
+  // if (loading) {
+  //   return <ActivityIndicator size='large' color={theme.colors.mainColor} />;
+  // }
 
   if (error) {
     return (
@@ -138,6 +139,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
   };
 
   const renderContent = (): JSX.Element | null => {
+    if (isLoading) return <components.Loader />;
     if (filteredProducts.length === 0) return <components.NoData />;
 
     return (

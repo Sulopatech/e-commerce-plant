@@ -68,7 +68,6 @@ const Product: React.FC<any> = ({ route }) => {
   const productDesc = data?.collection?.FilteredProduct?.items[0];
 
   const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset?.preview })) || [];
-  // console.log("data in product desc:", data?.collection?.productVariants?.items[0]?.name);
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
   const dispatch = hooks.useAppDispatch();
@@ -251,6 +250,9 @@ const Product: React.FC<any> = ({ route }) => {
   };
 
   const renderPriceWithQuantity = (): JSX.Element => {
+    const selectedVariantItem = data?.collection?.productVariants?.items.find((variant: any) => variant.id === selectedVariant);
+    const price = selectedVariantItem ? selectedVariantItem.price : 0;
+    
     return (
       <View
         style={{
@@ -273,8 +275,7 @@ const Product: React.FC<any> = ({ route }) => {
             color: theme.colors.mainColor,
           }}
         >
-          {/* ${productDesc?.variants[0]?.price} */}
-          $1000
+          ${price / 100}
         </Text>
         <product.ProductCounterInner item={modifedItem} />
       </View>
@@ -296,17 +297,21 @@ const Product: React.FC<any> = ({ route }) => {
           items={variantItems}
           setOpen={setOpen}
           setValue={setSelectedVariant}
-          setItems={() => { }}
+          setItems={() => {}}
           style={{
             borderWidth: 1,
-            borderColor: 'gray',
+            borderColor: '#E7EBEB',
             borderRadius: 4,
-            // color: 'black',
           }}
           dropDownContainerStyle={{
             backgroundColor: 'white',
+            borderWidth: 1,
+            borderColor: '#E7EBEB',
           }}
           listMode="SCROLLVIEW"
+          onChangeValue={(value: any) => {
+            setSelectedVariant(value);
+          }}
         />
       </View>
     );

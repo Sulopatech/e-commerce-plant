@@ -16,39 +16,29 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 const GET_ORDERS = gql`
   query GETORDERS {
-    activeCustomer {
+   activeOrder{
       id
-      firstName
-      orders {
-        totalItems
-        items {
-          id
           type
           total
           subTotal
           totalWithTax
+          subTotalWithTax
           totalQuantity
+      lines{
+        id
+        productVariant{
+          name
+          price
+        }
+        featuredAsset{
+              preview
+            }
+      }
           discounts{
             description
             amount
             amountWithTax
           }
-          lines {
-            id
-            unitPriceWithTax
-            quantity
-            linePriceWithTax
-            productVariant {
-              id
-              name
-              price
-            }
-            featuredAsset{
-              preview
-            }
-          }
-        }
-      }
     }
   }
 `;
@@ -105,16 +95,16 @@ const Order: React.FC = () => {
   }, []);
 
   const renderProducts = (): JSX.Element | null => {
-    if (ordersData?.activeCustomer?.orders?.items?.length > 0) {
+    if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
         <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
-          {ordersData.activeCustomer.orders.items.map(order => {
-            return order.lines.map((item, index) => {
-              const isLast = index === order.lines.length - 1;
+          {ordersData?.activeOrder?.lines?.map((order, index) => {
+            // return order.lines.map((item, index) => {
+              const isLast = index === order?.lines?.length - 1;
               return (
-                <items.OrderItem key={item.id} item={item} isLast={isLast} />
+                <items.OrderItem key={order?.id} item={order} isLast={isLast} />
               );
-            });
+            // });
           })}
         </View>
       );
@@ -224,6 +214,16 @@ const Order: React.FC = () => {
             backgroundColor: theme.colors.imageBackground,
           }}
         >
+          {/* DELIVERY */}
+          <View
+            style={{
+              ...theme.flex.rowCenterSpaceBetween,
+              paddingBottom: utils.responsiveHeight(14),
+            }}
+          >
+            <text.T14>Total Quantity</text.T14>
+            <text.T14>{ordersData?.activeOrder?.totalQuantity}</text.T14>
+          </View>
           {/* SUBTOTAL */}
           <View
             style={{
@@ -233,18 +233,8 @@ const Order: React.FC = () => {
           >
             <text.H5>Subtotal</text.H5>
             <text.T14 style={{ color: theme.colors.mainColor }}>
-              ${ordersData?.activeCustomer?.orders?.items[0]?.subTotal?.toFixed(2)}
+              ${ordersData?.activeOrder?.subTotal?.toFixed(2)}
             </text.T14>
-          </View>
-          {/* DELIVERY */}
-          <View
-            style={{
-              ...theme.flex.rowCenterSpaceBetween,
-              paddingBottom: utils.responsiveHeight(14),
-            }}
-          >
-            <text.T14>Delivery</text.T14>
-            <text.T14>${delivery}</text.T14>
           </View>
           {/* DISCOUNT */}
           {discount > 0 && (
@@ -263,8 +253,8 @@ const Order: React.FC = () => {
           )}
           {/* TOTAL */}
           <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
-            <text.H4>Total with tax</text.H4>
-            <text.H4>${ordersData?.activeCustomer?.orders?.items[0]?.totalWithTax?.toFixed(2)}</text.H4>
+            <text.H4>Subtotal with tax</text.H4>
+            <text.H4>${ordersData?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
             {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
           </View>
         </View>

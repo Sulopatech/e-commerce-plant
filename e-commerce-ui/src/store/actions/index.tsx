@@ -11,6 +11,9 @@ import {setName} from '../slices/paymentSlice';
 import {setDiscount} from '../slices/cartSlice';
 import {setPromoCode} from '../slices/cartSlice';
 import {setAddress} from '../slices/paymentSlice';
+import {setStreet} from '../slices/paymentSlice';
+import {setAddressShipping} from '../slices/paymentSlice';
+import {setStreetShipping} from '../slices/paymentSlice';
 import {resetFilters} from '../slices/filterSlice';
 import {setRememberMe} from '../slices/userSlice';
 import {removeFromCart} from '../slices/cartSlice';
@@ -40,6 +43,9 @@ export const actions = {
   addToCart,
   modifyItem,
   setAddress,
+  setAddressShipping,
+  setStreet,
+  setStreetShipping,
   setDiscount,
   resetFilters,
   setPromoCode,

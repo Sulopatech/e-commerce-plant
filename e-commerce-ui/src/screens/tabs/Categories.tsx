@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,26 +7,26 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import {useQuery} from '@apollo/client';
+import { useQuery } from '@apollo/client';
 
-import {utils} from '../../utils';
-import {hooks} from '../../hooks';
-import {custom} from '../../custom';
-import {theme} from '../../constants';
-import {components} from '../../components';
-import {GETCATEGORY} from '../../Api/get_collectiongql';
-import {items} from '../../items';
+import { utils } from '../../utils';
+import { hooks } from '../../hooks';
+import { custom } from '../../custom';
+import { theme } from '../../constants';
+import { components } from '../../components';
+import { GETCATEGORY } from '../../Api/get_collectiongql';
+import { items } from '../../items';
 
 const Categories: React.FC = () => {
   const navigation = hooks.useAppNavigation();
 
-  const {data, error, loading, refetch} = useQuery(GETCATEGORY, {
+  const { data, error, loading, refetch } = useQuery(GETCATEGORY, {
     variables: {
-      options: {skip: 0, take: 10},
+      options: { skip: 0, take: 10 },
     },
   });
 
-  console.log('data in category:', data);
+  // console.log('data in category:', data);
   const [refreshing, setRefreshing] = useState(false);
 
   let collections = data?.collections?.items ?? [];
@@ -56,54 +56,57 @@ const Categories: React.FC = () => {
             marginBottom: utils.responsiveHeight(40 - 14),
           }}
         >
-          {collections.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={{
-                width: utils.responsiveWidth(160, true),
-                height: utils.responsiveWidth(160, true),
-                marginBottom: 14,
-                justifyContent: 'space-between',
-              }}
-              onPress={() => {
-                navigation.navigate('Shop', {
-                  title: item.slug,
-                });
-              }}
-            >
-              <custom.ImageBackground
-                source={{
-                  uri: item.featuredAsset?.preview ?? 'default_image_uri',
-                }}
+          {collections.map((item, index) => {
+            console.log("img in cllection:", item.featuredAsset?.preview )
+            return (
+              <TouchableOpacity
+                key={index}
                 style={{
-                  flex: 1,
-                  width: '100%',
-                  height: '100%',
+                  width: utils.responsiveWidth(160, true),
+                  height: utils.responsiveWidth(160, true),
+                  marginBottom: 14,
                   justifyContent: 'space-between',
-                  paddingHorizontal: 14,
-                  paddingTop: 14,
-                  paddingBottom: 12,
                 }}
-                imageStyle={{
-                  borderRadius: 10,
-                  backgroundColor: theme.colors.imageBackground,
+                onPress={() => {
+                  navigation.navigate('Shop', {
+                    title: item.slug,
+                  });
                 }}
-                resizeMode='cover'
               >
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    fontSize: Platform.OS === 'ios' ? 14 : 12,
-                    color: theme.colors.mainColor,
-                    textTransform: 'capitalize',
-                    ...theme.fonts.DM_Sans_400Regular,
+                <custom.ImageBackground
+                  source={{
+                    uri: item.featuredAsset?.preview ?? 'default_image_uri',
                   }}
+                  style={{
+                    flex: 1,
+                    width: '100%',
+                    height: '100%',
+                    justifyContent: 'space-between',
+                    paddingHorizontal: 14,
+                    paddingTop: 14,
+                    paddingBottom: 12,
+                  }}
+                  imageStyle={{
+                    borderRadius: 10,
+                    backgroundColor: theme.colors.imageBackground,
+                  }}
+                  resizeMode='cover'
                 >
-                  {item.name}
-                </Text>
-              </custom.ImageBackground>
-            </TouchableOpacity>
-          ))}
+                  <Text
+                    numberOfLines={1}
+                    style={{
+                      fontSize: Platform.OS === 'ios' ? 14 : 12,
+                      color: theme.colors.mainColor,
+                      textTransform: 'capitalize',
+                      ...theme.fonts.DM_Sans_400Regular,
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                </custom.ImageBackground>
+              </TouchableOpacity>
+            )
+          })}
         </View>
       );
     }

@@ -12,6 +12,8 @@ type Props = { item: any; isLast: boolean };
 const OrderItem: React.FC<Props> = ({ item, isLast }) => {
   const navigation = hooks.useAppNavigation();
 
+  console.log("items in order:", item)
+
   // Extract the preview URL from the featuredAsset
   const imageUrl = item.featuredAsset?.preview || '';
 
@@ -84,7 +86,7 @@ const OrderItem: React.FC<Props> = ({ item, isLast }) => {
             </View>
           )}
         </View>
-        <product.ProductCounter item={item} />
+        {/* <product.ProductCounter item={item} /> */}
       </View>
     );
   };

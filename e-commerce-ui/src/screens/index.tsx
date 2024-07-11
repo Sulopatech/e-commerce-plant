@@ -18,6 +18,7 @@ import LeaveAReview from './LeaveAReview';
 import OrderHistory from './OrderHistory';
 import DeleteAccount from './DeleteAccount';
 import OrderSuccessful from './OrderSuccessful';
+import OrderPreview from './OrderPreview';
 import VerifyEmail from './verification/VerifyEmail';
 import VerifyPhone from './verification/VerifyPhone';
 import TabNavigator from '../navigation/TabNavigator';
@@ -66,5 +67,6 @@ export const screens = {
   SignUpAccountCreated,
   ShippingAndPaymentInfo,
   ForgotPasswordSentEmail,
-  OrderList
+  OrderList,
+  OrderPreview
 };

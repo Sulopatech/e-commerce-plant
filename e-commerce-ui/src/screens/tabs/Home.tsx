@@ -20,9 +20,8 @@ import { svg } from '../../assets/svg';
 import { theme } from '../../constants';
 import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
-import { GETCATEGORY, GET_ALL_PRODUCTS } from '../../Api/get_collectiongql';
+import { GETCATEGORY } from '../../Api/get_collectiongql';
 import { useQuery } from '@apollo/client';
-import Categories from './Categories';
 
 type ViewableItemsChanged = {
   viewableItems: Array<ViewToken>;
@@ -51,11 +50,6 @@ const Home: React.FC = () => {
       options: { skip: 0, take: 10 },
     },
   });
-
-  console.log("data :", data?.collections);
-  console.log("error :", categoriesError);
-  console.log("loading :", categoriesLoading);
-  console.log("refetch :", refetchCategories);
 
   const {
     data: carouselData,
@@ -117,7 +111,7 @@ const Home: React.FC = () => {
       });
   }, [refetchPlants, refetchBanners, refetchCarousel, refetchCategories]);
 
-  const renderCarouselItem = ({ item }) => {
+  const renderCarouselItem = ({item}) => {
     const products = plantsData?.plants.filter(plant => {
       return plant.promotion === item.promotion;
     });
@@ -126,7 +120,7 @@ const Home: React.FC = () => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
-          if (products?.length === 0) {
+          if (false) {
             Alert.alert(
               'Products do not exist',
               'Unfortunately, there are no products with the name of such promotion.',
@@ -143,7 +137,6 @@ const Home: React.FC = () => {
 
           navigation.navigate('Shop', {
             title: 'Shop',
-            products: products || [],
           });
         }}
       >
@@ -199,9 +192,12 @@ const Home: React.FC = () => {
   };
 
   const renderFlatList = () => {
+    console.log("*****COMING TO FLAT LIST")
+    console.log("*****carousel********",carousel)
     return (
       <FlatList
-        data={carousel}
+        data={[{"id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!"},
+          {"id": 2, "image": "https://everbloom.rn-admin.site/storage/2RxLwmDxKluhZp2FGrQXosmuIirqRFL8s0SY9o15.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!"}]}
         horizontal={true}
         pagingEnabled={true}
         bounces={false}
@@ -215,7 +211,8 @@ const Home: React.FC = () => {
   };
 
   const renderDots = (): JSX.Element | null => {
-    if (carousel.length && carousel.length > 0) {
+    // if (carousel.length && carousel.length > 0) {
+      if (true) {
       return (
         <View
           style={{
@@ -252,7 +249,7 @@ const Home: React.FC = () => {
   };
 
   const renderCarousel = (): JSX.Element | null => {
-    if (carouselData?.carousel.length && carouselData?.carousel.length > 0) {
+    if (true) {
       return (
         <View
           style={{
@@ -270,7 +267,6 @@ const Home: React.FC = () => {
   };
 
   const renderCategories = (): JSX.Element => {
-    console.log("Rendering categories:", categories);
   
     if (!categories || categories.length === 0) {
       console.log("No categories data available");
@@ -293,16 +289,13 @@ const Home: React.FC = () => {
         }}
       >
         {categories.map((item, index, array) => {
-          console.log(`Rendering category item: ${item.name}`);
           const isLast = index === array.length -1;
           
          
           const dataFilter = plantsData?.plants.filter(
             e => e.categories.includes(item.name),
           );
-  
-          console.log(`Filtered products for ${item.name}:`, dataFilter);
-          const qty = dataFilter?.length ?? 0;
+          const qty = item?.productVariants?.totalItems;
   
           return (
             <items.CategoryItem
@@ -333,7 +326,6 @@ const Home: React.FC = () => {
           viewAllOnPress={() => {
             navigation.navigate('Shop', {
               title: 'Best sellers',
-              products: bestSellers,
             });
           }}
         />
@@ -352,6 +344,7 @@ const Home: React.FC = () => {
                 key={item.id.toString()}
                 version={3}
                 isLast={isLast}
+                slug={""}
               />
             );
           })}
@@ -361,32 +354,31 @@ const Home: React.FC = () => {
   };
 
   const renderBanner = (): JSX.Element | null => {
-    if (banner?.length === 0) return null;
+    //if (banner?.length === 0) return null;
 
-    const bannerPromotion = bannersData?.banners[0]?.promotion;
-    const bannerLength = bannersData?.banners?.length ?? 0;
-    const products =
-      plantsData?.plants.filter(item => item.promotion === bannerPromotion) ??
-      [];
+    // const bannerPromotion = bannersData?.banners[0]?.promotion;
+    // const bannerLength = bannersData?.banners?.length ?? 0;
+    // const products =
+    //   plantsData?.plants.filter(item => item.promotion === bannerPromotion) ??
+    //   [];
 
-    if (bannerLength > 0) {
+    if (true) {
       return (
         <TouchableOpacity
           style={{ marginBottom: utils.responsiveHeight(50) }}
           onPress={() => {
-            if (products.length === 0) {
+            if (true) {
               Alert.alert('No data', 'No data available for this promotion');
               return;
             }
 
             navigation.navigate('Shop', {
               title: 'Shop',
-              products: products,
             });
           }}
         >
           <custom.Image
-            source={{ uri: banner[0]?.image }}
+            source={{ uri:'https://everbloom.rn-admin.site/storage/MuVAapQZ8kQIVA5LquIIRMFHkdv0CD8hicIT6zg8.png' }}
             style={{
               width: theme.sizes.deviceWidth - 20,
               aspectRatio: 355 / 200,
@@ -406,7 +398,7 @@ const Home: React.FC = () => {
   };
 
   const renderFeatured = (): JSX.Element | null => {
-    if (featured?.length === 0) return null;
+    // if (featured?.length === 0) return null;
 
     return (
       <View style={{ marginBottom: utils.responsiveHeight(20) }}>
@@ -419,7 +411,6 @@ const Home: React.FC = () => {
           viewAllOnPress={() => {
             navigation.navigate('Shop', {
               title: 'Featured',
-              products: featured,
             });
           }}
         />
@@ -438,6 +429,7 @@ const Home: React.FC = () => {
                 key={item.id.toString()}
                 version={2}
                 isLast={isLast}
+                slug={""}
               />
             );
           })}
@@ -459,7 +451,10 @@ const Home: React.FC = () => {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
+      {renderCarousel()}
       {renderCategories()}
+      {renderBanner()}
+      {renderFeatured()}
     </ScrollView>
   );
 };

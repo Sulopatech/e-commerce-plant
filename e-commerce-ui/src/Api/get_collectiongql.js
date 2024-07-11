@@ -348,6 +348,7 @@ productVariants(options:{
 }){
   items{
   id
+  price
     productId
     name
   }
