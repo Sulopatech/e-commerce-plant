@@ -57,7 +57,6 @@ const Categories: React.FC = () => {
           }}
         >
           {collections.map((item, index) => {
-            console.log("img in cllection:", item.featuredAsset?.preview )
             return (
               <TouchableOpacity
                 key={index}

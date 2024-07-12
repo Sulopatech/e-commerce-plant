@@ -9,6 +9,7 @@ import {
   Image,
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
+import Svg, { Path } from 'react-native-svg';
 import { useMutation, useQuery, gql } from '@apollo/client';
 import { text } from '../text';
 import { alert } from '../alert';
@@ -22,13 +23,37 @@ import { product } from '../product';
 import { components } from '../components';
 import { queryHooks } from '../store/slices/apiSlice';
 import { addToCart } from '../store/slices/cartSlice';
-import { ProductScreenProps } from '../types/ScreenProps';
+import { actions } from '../store/actions';
 import { GET_PRODUCT_DETAILS } from '../Api/get_collectiongql';
 import { ProductType, ViewableItemsChanged } from '../types';
 
+const renderMinusSvg = () => (
+  <Svg width={14} height={14} fill='none'>
+    <Path
+      stroke='#23374A'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      strokeWidth={1.2}
+      d='M2.898 7h8.114'
+    />
+  </Svg>
+);
+
+const renderPlusSvg = () => (
+  <Svg width={14} height={14} fill='none'>
+    <Path
+      stroke='#23374A'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      strokeWidth={1.2}
+      d='M6.955 2.917v8.166M2.898 7h8.114'
+    />
+  </Svg>
+);
+
 export const ADDTOCART = gql`
-  mutation AddItemToOrder($productVariantId: ID!, $quantity: Int!) {
-    addItemToOrder(productVariantId: $productVariantId, quantity: $quantity) {
+  mutation AddItemToOrder($productVariantId: ID!, $quantityToApi: Int!) {
+    addItemToOrder(productVariantId: $productVariantId, quantity: $quantityToApi) {
       __typename
       ...ActiveOrder
     }
@@ -61,17 +86,13 @@ export const ADDTOCART = gql`
 const Product: React.FC<any> = ({ route }) => {
   const { item, slug } = route.params;
   const { responsiveHeight } = utils;
-
-  console.log("all items in product:", item?.variantList?.items[0]?.name)
-
   const productId = item?.id;
-
   const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
   const productDesc = data?.collection?.FilteredProduct?.items[0];
-
   const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset?.preview })) || [];
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
+  const cart = hooks.useAppSelector(state => state.cartSlice.list);
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
 
@@ -82,13 +103,15 @@ const Product: React.FC<any> = ({ route }) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [selectedVariant, setSelectedVariant] = useState<string>(data?.collection?.productVariants?.items[0]?.id || item?.variantList?.items[0]?.id);
   const [open, setOpen] = useState(false);
+  const [quantity, setQuantity] = useState<number>(1);
+
+  console.log("selected variant:", selectedVariant);
 
   const onViewableItemsChanged = useRef((info: ViewableItemsChanged) => {
     const index = info.viewableItems[0]?.index ?? 0;
     setActiveIndex(index);
   }).current;
-
-  const cart = hooks.useAppSelector(state => state.cartSlice.list);
+  
   const exist = (item: ProductType) => cart.find(i => i.id === item?.id);
 
   const {
@@ -116,7 +139,7 @@ const Product: React.FC<any> = ({ route }) => {
     return unsubscribe;
   }, [navigation]);
 
-  const modifedItem = { ...productDesc };
+  const modifiedItem = { ...productDesc };
 
   const [addItemToOrder] = useMutation(ADDTOCART, {
     onCompleted: (data) => {
@@ -129,11 +152,11 @@ const Product: React.FC<any> = ({ route }) => {
 
   const handleAddToCart = async () => {
     const productVariantId = selectedVariant;
-    const quantity = 1;
+    const quantityToApi = quantity;
     try {
       if (!exist(productDesc)) {
-        dispatch(addToCart(modifedItem));
-        await addItemToOrder({ variables: { productVariantId, quantity } });
+        dispatch(addToCart(modifiedItem));
+        await addItemToOrder({ variables: { productVariantId, quantityToApi } });
       } else {
         alert.alreadyAdded();
       }
@@ -194,24 +217,10 @@ const Product: React.FC<any> = ({ route }) => {
               alignSelf: 'center',
             }}
           >
-            {
-              <Image
-                source={{
-                  uri: previewUrls,
-                }}
-                style={{ width: 430, height: 500 }}
-              /> ||
-              <Image
-                source={{
-                  uri: item?.assets[0]?.preview,
-                }}
-                style={{ width: 430, height: 500 }}
-              />
-            }
+            {<Image source={{ uri: previewUrls }} style={{ width: 430, height: 500 }} />}
           </View>
         );
       }
-
       return null;
     };
 
@@ -260,13 +269,19 @@ const Product: React.FC<any> = ({ route }) => {
   };
 
   const renderPriceWithQuantity = (): JSX.Element => {
-    const selectedVariantItem = data?.collection?.productVariants?.items.find((variant: any) => variant.id === selectedVariant);
+    // Combine both arrays
+    const combinedVariantItems = [
+      ...data?.collection?.productVariants?.items || [],
+      ...item?.variantList?.items || [],
+    ];
+
+    // Find the selected variant
+    const selectedVariantItem = combinedVariantItems.find(variant => variant.id === selectedVariant);
     const price = selectedVariantItem ? selectedVariantItem.price : 0;
-    
+
     return (
       <View
         style={{
-          marginLeft: 20,
           paddingLeft: 20,
           marginBottom: 30,
           borderTopWidth: 1,
@@ -285,18 +300,55 @@ const Product: React.FC<any> = ({ route }) => {
             color: theme.colors.mainColor,
           }}
         >
-          ₹{price}
+          ₹{price / 100}
         </Text>
-        <product.ProductCounterInner item={modifedItem} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity
+            onPress={() => {
+              setQuantity(prevQuantity => Math.max(prevQuantity - 1, 0));
+            }}
+            style={{ paddingHorizontal: 20, paddingVertical: 23 }}
+          >
+            {renderMinusSvg()}
+          </TouchableOpacity>
+          <Text
+            style={{
+              ...theme.fonts.DM_Sans_700Bold,
+              fontSize: Platform.OS === 'ios' ? 14 : 12,
+              color: theme.colors.textColor,
+              lineHeight: Platform.OS === 'ios' ? 14 * 1.5 : 12 * 1.5,
+            }}
+          >
+            {quantity}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setQuantity(prevQuantity => prevQuantity + 1);
+            }}
+            style={{ paddingHorizontal: 20, paddingVertical: 23 }}
+          >
+            {renderPlusSvg()}
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
 
   const renderVariantDropdown = (): JSX.Element => {
-    const variantItems = item?.variantList?.items || data?.collection?.productVariants?.items.map((variant: any) => ({
-      label: variant.name,
-      value: variant.id,
+    // Map through the existing variant items
+    const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
+      label: variant?.name,
+      value: variant?.id,
     })) || [];
+
+    // Map through the additional variant list items
+    const additionalVariantItems = item?.variantList?.items.map((variant: any) => ({
+      label: variant?.name,
+      value: variant?.id,
+    })) || [];
+
+    // Combine both arrays
+    const combinedVariantItems = [...variantItems, ...additionalVariantItems];
 
     return (
       <View style={{ marginHorizontal: 20, marginBottom: 30 }}>
@@ -304,7 +356,7 @@ const Product: React.FC<any> = ({ route }) => {
         <DropDownPicker
           open={open}
           value={selectedVariant}
-          items={variantItems}
+          items={combinedVariantItems}
           setOpen={setOpen}
           setValue={setSelectedVariant}
           setItems={() => {}}

@@ -99,7 +99,7 @@ const OrderItem: React.FC<Props> = ({ item, isLast }) => {
         height: 100,
         marginBottom: isLast ? 0 : 14,
       }}
-      onPress={() => navigation.navigate('Product', { item })}
+      // onPress={() => navigation.navigate('Product', { item })}
     >
       {renderImage()}
       {renderInfo()}

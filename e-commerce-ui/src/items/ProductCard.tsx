@@ -62,13 +62,13 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
             containerStyle={{ marginBottom: 'auto', padding: 10 }}
           />
 
-          {quantity === 0 && (
+          {/* {quantity === 0 && (
             <product.ProductInCart
               item={item}
               version={1}
               containerStyle={{ padding: 10 }}
             />
-          )}
+          )} */}
           {item.oldPrice && (
             <product.ProductSaleBadge
               containerStyle={{
@@ -119,7 +119,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
             }}
           />
 
-          {quantity === 0 && (
+          {/* {quantity === 0 && (
             <product.ProductInCart
               item={item}
               containerStyle={{
@@ -129,7 +129,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
                 right: 0,
               }}
             />
-          )}
+          )} */}
         </custom.ImageBackground>
         <View style={{ width: utils.rsHeight(138, true) }}>
           <product.ProductName item={item} style={{ marginBottom: 3 }} />
@@ -167,7 +167,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
               right: 0,
             }}
           />
-          <product.ProductInCart
+          {/* <product.ProductInCart
             item={item}
             containerStyle={{
               position: 'absolute',
@@ -175,7 +175,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Elem
               bottom: 0,
               right: 0,
             }}
-          />
+          /> */}
         </custom.ImageBackground>
         <View style={{ width: width }}>
           <product.ProductName item={item} style={{ marginBottom: 3 }} />

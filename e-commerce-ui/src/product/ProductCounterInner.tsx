@@ -46,7 +46,6 @@ const PlantCounterInner: React.FC<Props> = ({item}) => {
   };
 
   const quantity = quantityInCart(item, cart);
-
   return (
     <View style={{flexDirection: 'row', alignItems: 'center'}}>
       <TouchableOpacity
