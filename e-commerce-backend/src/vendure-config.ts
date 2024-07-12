@@ -119,13 +119,13 @@ export const config: VendureConfig = {
                 hideVersion:true,
                 
             },
-            app: compileUiExtensions({
-                outputPath: path.join(__dirname, '../admin-ui'),
-                extensions: [
-                    ProductreviewPlugin.ui,
-                ],
-                devMode: true,
-            }),
+            // app: compileUiExtensions({
+            //     outputPath: path.join(__dirname, '../admin-ui'),
+            //     extensions: [
+            //         ProductreviewPlugin.ui,
+            //     ],
+            //     devMode: true,
+            // }),
         }),
         ProductreviewPlugin.init({}),
         DeletecustomerPlugin.init({allowDeleteWithOrders:true}),

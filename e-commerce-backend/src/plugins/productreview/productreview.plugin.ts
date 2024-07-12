@@ -1,7 +1,4 @@
 import { LanguageCode, PluginCommonModule, Type, VendurePlugin } from '@vendure/core';
-import { AdminUiExtension } from '@vendure/ui-devkit/compiler';
-import gql from 'graphql-tag';
-import * as path from 'path';
 import { ProductReviewAdminResolver, ProductReviewShopResolver } from './api/product-review-admin.resolver';
 import { PRODUCTREVIEW_PLUGIN_OPTIONS } from './constants';
 import { ProductReview } from './entities/product-review.entity';
@@ -61,10 +58,10 @@ export class ProductreviewPlugin {
         return ProductreviewPlugin;
     }
 
-    static ui: AdminUiExtension = {
-        id: 'productreview-ui',
-        extensionPath: path.join(__dirname, 'ui'),
-        routes: [{ route: 'productreview', filePath: 'routes.ts' }],
-        providers: ['providers.ts'],
-    };
+    // static ui: AdminUiExtension = {
+    //     id: 'productreview-ui',
+    //     extensionPath: path.join(__dirname, 'ui'),
+    //     routes: [{ route: 'productreview', filePath: 'routes.ts' }],
+    //     providers: ['providers.ts'],
+    // };
 }
