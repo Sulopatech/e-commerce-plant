@@ -26,7 +26,7 @@ export const config: VendureConfig = {
     
     apiOptions: {
         hostname:"0.0.0.0",
-        port: 3000,
+        port: 5000,
         adminApiPath: 'admin-api',
         shopApiPath: 'shop-api',
         // The following options are useful in development mode,
@@ -111,17 +111,21 @@ export const config: VendureConfig = {
         }),
         AdminUiPlugin.init({
             route: 'admin',
-            port: 3002,
+            port: 5002,
             adminUiConfig: {
-                apiPort: 3000,
+                apiPort: 5000,
+                brand:"Sulopa",
+                hideVendureBranding:true,
+                hideVersion:true,
+                
             },
-            app: compileUiExtensions({
-                outputPath: path.join(__dirname, '../admin-ui'),
-                extensions: [
-                    ProductreviewPlugin.ui,
-                ],
-                devMode: true,
-            }),
+            // app: compileUiExtensions({
+            //     outputPath: path.join(__dirname, '../admin-ui'),
+            //     extensions: [
+            //         ProductreviewPlugin.ui,
+            //     ],
+            //     devMode: true,
+            // }),
         }),
         ProductreviewPlugin.init({}),
         DeletecustomerPlugin.init({allowDeleteWithOrders:true}),

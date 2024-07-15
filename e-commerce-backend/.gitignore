@@ -1,5 +1,5 @@
 node_modules
 dist
-admin-ui
+.angular
 static/assets
 static/email/test-emails
