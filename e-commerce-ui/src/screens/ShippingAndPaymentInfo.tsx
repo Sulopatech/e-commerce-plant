@@ -239,7 +239,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'countryBilling',
         component: (
           <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownLabel}>COUNTRY</Text>
+            {/* <Text style={styles.dropdownLabel}>COUNTRY</Text> */}
             <DropDownPicker
               open={countryOpen}
               value={countryValue}
@@ -251,26 +251,8 @@ const ShippingAndPaymentInfo: React.FC = () => {
               containerStyle={styles.dropdownContainerStyle}
               style={styles.dropdownStyle}
               dropDownContainerStyle={styles.dropdownMenu}
-            />
-          </View>
-        )
-      },
-      {
-        id: 'shippingMethod',
-        component: (
-          <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownLabel}>SHIPPING METHOD</Text>
-            <DropDownPicker
-              open={shippingMethodOpen}
-              value={shippingMethodValue}
-              items={shippingMethodItems}
-              setOpen={setShippingMethodOpen}
-              setValue={setShippingMethodValue}
-              setItems={setShippingMethodItems}
-              placeholder="Select shipping method"
-              containerStyle={styles.dropdownContainerStyle}
-              style={styles.dropdownStyle}
-              dropDownContainerStyle={styles.dropdownMenu}
+              listMode="MODAL"
+              searchable={true}
             />
           </View>
         )
@@ -309,7 +291,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'countryShipping',
         component: (
           <View style={styles.dropdownContainer}>
-            <Text style={styles.dropdownLabel}>COUNTRY</Text>
+            {/* <Text style={styles.dropdownLabel}>COUNTRY</Text> */}
             <DropDownPicker
               open={countryShippingOpen}
               value={countryShippingValue}
@@ -321,6 +303,30 @@ const ShippingAndPaymentInfo: React.FC = () => {
               containerStyle={styles.dropdownContainerStyle}
               style={styles.dropdownStyle}
               dropDownContainerStyle={styles.dropdownMenu}
+               listMode="MODAL"
+               searchable={true}
+            />
+          </View>
+        )
+      },
+      {
+        id: 'shippingMethod',
+        component: (
+          <View style={styles.dropdownContainer}>
+            {/* <Text style={styles.dropdownLabel}>SHIPPING METHOD</Text> */}
+            <DropDownPicker
+              open={shippingMethodOpen}
+              value={shippingMethodValue}
+              items={shippingMethodItems}
+              setOpen={setShippingMethodOpen}
+              setValue={setShippingMethodValue}
+              setItems={setShippingMethodItems}
+              placeholder="Select shipping method"
+              containerStyle={styles.dropdownContainerStyle}
+              style={styles.dropdownStyle}
+              dropDownContainerStyle={styles.dropdownMenu}
+              //  listMode="MODAL"
+              //  searchable={true}
             />
           </View>
         )
@@ -376,7 +382,7 @@ const styles = StyleSheet.create({
     zIndex: 1
   },
   inputContainer: {
-    marginBottom: utils.responsiveHeight(20),
+    marginBottom: utils.responsiveHeight(15),
     zIndex: 1
   },
   header: {

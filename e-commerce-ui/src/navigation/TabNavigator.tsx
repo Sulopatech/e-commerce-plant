@@ -80,8 +80,8 @@ const TabNavigator: React.FC = () => {
         {currentTabScreen === tabs[0].name && <Home />}
         {currentTabScreen === tabs[1].name && <Categories />}
         {currentTabScreen === tabs[2].name && <Order />}
-        {currentTabScreen === tabs[3].name && <Wishlist />}
-        {currentTabScreen === tabs[4].name && <Profile />}
+        {/* {currentTabScreen === tabs[3].name && <Wishlist />} */}
+        {currentTabScreen === tabs[3].name && <Profile />}
       </View>
     );
   };

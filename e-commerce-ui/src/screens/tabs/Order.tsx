@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, Platform, Alert, RefreshControl } from 'react-native';
 import { gql, useQuery } from '@apollo/client';
+import { useFocusEffect } from '@react-navigation/native';
 import { text } from '../../text';
 import { hooks } from '../../hooks';
 import { items } from '../../items';
@@ -55,9 +56,7 @@ const Order: React.FC = () => {
   const subtotal = useAppSelector(state => state.cartSlice.subtotal);
   const promoCode = useAppSelector(state => state.cartSlice.promoCode);
 
-  
   const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ORDERS);
-  // console.log("total", ordersData?.activeCustomer.orders.items[0].total)
 
   const {
     data: plantsData,
@@ -94,17 +93,21 @@ const Order: React.FC = () => {
       });
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      refetchOrders();
+    }, [])
+  );
+
   const renderProducts = (): JSX.Element | null => {
     if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
         <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
           {ordersData?.activeOrder?.lines?.map((order, index) => {
-            // return order.lines.map((item, index) => {
-              const isLast = index === order?.lines?.length - 1;
-              return (
-                <items.OrderItem key={order?.id} item={order} isLast={isLast} />
-              );
-            // });
+            const isLast = index === order?.lines?.length - 1;
+            return (
+              <items.OrderItem key={order?.id} item={order} isLast={isLast} />
+            );
           })}
         </View>
       );
@@ -114,7 +117,7 @@ const Order: React.FC = () => {
   };
 
   const renderEnterVoucher = (): JSX.Element | null => {
-    if (cart.length > 0) {
+    if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
         <View
           style={{
@@ -203,7 +206,7 @@ const Order: React.FC = () => {
   };
 
   const renderTotal = (): JSX.Element | null => {
-    if (cart.length > 0) {
+    if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
         <View
           style={{
@@ -255,7 +258,6 @@ const Order: React.FC = () => {
           <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
             <text.H4>Subtotal with tax</text.H4>
             <text.H4>₹{ordersData?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
-            {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
           </View>
         </View>
       );
@@ -265,7 +267,7 @@ const Order: React.FC = () => {
   };
 
   const renderEmpty = (): JSX.Element | null => {
-    if (cart.length === 0) {
+    if (ordersData?.activeOrder?.lines?.length === undefined) {
       return (
         <View style={{ flexGrow: 1, padding: 20, justifyContent: 'center' }}>
           <custom.Image
@@ -293,19 +295,19 @@ const Order: React.FC = () => {
   const renderButton = (): JSX.Element | null => {
     return (
       <components.Button
-        title={cart.length > 0 ? 'Shipping & Payment info' : 'Shop now'}
+        title={ordersData?.activeOrder?.lines?.length > 0 ? 'Shipping & Payment info' : 'Shop now'}
         containerStyle={{ padding: 20 }}
         touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
         textStyle={{ color: theme.colors.steelTeal }}
         onPress={() => {
-          if (cart.length === 0) {
+          if (ordersData?.activeOrder?.lines?.length === 0) {
             navigation.navigate('Shop', {
               title: 'Shop',
             });
             return;
           }
 
-          if (cart.length > 0) {
+          if (ordersData?.activeOrder?.lines?.length > 0) {
             dispatch(actions.resetFilters());
             navigation.navigate('ShippingAndPaymentInfo');
             return;
@@ -316,6 +318,7 @@ const Order: React.FC = () => {
   };
 
   const renderContent = (): JSX.Element => {
+    if (ordersLoading) return <components.Loader />;
     return (
       <KeyboardAwareScrollView
         enableOnAndroid={true}

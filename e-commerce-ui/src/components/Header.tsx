@@ -349,10 +349,10 @@ const Header: React.FC<HeaderType> = ({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: theme.colors.mainColor,
+              // backgroundColor: theme.colors.mainColor,
             }}
           >
-            <Text
+            {/* <Text
               style={{
                 color: theme.colors.white,
                 ...theme.fonts.DM_Sans_700Bold,
@@ -361,7 +361,7 @@ const Header: React.FC<HeaderType> = ({
               numberOfLines={1}
             >
               {cart.length > 0 ? `$${subtotal}` : '$0'}
-            </Text>
+            </Text> */}
           </View>
           <svg.BasketSvg />
         </TouchableOpacity>

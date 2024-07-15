@@ -20,7 +20,7 @@ import { svg } from '../../assets/svg';
 import { theme } from '../../constants';
 import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
-import { GETCATEGORY } from '../../Api/get_collectiongql';
+import { GETCATEGORY, GET_COLLECTION } from '../../Api/get_collectiongql';
 import { useQuery } from '@apollo/client';
 
 type ViewableItemsChanged = {
@@ -50,6 +50,11 @@ const Home: React.FC = () => {
       options: { skip: 0, take: 10 },
     },
   });
+
+  const title = "featured-product"
+  const { loading, error, data: featuredData } = useQuery(GET_COLLECTION(title));
+
+  console.log("data in category feateur:",featuredData )
 
   const {
     data: carouselData,
@@ -288,7 +293,7 @@ const Home: React.FC = () => {
           flexGrow: 0,
         }}
       >
-        {categories.map((item, index, array) => {
+        {categories?.map((item, index, array) => {
           const isLast = index === array.length -1;
           
          

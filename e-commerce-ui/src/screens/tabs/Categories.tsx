@@ -15,7 +15,6 @@ import { custom } from '../../custom';
 import { theme } from '../../constants';
 import { components } from '../../components';
 import { GETCATEGORY } from '../../Api/get_collectiongql';
-import { items } from '../../items';
 
 const Categories: React.FC = () => {
   const navigation = hooks.useAppNavigation();

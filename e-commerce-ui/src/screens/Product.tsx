@@ -89,7 +89,8 @@ const Product: React.FC<any> = ({ route }) => {
   const productId = item?.id;
   const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
   const productDesc = data?.collection?.FilteredProduct?.items[0];
-  const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset?.preview })) || [];
+  const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset?.preview })) || item?.assets[0].preview;
+  const [loading, setLoading] = useState(false);
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
@@ -101,11 +102,33 @@ const Product: React.FC<any> = ({ route }) => {
   }).current;
 
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [selectedVariant, setSelectedVariant] = useState<string>(data?.collection?.productVariants?.items[0]?.id || item?.variantList?.items[0]?.id);
+  const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
+    label: variant?.name,
+    value: variant?.id,
+  })) || [];
+
+  // Map through the additional variant list items
+  const additionalVariantItems = item?.variantList?.items.map((variant: any) => ({
+    label: variant?.name,
+    value: variant?.id,
+  })) || [];
+
+  // Combine both arrays
+  const combinedVariantItems = [...variantItems, ...additionalVariantItems];
+
   const [open, setOpen] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState(
+    combinedVariantItems.length > 0 ? combinedVariantItems[0].value : null
+  );
+
+  useEffect(() => {
+    if (combinedVariantItems.length > 0) {
+      setSelectedVariant(combinedVariantItems[0].value);
+    }
+  }, [combinedVariantItems]);
   const [quantity, setQuantity] = useState<number>(1);
 
-  console.log("selected variant:", selectedVariant);
+  // console.log("selected variant:", selectedVariant);
 
   const onViewableItemsChanged = useRef((info: ViewableItemsChanged) => {
     const index = info.viewableItems[0]?.index ?? 0;
@@ -153,6 +176,7 @@ const Product: React.FC<any> = ({ route }) => {
   const handleAddToCart = async () => {
     const productVariantId = selectedVariant;
     const quantityToApi = quantity;
+    setLoading(true);
     try {
       if (!exist(productDesc)) {
         dispatch(addToCart(modifiedItem));
@@ -162,6 +186,8 @@ const Product: React.FC<any> = ({ route }) => {
       }
     } catch (error) {
       console.error("Error during cart: ", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -335,20 +361,6 @@ const Product: React.FC<any> = ({ route }) => {
   };
 
   const renderVariantDropdown = (): JSX.Element => {
-    // Map through the existing variant items
-    const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
-      label: variant?.name,
-      value: variant?.id,
-    })) || [];
-
-    // Map through the additional variant list items
-    const additionalVariantItems = item?.variantList?.items.map((variant: any) => ({
-      label: variant?.name,
-      value: variant?.id,
-    })) || [];
-
-    // Combine both arrays
-    const combinedVariantItems = [...variantItems, ...additionalVariantItems];
 
     return (
       <View style={{ marginHorizontal: 20, marginBottom: 30 }}>
@@ -452,6 +464,7 @@ const Product: React.FC<any> = ({ route }) => {
           containerStyle={{
             paddingBottom: ifInOrderExist ? responsiveHeight(14) : 0,
           }}
+          loading={loading}
         />
         {ifInOrderExist && (
           <components.Button

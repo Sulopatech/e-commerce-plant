@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Accordion from 'react-native-collapsible/Accordion';
 import { View, TouchableOpacity, Text, ScrollView, Platform, ActivityIndicator } from 'react-native';
 import { gql, useQuery } from '@apollo/client';
+import { useFocusEffect } from '@react-navigation/native';
 import { text } from '../text';
 import { hooks } from '../hooks';
 import { utils } from '../utils';
@@ -9,7 +10,7 @@ import { custom } from '../custom';
 import { theme } from '../constants';
 import { components } from '../components';
 import { actions } from '../store/actions';
-import { GET_ORDERS_HISTORY } from '../Api/order_gql'
+import { GET_ORDERS_HISTORY } from '../Api/order_gql';
 
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -23,7 +24,7 @@ const formatDate = (dateString) => {
 };
 
 const OrderHistory: React.FC = () => {
-  const { loading, error, data } = useQuery(GET_ORDERS_HISTORY);
+  const { loading, error, data, refetch } = useQuery(GET_ORDERS_HISTORY);
   const [activeSections, setActiveSections] = useState([]);
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
@@ -31,6 +32,12 @@ const OrderHistory: React.FC = () => {
   const setSections = (sections: any) => {
     setActiveSections(sections.includes(undefined) ? [] : sections);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [])
+  );
 
   const renderHeader = (): JSX.Element => {
     return <components.Header goBackIcon={true} title='Order history' />;
@@ -121,7 +128,7 @@ const OrderHistory: React.FC = () => {
               Total
             </text.T14>
             <text.T14 style={{ textTransform: 'capitalize' }} numberOfLines={1}>
-            ₹{section.total}
+            ₹{section?.total}
             </text.T14>
           </View>
         </components.Container>
