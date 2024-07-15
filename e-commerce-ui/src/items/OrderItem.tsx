@@ -5,16 +5,11 @@ import { hooks } from '../hooks';
 import { custom } from '../custom';
 import { product } from '../product';
 import { theme } from '../constants';
-import { ProductType } from '../types';
 
 type Props = { item: any; isLast: boolean };
 
 const OrderItem: React.FC<Props> = ({ item, isLast }) => {
   const navigation = hooks.useAppNavigation();
-
-  // console.log("items in order:", item)
-
-  // Extract the preview URL from the featuredAsset
   const imageUrl = item.featuredAsset?.preview || '';
 
   const renderImage = () => {
@@ -99,7 +94,7 @@ const OrderItem: React.FC<Props> = ({ item, isLast }) => {
         height: 100,
         marginBottom: isLast ? 0 : 14,
       }}
-      // onPress={() => navigation.navigate('Product', { item })}
+      onPress={() => navigation.navigate('Product', { item })}
     >
       {renderImage()}
       {renderInfo()}

@@ -23,8 +23,8 @@ import { product } from '../product';
 import { components } from '../components';
 import { queryHooks } from '../store/slices/apiSlice';
 import { addToCart } from '../store/slices/cartSlice';
-import { actions } from '../store/actions';
 import { GET_PRODUCT_DETAILS } from '../Api/get_collectiongql';
+import { ADDTOCART } from '../Api/order_gql';
 import { ProductType, ViewableItemsChanged } from '../types';
 
 const renderMinusSvg = () => (
@@ -51,45 +51,15 @@ const renderPlusSvg = () => (
   </Svg>
 );
 
-export const ADDTOCART = gql`
-  mutation AddItemToOrder($productVariantId: ID!, $quantityToApi: Int!) {
-    addItemToOrder(productVariantId: $productVariantId, quantity: $quantityToApi) {
-      __typename
-      ...ActiveOrder
-    }
-  }
-  fragment ActiveOrder on Order {
-    id
-    code
-    state
-    couponCodes
-    subTotalWithTax
-    shippingWithTax
-    totalWithTax
-    totalQuantity
-    lines {
-      id
-      productVariant {
-        id
-        name
-      }
-      featuredAsset {
-        id
-        preview
-      }
-      quantity
-      linePriceWithTax
-    }
-  }
-`;
-
 const Product: React.FC<any> = ({ route }) => {
   const { item, slug } = route.params;
   const { responsiveHeight } = utils;
   const productId = item?.id;
   const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
   const productDesc = data?.collection?.FilteredProduct?.items[0];
-  const previewUrls = productDesc?.assets?.map((asset: any) => ({ uri: asset?.preview })) || item?.assets[0].preview;
+  const previewUrls = productDesc?.assets
+  ? productDesc.assets.map((asset: any) => ({ uri: asset.preview }))
+  : (item?.assets?.map((asset: any) => ({ uri: asset.preview })) || item?.featuredAsset?.preview);
   const [loading, setLoading] = useState(false);
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
@@ -113,8 +83,15 @@ const Product: React.FC<any> = ({ route }) => {
     value: variant?.id,
   })) || [];
 
+  const variantItemsFromHome = item?.collection?.productVariants?.items.map((variant: any) => ({
+    label: variant?.name,
+    value: variant?.id,
+  })) || [];
+
+  console.log("varient in feature:", item?.featuredAsset?.preview)
+  console.log("varient in data:", data)
   // Combine both arrays
-  const combinedVariantItems = [...variantItems, ...additionalVariantItems];
+  const combinedVariantItems = [...variantItems, ...additionalVariantItems, ...variantItemsFromHome];
 
   const [open, setOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState(
@@ -266,7 +243,7 @@ const Product: React.FC<any> = ({ route }) => {
       );
     };
 
-    if (previewUrls.length > 0) {
+    if (previewUrls?.length > 0) {
       return (
         <View style={{ marginBottom: utils.rsHeight(30) }}>
           {renderImages()}
@@ -288,7 +265,7 @@ const Product: React.FC<any> = ({ route }) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name}</text.H3>
+        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name || item?.productVariant?.name}</text.H3>
         <product.ProductRating rating={productDesc?.rating || item?.rating} />
       </View>
     );
@@ -409,12 +386,12 @@ const Product: React.FC<any> = ({ route }) => {
           }}
           numberOfLines={6}
         >
-          {productDesc?.description || item?.description}
+          {productDesc?.description || item?.description || item?.productVariant?.description}
         </text.T16>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('Description', {
-              description: productDesc?.description || item?.description,
+              description: productDesc?.description || item?.description || item?.productVariant?.description,
               title: productDesc?.name,
             });
           }}

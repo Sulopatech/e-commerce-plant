@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Platform, Alert, RefreshControl } from 'react-native';
-import { gql, useQuery } from '@apollo/client';
+import { View, Alert, RefreshControl } from 'react-native';
+import { useQuery } from '@apollo/client';
 import { useFocusEffect } from '@react-navigation/native';
 import { text } from '../../text';
 import { hooks } from '../../hooks';
@@ -14,49 +14,16 @@ import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
 import { useChangeHandler } from '../../utils/useChangeHandler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
-const GET_ORDERS = gql`
-  query GETORDERS {
-   activeOrder{
-      id
-          type
-          total
-          subTotal
-          totalWithTax
-          subTotalWithTax
-          totalQuantity
-      lines{
-        id
-        productVariant{
-          name
-          price
-        }
-        featuredAsset{
-              preview
-            }
-      }
-          discounts{
-            description
-            amount
-            amountWithTax
-          }
-    }
-  }
-`;
+import { GET_ACTIVE_ORDERS } from '../../Api/order_gql';
 
 const Order: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
 
-  const cart = useAppSelector(state => state.cartSlice.list);
-  const user = useAppSelector(state => state.userSlice.user);
-  const total = useAppSelector(state => state.cartSlice.total);
-  const delivery = useAppSelector(state => state.cartSlice.delivery);
   const discount = useAppSelector(state => state.cartSlice.discount);
-  const subtotal = useAppSelector(state => state.cartSlice.subtotal);
   const promoCode = useAppSelector(state => state.cartSlice.promoCode);
 
-  const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ORDERS);
+  const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ACTIVE_ORDERS);
 
   const {
     data: plantsData,
@@ -71,9 +38,6 @@ const Order: React.FC = () => {
     isLoading: promocodesLoading,
     refetch: refetchPromocodes,
   } = queryHooks.useGetPromocodesQuery();
-
-  const isError = plantsError || promocodesError || ordersError;
-  const isLoading = plantsLoading || promocodesLoading || ordersLoading;
 
   const handlePromocodeChange = useChangeHandler(actions.setPromoCode);
 
@@ -300,7 +264,7 @@ const Order: React.FC = () => {
         touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
         textStyle={{ color: theme.colors.steelTeal }}
         onPress={() => {
-          if (ordersData?.activeOrder?.lines?.length === 0) {
+          if (ordersData?.activeOrder?.lines?.length === undefined) {
             navigation.navigate('Shop', {
               title: 'Shop',
             });

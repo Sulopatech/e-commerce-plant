@@ -22,6 +22,7 @@ import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
 import { GETCATEGORY, GET_COLLECTION } from '../../Api/get_collectiongql';
 import { useQuery } from '@apollo/client';
+import ProductCard from '../../items/ProductCard';
 
 type ViewableItemsChanged = {
   viewableItems: Array<ViewToken>;
@@ -52,9 +53,9 @@ const Home: React.FC = () => {
   });
 
   const title = "featured-product"
-  const { loading, error, data: featuredData } = useQuery(GET_COLLECTION(title));
-
-  console.log("data in category feateur:",featuredData )
+  const titleBest = "best-selling"
+  const { data: featuredData } = useQuery(GET_COLLECTION(title));
+  const { data: bestSellersData } = useQuery(GET_COLLECTION(titleBest));
 
   const {
     data: carouselData,
@@ -116,7 +117,7 @@ const Home: React.FC = () => {
       });
   }, [refetchPlants, refetchBanners, refetchCarousel, refetchCategories]);
 
-  const renderCarouselItem = ({item}) => {
+  const renderCarouselItem = ({ item }) => {
     const products = plantsData?.plants.filter(plant => {
       return plant.promotion === item.promotion;
     });
@@ -201,8 +202,8 @@ const Home: React.FC = () => {
     // console.log("*****carousel********",carousel)
     return (
       <FlatList
-        data={[{"id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!"},
-          {"id": 2, "image": "https://everbloom.rn-admin.site/storage/2RxLwmDxKluhZp2FGrQXosmuIirqRFL8s0SY9o15.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!"}]}
+        data={[{ "id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" },
+        { "id": 2, "image": "https://everbloom.rn-admin.site/storage/2RxLwmDxKluhZp2FGrQXosmuIirqRFL8s0SY9o15.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" }]}
         horizontal={true}
         pagingEnabled={true}
         bounces={false}
@@ -217,7 +218,7 @@ const Home: React.FC = () => {
 
   const renderDots = (): JSX.Element | null => {
     // if (carousel.length && carousel.length > 0) {
-      if (true) {
+    if (true) {
       return (
         <View
           style={{
@@ -272,12 +273,12 @@ const Home: React.FC = () => {
   };
 
   const renderCategories = (): JSX.Element => {
-  
+
     if (!categories || categories.length === 0) {
       console.log("No categories data available");
       return <View />;
     }
-  
+
     return (
       <ScrollView
         horizontal={true}
@@ -294,14 +295,14 @@ const Home: React.FC = () => {
         }}
       >
         {categories?.map((item, index, array) => {
-          const isLast = index === array.length -1;
-          
-         
+          const isLast = index === array.length - 1;
+
+
           const dataFilter = plantsData?.plants.filter(
             e => e.categories.includes(item.name),
           );
           const qty = item?.productVariants?.totalItems;
-  
+
           return (
             <items.CategoryItem
               item={item}
@@ -315,45 +316,45 @@ const Home: React.FC = () => {
       </ScrollView>
     );
   };
-  
+
 
   const renderBestSellers = (): JSX.Element | null => {
-    if (bestSellers?.length === 0) return null;
+    const bestSeller = bestSellersData?.collection?.FilteredProduct?.items || [];
 
     return (
       <View style={{ marginBottom: utils.responsiveHeight(50) }}>
         <components.BlockHeading
           title='Best sellers'
           containerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal:0,
             marginBottom: 11,
           }}
           viewAllOnPress={() => {
             navigation.navigate('Shop', {
-              title: 'Best sellers',
+              title: 'best-selling',
             });
           }}
         />
-        <ScrollView
-          horizontal={true}
-          contentContainerStyle={{
-            paddingLeft: 20,
-          }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {bestSellers?.map((item, index, array) => {
-            const isLast = index === array.length - 1;
+         <FlatList
+          data={bestSeller}
+          renderItem={({ item, index }) => {
+            const isLast = index === featured.length - 1;
             return (
               <items.ProductCard
                 item={item}
                 key={item.id.toString()}
-                version={3}
+                version={1}
                 isLast={isLast}
-                slug={""}
+                slug={item.slug}
               />
             );
-          })}
-        </ScrollView>
+          }}
+          horizontal={true}
+          contentContainerStyle={{ paddingLeft: 0 }}
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />} 
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+        />
       </View>
     );
   };
@@ -383,7 +384,7 @@ const Home: React.FC = () => {
           }}
         >
           <custom.Image
-            source={{ uri:'https://everbloom.rn-admin.site/storage/MuVAapQZ8kQIVA5LquIIRMFHkdv0CD8hicIT6zg8.png' }}
+            source={{ uri: 'https://everbloom.rn-admin.site/storage/MuVAapQZ8kQIVA5LquIIRMFHkdv0CD8hicIT6zg8.png' }}
             style={{
               width: theme.sizes.deviceWidth - 20,
               aspectRatio: 355 / 200,
@@ -403,66 +404,68 @@ const Home: React.FC = () => {
   };
 
   const renderFeatured = (): JSX.Element | null => {
-    // if (featured?.length === 0) return null;
-
+    const featured = featuredData?.collection?.FilteredProduct?.items || [];
+  
     return (
       <View style={{ marginBottom: utils.responsiveHeight(20) }}>
         <components.BlockHeading
-          title='Featured products'
+          title="Featured products"
           containerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 0,
             marginBottom: utils.rsHeight(11),
           }}
           viewAllOnPress={() => {
             navigation.navigate('Shop', {
-              title: 'Featured',
+              title: 'featured-product',
             });
           }}
         />
-        <ScrollView
-          horizontal={true}
-          contentContainerStyle={{
-            paddingLeft: 20,
-          }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {featured?.map((item, index, array) => {
-            const isLast = index === array.length - 1;
+        <FlatList
+          data={featured}
+          renderItem={({ item, index }) => {
+            const isLast = index === featured.length - 1;
             return (
               <items.ProductCard
                 item={item}
                 key={item.id.toString()}
-                version={2}
+                version={1}
                 isLast={isLast}
-                slug={""}
+                slug={item.slug}
               />
             );
-          })}
-        </ScrollView>
+          }}
+          horizontal={true}
+          contentContainerStyle={{ paddingLeft: 0 }}
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />} 
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+        />
       </View>
     );
   };
+  
 
- const renderContent = (): JSX.Element => {
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingTop: 20,
-        paddingHorizontal: 20,
-      }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {renderCarousel()}
-      {renderCategories()}
-      {renderBanner()}
-      {renderFeatured()}
-    </ScrollView>
-  );
-};
+  const renderContent = (): JSX.Element => {
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: 20,
+          paddingHorizontal: 20,
+        }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {renderCarousel()}
+        {renderCategories()}
+        {renderBanner()}
+        {renderFeatured()}
+        {renderBestSellers()}
+      </ScrollView>
+    );
+  };
 
   return renderContent();
 };
