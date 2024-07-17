@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import Modal from 'react-native-modal';
-import { useRoute } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -22,6 +22,8 @@ import { HeaderType } from '../types';
 import { actions } from '../store/actions';
 import { queryHooks } from '../store/slices/apiSlice';
 import { useAppSelector, useAppDispatch } from '../store';
+import { useQuery } from '@apollo/client';
+import { GET_ACTIVE_ORDERS } from '../Api/order_gql';
 
 const Header: React.FC<HeaderType> = ({
   title,
@@ -39,7 +41,14 @@ const Header: React.FC<HeaderType> = ({
   const user = useAppSelector(state => state.userSlice.user);
   const cart = useAppSelector(state => state.cartSlice.list);
   const subtotal = useAppSelector(state => state.cartSlice.subtotal);
+  const { data: activeOrderData, loading: activeOrderLoading, error: activeOrderError, refetch: refetchOrders } = useQuery(GET_ACTIVE_ORDERS);
 
+  useFocusEffect(
+    useCallback(() => {
+      refetchOrders();
+    }, [])
+  );
+  const totalQuantity = activeOrderData?.activeOrder?.totalQuantity || 0;
   const [showModal, setShowModal] = useState(false);
 
   const {
@@ -188,8 +197,8 @@ const Header: React.FC<HeaderType> = ({
                 dispatch(actions.setScreen('Category'));
               }}
             />
-            <items.BurgerMenuItem
-              qty={`${saleQuantity}`}
+            {/* <items.BurgerMenuItem
+              // qty={`${saleQuantity}`}
               title=">  Sale"
               onPress={() => {
                 setShowModal(false);
@@ -200,7 +209,7 @@ const Header: React.FC<HeaderType> = ({
               }}
             />
             <items.BurgerMenuItem
-              qty={`${newQuantity}`}
+              // qty={`${newQuantity}`}
               title=">  New arrivals"
               onPress={() => {
                 setShowModal(false);
@@ -209,25 +218,25 @@ const Header: React.FC<HeaderType> = ({
                   // products: plantsData?.plants.filter(item => item.isNew) ?? [],
                 });
               }}
-            />
+            /> */}
             <items.BurgerMenuItem
-              qty={`${bestQuantity}`}
+              // qty={`${bestQuantity}`}
               title=">  Best sellers"
               onPress={() => {
                 setShowModal(false);
                 navigation.navigate('Shop', {
-                  title: 'Best sellers',
+                  title: 'best-selling',
                   // products: plantsData?.plants.filter(item => item.isBestSeller) ?? [],
                 });
               }}
             />
             <items.BurgerMenuItem
-              qty={`${featuredQuantity}`}
+              // qty={`${featuredQuantity}`}
               title=">  Featured products"
               onPress={() => {
                 setShowModal(false);
                 navigation.navigate('Shop', {
-                  title: 'Featured products',
+                  title: 'featured-product',
                   // products: plantsData?.plants.filter(item => item.isFeatured) ?? [],
                 });
               }}
@@ -349,10 +358,10 @@ const Header: React.FC<HeaderType> = ({
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              // backgroundColor: theme.colors.mainColor,
+              backgroundColor: theme.colors.mainColor,
             }}
           >
-            {/* <Text
+            <Text
               style={{
                 color: theme.colors.white,
                 ...theme.fonts.DM_Sans_700Bold,
@@ -360,16 +369,17 @@ const Header: React.FC<HeaderType> = ({
               }}
               numberOfLines={1}
             >
-              {cart.length > 0 ? `$${subtotal}` : '$0'}
-            </Text> */}
+              {totalQuantity}
+            </Text>
           </View>
           <svg.BasketSvg />
         </TouchableOpacity>
       );
     }
-
+  
     return null;
   };
+  
 
   const renderContent = (): JSX.Element => {
     const containerStyle: ViewStyle = {

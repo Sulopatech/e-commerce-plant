@@ -21,7 +21,7 @@ const CategoryItem: React.FC<Props> = ({ item, isLast, qty, dataFilter }) => {
   const onPress = () => {
     if (qty > 0) {
       navigation.navigate('Shop', {
-        title: item.name,
+        title: item.slug,
       });
     } else {
       Alert.alert('No data', 'No data available for this category');
@@ -78,7 +78,7 @@ const CategoryItem: React.FC<Props> = ({ item, isLast, qty, dataFilter }) => {
         <Text
           numberOfLines={1}
           style={{
-            fontSize: Platform.OS === 'ios' ? 10 : 8,
+            fontSize: Platform.OS === 'ios' ? 10 : 14,
             textTransform: 'capitalize',
             color: theme.colors.mainColor,
             ...theme.fonts.DM_Sans_400Regular,
@@ -86,7 +86,7 @@ const CategoryItem: React.FC<Props> = ({ item, isLast, qty, dataFilter }) => {
             backgroundColor: 'rgba(255, 255, 255, 0.7)', // Light gray background with 70% opacity
             paddingHorizontal: 4,
             borderRadius: 5,
-            fontWeight: 'bold',
+            // fontWeight: 'bold',
             alignSelf: 'flex-start'
           }}
         >

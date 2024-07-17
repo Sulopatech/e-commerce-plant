@@ -5,7 +5,7 @@ import {setScreen} from '../slices/tabSlice';
 import {addToCart} from '../slices/cartSlice';
 import {resetCart} from '../slices/cartSlice';
 import {setStart} from '../slices/startSlice';
-import {setCvv} from '../slices/paymentSlice';
+import {setCvv, setPinBilling, setPinShipping} from '../slices/paymentSlice';
 import {modifyItem} from '../slices/cartSlice';
 import {setName} from '../slices/paymentSlice';
 import {setDiscount} from '../slices/cartSlice';
@@ -46,6 +46,8 @@ export const actions = {
   setAddressShipping,
   setStreet,
   setStreetShipping,
+  setPinBilling,
+  setPinShipping,
   setDiscount,
   resetFilters,
   setPromoCode,

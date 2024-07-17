@@ -11,6 +11,24 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+const GET_BANNER = gql`
+query banner{
+  banners{
+    items{
+      id
+      description
+      name
+      asset{
+        id
+        source
+        preview
+      }
+    }
+    totalItems
+  }
+}
+`
+
 import { text } from '../../text';
 import { items } from '../../items';
 import { hooks } from '../../hooks';
@@ -21,7 +39,7 @@ import { theme } from '../../constants';
 import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
 import { GETCATEGORY, GET_COLLECTION } from '../../Api/get_collectiongql';
-import { useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 import ProductCard from '../../items/ProductCard';
 
 type ViewableItemsChanged = {
@@ -57,6 +75,8 @@ const Home: React.FC = () => {
   const { data: featuredData } = useQuery(GET_COLLECTION(title));
   const { data: bestSellersData } = useQuery(GET_COLLECTION(titleBest));
 
+  const { data: bannerData } = useQuery(GET_BANNER);
+
   const {
     data: carouselData,
     error: carouselError,
@@ -85,7 +105,9 @@ const Home: React.FC = () => {
 
   let categories = data?.collections?.items ?? [];
 
-  let banner = bannersData?.banners || [];
+  let banner = bannerData?.banners?.items || [];
+
+  console.log("baNNER:",bannerData)
 
   const isData =
     banner.length === 0 &&
@@ -142,12 +164,12 @@ const Home: React.FC = () => {
           }
 
           navigation.navigate('Shop', {
-            title: 'Shop',
+            title: 'featured-product',
           });
         }}
       >
         <custom.ImageBackground
-          source={{ uri: item.image }}
+          source={{ uri: item?.asset?.preview }}
           style={{
             width: theme.sizes.deviceWidth,
             aspectRatio: 375 / 500,
@@ -159,19 +181,19 @@ const Home: React.FC = () => {
           imageStyle={{ backgroundColor: theme.colors.imageBackground }}
         >
           <View style={{ marginBottom: 30 }}>
+            {/* <text.H1 style={{ textTransform: 'capitalize' }}>
+              {item?.name}
+            </text.H1> */}
             <text.H1 style={{ textTransform: 'capitalize' }}>
-              {item.title_line_1}
-            </text.H1>
-            <text.H1 style={{ textTransform: 'capitalize' }}>
-              {item.title_line_2}
+              {item?.description}
             </text.H1>
             <View
               style={{
                 marginTop: 30,
                 backgroundColor: theme.colors.pastelMint,
                 alignSelf: 'flex-start',
-                paddingHorizontal: 20,
-                paddingVertical: 8,
+                paddingHorizontal: 24,
+                paddingVertical: 15,
                 borderRadius: 50,
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -182,7 +204,7 @@ const Home: React.FC = () => {
               <Text
                 style={{
                   ...theme.fonts.DM_Sans_500Medium,
-                  fontSize: Platform.OS === 'ios' ? 12 : 10,
+                  fontSize: Platform.OS === 'ios' ? 12 : 13,
                   lineHeight: Platform.OS === 'ios' ? 12 * 1.7 : 10 * 1.7,
                   color: theme.colors.mainColor,
                 }}
@@ -202,8 +224,9 @@ const Home: React.FC = () => {
     // console.log("*****carousel********",carousel)
     return (
       <FlatList
-        data={[{ "id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" },
-        { "id": 2, "image": "https://everbloom.rn-admin.site/storage/2RxLwmDxKluhZp2FGrQXosmuIirqRFL8s0SY9o15.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" }]}
+        data={banner}
+        // data={[{ "id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" },
+        // { "id": 2, "image": "https://everbloom.rn-admin.site/storage/2RxLwmDxKluhZp2FGrQXosmuIirqRFL8s0SY9o15.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" }]}
         horizontal={true}
         pagingEnabled={true}
         bounces={false}
@@ -229,7 +252,7 @@ const Home: React.FC = () => {
             position: 'absolute',
           }}
         >
-          {carouselData?.carousel.map((_, current, array) => {
+          {banner?.map((_, current, array) => {
             const last = current === array.length - 1;
             return (
               <View
@@ -275,7 +298,7 @@ const Home: React.FC = () => {
   const renderCategories = (): JSX.Element => {
 
     if (!categories || categories.length === 0) {
-      console.log("No categories data available");
+      // console.log("No categories data available");
       return <View />;
     }
 
@@ -326,7 +349,7 @@ const Home: React.FC = () => {
         <components.BlockHeading
           title='Best sellers'
           containerStyle={{
-            paddingHorizontal:0,
+            paddingHorizontal: 0,
             marginBottom: 11,
           }}
           viewAllOnPress={() => {
@@ -335,7 +358,7 @@ const Home: React.FC = () => {
             });
           }}
         />
-         <FlatList
+        <FlatList
           data={bestSeller}
           renderItem={({ item, index }) => {
             const isLast = index === featured.length - 1;
@@ -351,7 +374,7 @@ const Home: React.FC = () => {
           }}
           horizontal={true}
           contentContainerStyle={{ paddingLeft: 0 }}
-          ItemSeparatorComponent={() => <View style={{ width: 10 }} />} 
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
         />
@@ -405,7 +428,7 @@ const Home: React.FC = () => {
 
   const renderFeatured = (): JSX.Element | null => {
     const featured = featuredData?.collection?.FilteredProduct?.items || [];
-  
+
     return (
       <View style={{ marginBottom: utils.responsiveHeight(20) }}>
         <components.BlockHeading
@@ -436,22 +459,22 @@ const Home: React.FC = () => {
           }}
           horizontal={true}
           contentContainerStyle={{ paddingLeft: 0 }}
-          ItemSeparatorComponent={() => <View style={{ width: 10 }} />} 
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
         />
       </View>
     );
   };
-  
+
 
   const renderContent = (): JSX.Element => {
     return (
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingTop: 20,
-          paddingHorizontal: 20,
+          // paddingTop: 20,
+          paddingHorizontal: 10,
         }}
         showsVerticalScrollIndicator={false}
         refreshControl={

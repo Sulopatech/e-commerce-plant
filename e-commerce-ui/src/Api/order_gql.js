@@ -85,6 +85,7 @@ export const GET_ACTIVE_ORDERS = gql`
           totalQuantity
       lines{
         id
+        quantity
         productVariant{
           name
           price

@@ -6,6 +6,8 @@ interface PaymentState {
   name: string;
   address: string;
   streetLine: string;
+  pinShipping: string,
+  pinBilling: string,
   addressShipping: string;
   streetLineShipping: string;
   cardNumber: string;
@@ -18,6 +20,8 @@ const initialState: PaymentState = {
   name: '',
   address: '',
   streetLine: '',
+  pinShipping:'',
+  pinBilling:'',
   addressShipping: '',
   streetLineShipping: '',
   expiryDate: '',
@@ -34,6 +38,12 @@ export const paymentSlice = createSlice({
     },
     setAddress: (state, action: PayloadAction<string>) => {
       state.address = action.payload;
+    },
+    setPinBilling: (state, action: PayloadAction<string>) => {
+      state.pinBilling = action.payload;
+    },
+    setPinShipping: (state, action: PayloadAction<string>) => {
+      state.pinShipping = action.payload;
     },
     setStreet: (state, action: PayloadAction<string>) => {
       state.streetLine = action.payload;
@@ -65,6 +75,8 @@ export const {
   setStreet,
   setAddressShipping,
   setStreetShipping,
+  setPinBilling,
+  setPinShipping,
   setCardNumber,
   setExpiryDate,
   setCvv,

@@ -93,11 +93,16 @@ const Categories: React.FC = () => {
                   <Text
                     numberOfLines={1}
                     style={{
-                      fontSize: Platform.OS === 'ios' ? 14 : 12,
+                      fontSize: Platform.OS === 'ios' ? 14 : 18,
                       color: theme.colors.mainColor,
                       textTransform: 'capitalize',
                       ...theme.fonts.DM_Sans_400Regular,
+                      backgroundColor: 'rgba(255, 255, 255, 0.7)', // Light gray background with 70% opacity
+                      paddingHorizontal: 4,
+                      borderRadius: 5,
+                      alignSelf: 'flex-start'
                     }}
+
                   >
                     {item.name}
                   </Text>

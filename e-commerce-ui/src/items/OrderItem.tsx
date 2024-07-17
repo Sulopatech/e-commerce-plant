@@ -5,13 +5,13 @@ import { hooks } from '../hooks';
 import { custom } from '../custom';
 import { product } from '../product';
 import { theme } from '../constants';
+import { text } from '../text';
 
 type Props = { item: any; isLast: boolean };
 
 const OrderItem: React.FC<Props> = ({ item, isLast }) => {
   const navigation = hooks.useAppNavigation();
   const imageUrl = item.featuredAsset?.preview || '';
-
   const renderImage = () => {
     return (
       <custom.ImageBackground
@@ -60,7 +60,8 @@ const OrderItem: React.FC<Props> = ({ item, isLast }) => {
           }}
         >
           <product.ProductName item={item?.productVariant?.name} style={{ marginBottom: 3 }} />
-          <product.ProductPrice item={item?.productVariant?.price} />
+          <product.ProductPrice item={item?.productVariant?.price / 100} />
+          <text.T14>Qty: {item?.quantity}</text.T14>
           {item.color && (
             <View
               style={{

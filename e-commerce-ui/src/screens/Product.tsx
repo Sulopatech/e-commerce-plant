@@ -220,7 +220,7 @@ const Product: React.FC<any> = ({ route }) => {
               alignSelf: 'center',
             }}
           >
-            {<Image source={{ uri: previewUrls }} style={{ width: 430, height: 500 }} />}
+            {/* {<Image source={{ uri: previewUrls }} style={{ width: 430, height: 500 }} />} */}
           </View>
         );
       }

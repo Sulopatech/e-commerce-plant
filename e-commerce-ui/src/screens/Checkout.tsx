@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, TextInput, StyleSheet, FlatList } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 
@@ -90,6 +90,31 @@ const Checkout: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (cvv.length === 3) {
+      cvvInputRef.current?.blur();
+    }
+
+    if (cardNumber.length === 19) {
+      cardNumberInputRef.current?.blur();
+    }
+
+    if (expiryDate.length === 5) {
+      expiryDateInputRef.current?.blur();
+    }
+  }, [cvv, cardNumber, expiryDate]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('blur', () => {
+      cvvInputRef.current?.blur();
+      cardNumberInputRef.current?.blur();
+      expiryDateInputRef.current?.blur();
+      cardHolderNameInputRef.current?.blur();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   const renderHeader = (): JSX.Element => {
     return <components.Header title="Checkout" goBackIcon={true} />;
   };
@@ -174,7 +199,7 @@ const Checkout: React.FC = () => {
           }}
         >
           <text.T14>Shipping</text.T14>
-          <text.T14>₹{paymentInfo?.activeOrder?.shipping}</text.T14>
+          <text.T14>₹{paymentInfo?.activeOrder?.shipping/ 100}</text.T14>
         </View>
         <View
           style={{
@@ -183,7 +208,7 @@ const Checkout: React.FC = () => {
           }}
         >
           <text.T14>Subtotal</text.T14>
-          <text.T14>₹{paymentInfo?.activeOrder?.subTotal?.toFixed(2)}</text.T14>
+          <text.T14>₹{paymentInfo?.activeOrder?.subTotal?.toFixed(2)/ 100}</text.T14>
         </View>
         {/* SUBTOTAL */}
         <View
@@ -194,7 +219,7 @@ const Checkout: React.FC = () => {
         >
           <text.H5>Total</text.H5>
           <text.T14 style={{ color: theme.colors.mainColor }}>
-          ₹{paymentInfo?.activeOrder?.total?.toFixed(2)}
+          ₹{paymentInfo?.activeOrder?.total?.toFixed(2)/ 100}
           </text.T14>
         </View>
         {/* DISCOUNT */}
@@ -215,7 +240,7 @@ const Checkout: React.FC = () => {
         {/* TOTAL */}
         <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
           <text.H4>Total with tax</text.H4>
-          <text.H4>₹{paymentInfo?.activeOrder?.subTotalWithTax?.toFixed(2)}</text.H4>
+          <text.H4>₹{paymentInfo?.activeOrder?.subTotalWithTax?.toFixed(2)/ 100}</text.H4>
           {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
         </View>
       </View>
@@ -252,7 +277,8 @@ const Checkout: React.FC = () => {
           setValue={setPaymentMethod}
           placeholder="Select a payment method"
           containerStyle={{ marginBottom: utils.responsiveHeight(20) }}
-          dropDownContainerStyle={{ borderColor: 'gray' }}
+          dropDownContainerStyle={{ borderColor: '#E7EBEB', backgroundColor: '#fafafa' }}
+          style={{borderColor: '#E7EBEB', backgroundColor: '#fafafa'}}
         />
       );
     }
