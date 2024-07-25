@@ -10,9 +10,8 @@ import {
 } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Svg, { Path } from 'react-native-svg';
-import { useMutation, useQuery, gql } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { text } from '../text';
-import { alert } from '../alert';
 import { hooks } from '../hooks';
 import { items } from '../items';
 import { utils } from '../utils';
@@ -22,10 +21,10 @@ import { theme } from '../constants';
 import { product } from '../product';
 import { components } from '../components';
 import { queryHooks } from '../store/slices/apiSlice';
-import { addToCart } from '../store/slices/cartSlice';
 import { GET_PRODUCT_DETAILS } from '../Api/get_collectiongql';
 import { ADDTOCART } from '../Api/order_gql';
 import { ProductType, ViewableItemsChanged } from '../types';
+import {showMessage} from 'react-native-flash-message';
 
 const renderMinusSvg = () => (
   <Svg width={14} height={14} fill='none'>
@@ -71,12 +70,14 @@ const Product: React.FC<any> = ({ route }) => {
     viewAreaCoveragePercentThreshold: 50,
   }).current;
 
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [, setActiveIndex] = useState<number>(0);
   const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
     label: variant?.name,
     value: variant?.id,
+    stock: variant?.stockLevel
   })) || [];
 
+  console.log("variant in list", variantItems)
   // Map through the additional variant list items
   const additionalVariantItems = item?.variantList?.items.map((variant: any) => ({
     label: variant?.name,
@@ -88,8 +89,6 @@ const Product: React.FC<any> = ({ route }) => {
     value: variant?.id,
   })) || [];
 
-  console.log("varient in feature:", item?.featuredAsset?.preview)
-  console.log("varient in data:", data)
   // Combine both arrays
   const combinedVariantItems = [...variantItems, ...additionalVariantItems, ...variantItemsFromHome];
 
@@ -139,12 +138,10 @@ const Product: React.FC<any> = ({ route }) => {
     return unsubscribe;
   }, [navigation]);
 
-  const modifiedItem = { ...productDesc };
-
   const [addItemToOrder] = useMutation(ADDTOCART, {
-    onCompleted: (data) => {
-      Alert.alert("Success", "Item added to order successfully!");
-    },
+    // onCompleted: (data) => {
+    //   Alert.alert("Success", "Item added to order successfully!");
+    // },
     onError: (error) => {
       Alert.alert("Error", "Failed to add item to order.");
     },
@@ -153,13 +150,26 @@ const Product: React.FC<any> = ({ route }) => {
   const handleAddToCart = async () => {
     const productVariantId = selectedVariant;
     const quantityToApi = quantity;
+    const selectedVariantItem = combinedVariantItems.find(variant => variant.value === selectedVariant);
+    if (selectedVariantItem?.stock === ("OUT_OF_STOCK" || "LOW_STOCK")) {
+      showMessage({
+        message: 'Error',
+        description: `This variant is out of stock.`,
+        type: 'danger',
+        icon: 'danger',
+      });
+      return;
+    }
     setLoading(true);
     try {
       if (!exist(productDesc)) {
-        dispatch(addToCart(modifiedItem));
+        showMessage({
+          message: 'Success',
+          description: `${productDesc?.name || item?.name || item?.productVariant?.name} added to cart`,
+          type: 'success',
+          icon: 'success',
+        })
         await addItemToOrder({ variables: { productVariantId, quantityToApi } });
-      } else {
-        alert.alreadyAdded();
       }
     } catch (error) {
       console.error("Error during cart: ", error);
@@ -167,6 +177,7 @@ const Product: React.FC<any> = ({ route }) => {
       setLoading(false);
     }
   };
+  
 
   const renderHeader = (): JSX.Element => {
     return (
@@ -192,8 +203,8 @@ const Product: React.FC<any> = ({ route }) => {
         onViewableItemsChanged={onViewableItemsChanged}
         renderItem={({ item }) => {
           return (
-            <custom.Image
-              resizeMode='contain'
+            <custom.ImageBackground
+              resizeMode='cover'
               source={{ uri: item.uri }}
               style={{
                 aspectRatio: 375 / 500,
@@ -433,15 +444,28 @@ const Product: React.FC<any> = ({ route }) => {
   };
 
   const renderButton = (): JSX.Element => {
+    const selectedVariantItem = combinedVariantItems.find(variant => variant.value === selectedVariant);
+    const isOutOfStock = selectedVariantItem?.stock === ("OUT_OF_STOCK" || "LOW_STOCK");
+  
     return (
-      <View style={{ padding: 20 }}>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: 20,
+          backgroundColor: 'white',
+        }}
+      >
         <components.Button
-          title='+ ADD to cart'
+          title={isOutOfStock ? 'OUT OF STOCK' : '+ ADD to cart'}
           onPress={handleAddToCart}
           containerStyle={{
             paddingBottom: ifInOrderExist ? responsiveHeight(14) : 0,
           }}
           loading={loading}
+          // disabled={isOutOfStock}
         />
         {ifInOrderExist && (
           <components.Button
@@ -456,6 +480,8 @@ const Product: React.FC<any> = ({ route }) => {
       </View>
     );
   };
+  
+  
 
   // Define data for FlatList
   const listData = [
@@ -465,19 +491,20 @@ const Product: React.FC<any> = ({ route }) => {
     { key: 'variantDropdown', render: renderVariantDropdown },
     { key: 'description', render: renderDescription },
     { key: 'reviews', render: renderReviews },
-    { key: 'button', render: renderButton },
+    // { key: 'button', render: renderButton },
   ];
 
   const renderItem = ({ item }: { item: any }) => item.render();
 
   return (
-    <custom.SafeAreaView insets={['top', 'bottom']}>
+    <custom.SafeAreaView insets={['top', 'bottom']} style={{ flex: 1 }}>
       {renderHeader()}
       <FlatList
         data={listData}
         renderItem={renderItem}
         keyExtractor={item => item.key}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 50 }}
         ListFooterComponent={() => (
           <View style={{ padding: 20 }}>
             {ifInOrderExist && (
@@ -493,6 +520,7 @@ const Product: React.FC<any> = ({ route }) => {
           </View>
         )}
       />
+      {renderButton()}
     </custom.SafeAreaView>
   );
 };

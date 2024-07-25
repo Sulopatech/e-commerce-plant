@@ -351,6 +351,7 @@ productVariants(options:{
   price
     productId
     name
+    stockLevel
   }
   totalItems
 }

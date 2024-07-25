@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Alert, RefreshControl } from 'react-native';
+import { View, Alert, RefreshControl, StyleSheet } from 'react-native';
 import { useQuery } from '@apollo/client';
 import { useFocusEffect } from '@react-navigation/native';
 import { text } from '../../text';
@@ -15,6 +15,7 @@ import { queryHooks } from '../../store/slices/apiSlice';
 import { useChangeHandler } from '../../utils/useChangeHandler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { GET_ACTIVE_ORDERS } from '../../Api/order_gql';
+import { setScreen } from '../../store/slices/tabSlice';
 
 const Order: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
@@ -87,7 +88,7 @@ const Order: React.FC = () => {
           style={{
             paddingHorizontal: 20,
             ...theme.flex.rowCenterSpaceBetween,
-            marginBottom: utils.responsiveHeight(70),
+            marginBottom: utils.responsiveHeight(120),
           }}
         >
           <custom.InputField
@@ -172,56 +173,30 @@ const Order: React.FC = () => {
   const renderTotal = (): JSX.Element | null => {
     if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
-        <View
-          style={{
-            marginHorizontal: 20,
-            marginBottom: 20,
-            padding: 20,
-            borderRadius: 15,
-            backgroundColor: theme.colors.imageBackground,
-          }}
-        >
+        <View style={styles.totalContainer}>
           {/* DELIVERY */}
-          <View
-            style={{
-              ...theme.flex.rowCenterSpaceBetween,
-              paddingBottom: utils.responsiveHeight(14),
-            }}
-          >
+          <View style={styles.row}>
             <text.T14>Total Quantity</text.T14>
             <text.T14>{ordersData?.activeOrder?.totalQuantity}</text.T14>
           </View>
           {/* SUBTOTAL */}
-          <View
-            style={{
-              ...theme.flex.rowCenterSpaceBetween,
-              marginBottom: utils.responsiveHeight(14),
-            }}
-          >
+          <View style={styles.row}>
             <text.H5>Subtotal</text.H5>
             <text.T14 style={{ color: theme.colors.mainColor }}>
-            ₹{ordersData?.activeOrder?.subTotal?.toFixed(2) / 100}
+              ₹{ordersData?.activeOrder?.subTotal?.toFixed(2) / 100}
             </text.T14>
           </View>
           {/* DISCOUNT */}
           {discount > 0 && (
-            <View
-              style={{
-                borderBottomWidth: 1,
-                ...theme.flex.rowCenterSpaceBetween,
-                paddingBottom: utils.responsiveHeight(14),
-                marginBottom: utils.responsiveHeight(14),
-                borderColor: theme.colors.antiFlashWhite,
-              }}
-            >
+            <View style={styles.rowWithBorder}>
               <text.T14>Discount</text.T14>
               <text.T14>{discount}%</text.T14>
             </View>
           )}
           {/* TOTAL */}
-          <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
+          <View style={styles.row}>
             <text.H4>Subtotal with tax</text.H4>
-            <text.H4>₹{ordersData?.activeOrder?.subTotalWithTax?.toFixed(2)/ 100}</text.H4>
+            <text.H4>₹{ordersData?.activeOrder?.subTotalWithTax?.toFixed(2) / 100}</text.H4>
           </View>
         </View>
       );
@@ -231,7 +206,7 @@ const Order: React.FC = () => {
   };
 
   const renderEmpty = (): JSX.Element | null => {
-    if (ordersData?.activeOrder?.lines?.length === undefined) {
+    if (!ordersData?.activeOrder?.lines || ordersData?.activeOrder?.lines?.length === 0) {
       return (
         <View style={{ flexGrow: 1, padding: 20, justifyContent: 'center' }}>
           <custom.Image
@@ -264,10 +239,11 @@ const Order: React.FC = () => {
         touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
         textStyle={{ color: theme.colors.steelTeal }}
         onPress={() => {
-          if (ordersData?.activeOrder?.lines?.length === undefined) {
-            navigation.navigate('Shop', {
-              title: 'Shop',
-            });
+          if (!ordersData?.activeOrder?.lines || ordersData?.activeOrder?.lines?.length === 0) {
+            // navigation.navigate('Shop', {
+            //   title: 'Best-Selling',
+            // });
+            dispatch(setScreen("Category"))
             return;
           }
 
@@ -295,19 +271,47 @@ const Order: React.FC = () => {
         }
       >
         {renderProducts()}
-        {renderEnterVoucher()}
-        {renderTotal()}
         {renderEmpty()}
       </KeyboardAwareScrollView>
     );
   };
 
   return (
-    <React.Fragment>
+    <View style={styles.container}>
       {renderContent()}
+      {renderEnterVoucher()}
+      {renderTotal()}
       {renderButton()}
-    </React.Fragment>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  totalContainer: {
+    marginHorizontal: 0,
+    marginBottom: 60,
+    padding: 20,
+    borderRadius: 15,
+    backgroundColor: theme.colors.imageBackground,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  row: {
+    ...theme.flex.rowCenterSpaceBetween,
+    marginBottom: utils.responsiveHeight(14),
+  },
+  rowWithBorder: {
+    borderBottomWidth: 5,
+    ...theme.flex.rowCenterSpaceBetween,
+    paddingBottom: utils.responsiveHeight(24),
+    marginBottom: utils.responsiveHeight(24),
+    borderColor: theme.colors.antiFlashWhite,
+  },
+});
 
 export default Order;

@@ -66,13 +66,15 @@ const Header: React.FC<HeaderType> = ({
 
   const isLoading = plantsLoading;
 
+  console.log("length of cart:", activeOrderData?.activeOrder?.lines?.length)
   const handleOnPress = () => {
-    if (cart.length > 0) {
+    if (activeOrderData?.activeOrder?.lines?.length > 0) {
       dispatch(actions.setScreen('Order'));
       route.name === 'Shop' && navigation.navigate('TabNavigator');
+      route.name === 'Order' && navigation.navigate('TabNavigator');
       route.name === 'Product' && navigation.navigate('TabNavigator');
     }
-    if (cart.length === 0) {
+    if (activeOrderData?.activeOrder?.lines?.length === undefined) {
       Alert.alert('Your cart is empty', 'Please add some items to your cart', [
         { text: 'OK', onPress: () => console.log('OK Pressed') },
       ]);
@@ -303,7 +305,7 @@ const Header: React.FC<HeaderType> = ({
           <Text
             style={{
               ...theme.fonts.DM_Sans_400Regular,
-              fontSize: Platform.OS === 'ios' ? 14 : 12,
+              fontSize: Platform.OS === 'ios' ? 14 : 16,
               color: theme.colors.textColor,
               textTransform: 'capitalize',
             }}

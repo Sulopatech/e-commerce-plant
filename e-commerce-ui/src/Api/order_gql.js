@@ -32,6 +32,28 @@ export const ADDTOCART = gql`
   }
 `;
 
+export const ADJUST_ORDER_LINE = gql`
+  mutation AdjustOrderLine($orderLineId: ID!, $quantity: Int!) {
+    adjustOrderLine(orderLineId: $orderLineId, quantity: $quantity) {
+      ... on Order {
+        id
+        totalWithTax
+        lines {
+          id
+          quantity
+          productVariant {
+            name
+          }
+        }
+      }
+      ... on ErrorResult {
+        errorCode
+        message
+      }
+    }
+  }
+`;
+
 export const GET_ORDERS_HISTORY = gql`
   query GETORDERS {
      activeCustomer {
@@ -77,28 +99,29 @@ export const GET_ACTIVE_ORDERS = gql`
   query GETORDERS {
    activeOrder{
       id
-          type
-          total
-          subTotal
-          totalWithTax
-          subTotalWithTax
-          totalQuantity
+      type
+      total
+      subTotal
+      totalWithTax
+      subTotalWithTax
+      totalQuantity
       lines{
         id
         quantity
         productVariant{
+          id
           name
           price
         }
         featuredAsset{
-              preview
-            }
+          preview
+        }
       }
-          discounts{
-            description
-            amount
-            amountWithTax
-          }
+      discounts{
+        description
+        amount
+        amountWithTax
+      }
     }
   }
 `;

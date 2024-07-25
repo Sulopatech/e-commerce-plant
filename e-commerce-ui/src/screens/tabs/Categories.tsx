@@ -90,6 +90,31 @@ const Categories: React.FC = () => {
                   }}
                   resizeMode='cover'
                 >
+                  <View
+                    style={{
+                      backgroundColor: '#CFF5CE',
+                      alignSelf: 'flex-start',
+                      paddingHorizontal: 9,
+                      paddingVertical: 1,
+                      borderRadius: 50,
+                      minWidth: 23,
+                      height: 23,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontSize: Platform.OS === 'ios' ? 14 : 12,
+                        color: '#50858B',
+                        textTransform: 'capitalize',
+                        ...theme.fonts.DM_Sans_400Regular,
+                      }}
+                    >
+                      {item?.productVariants?.totalItems}
+                    </Text>
+                  </View>
                   <Text
                     numberOfLines={1}
                     style={{

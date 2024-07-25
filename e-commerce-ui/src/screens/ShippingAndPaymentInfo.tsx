@@ -15,6 +15,7 @@ import {
 import DropDownPicker from 'react-native-dropdown-picker';
 import CheckBox from '@react-native-community/checkbox'; // Import CheckBox from @react-native-community/checkbox
 import { useMutation, useQuery } from '@apollo/client';
+import { showMessage } from 'react-native-flash-message';
 
 import { hooks } from '../hooks';
 import { utils } from '../utils';
@@ -92,8 +93,16 @@ const ShippingAndPaymentInfo: React.FC = () => {
   }, [shippingMethodsData]);
 
   const handleProceedToCheckout = async () => {
+    if (!name || !streetLine || !address || !pinBilling || !countryValue || !shippingMethodValue || !streetLineShipping|| !addressShipping  || !pinShipping) {
+      showMessage({
+        message: 'Please fill in all required fields',
+        type: 'danger',
+      });
+      return;
+    }
+  
     setLoading(true);
-
+  
     try {
       await addingBillingAddress({
         variables: {
@@ -111,12 +120,10 @@ const ShippingAndPaymentInfo: React.FC = () => {
           countryCode: countryValue || '',
         }
       });
-      console.log(addAddress);
       if (shippingMethodValue) {
         await addShippingMethod({ variables: { shippingMethodId: shippingMethodValue } });
       }
-
-      console.log("shipping method:", shippingMethodValue);
+  
       navigation.navigate('Checkout');
     } catch (error) {
       console.error("Error during checkout: ", error);
@@ -124,6 +131,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     if (loading) {
@@ -155,7 +163,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'name',
         component: (
           <custom.InputField
-            label='Name'
+            label='Name *'
             value={name}
             innerRef={nameInputRef}
             onChangeText={handleNameChange}
@@ -169,7 +177,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'email',
         component: (
           <custom.InputField
-            label='Email'
+            label='Email *'
             editable={false}
             value={user?.email}
             innerRef={emailInputRef}
@@ -226,7 +234,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'streetBilling',
         component: (
           <custom.InputField
-            label='Street Line'
+            label='Street Line *'
             value={streetLine}
             innerRef={streetInputRef}
             placeholder='Enter your street line'
@@ -239,7 +247,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'cityBilling',
         component: (
           <custom.InputField
-            label='City'
+            label='City *'
             value={address}
             innerRef={addressInputRef}
             placeholder='Enter your city'
@@ -252,7 +260,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'pinBilling',
         component: (
           <custom.InputField
-            label='Pin code'
+            label='Pin code *'
             value={pinBilling}
             innerRef={pinBillingInputRef}
             placeholder='Enter your pin code'
@@ -272,7 +280,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
               setOpen={setCountryOpen}
               setValue={setCountryValue}
               setItems={setCountryItems}
-              placeholder="Select your country"
+              placeholder="Select your country *"
               containerStyle={styles.dropdownContainerStyle}
               style={styles.dropdownStyle}
               dropDownContainerStyle={styles.dropdownMenu}
@@ -292,7 +300,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'streetShipping',
         component: (
           <custom.InputField
-            label='Street Line'
+            label='Street Line *'
             value={streetLineShipping}
             innerRef={streetShippingInputRef}
             placeholder='Enter your street line'
@@ -305,7 +313,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'cityShipping',
         component: (
           <custom.InputField
-            label='City'
+            label='City *'
             value={addressShipping}
             innerRef={addressShippingInputRef}
             placeholder='Enter your city'
@@ -318,7 +326,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
         id: 'pinShipping',
         component: (
           <custom.InputField
-            label='Pin code'
+            label='Pin code *'
             value={pinShipping}
             innerRef={pinShippingInputRef}
             placeholder='Enter your pin code'
@@ -338,7 +346,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
               setOpen={setCountryShippingOpen}
               setValue={setCountryShippingValue}
               setItems={setCountryItems}
-              placeholder="Select your country"
+              placeholder="Select your country *"
               containerStyle={styles.dropdownContainerStyle}
               style={styles.dropdownStyle}
               dropDownContainerStyle={styles.dropdownMenu}
@@ -378,7 +386,7 @@ const ShippingAndPaymentInfo: React.FC = () => {
               setOpen={setShippingMethodOpen}
               setValue={setShippingMethodValue}
               setItems={setShippingMethodItems}
-              placeholder="Select shipping method"
+              placeholder="Select shipping method *"
               containerStyle={styles.dropdownContainerStyle}
               style={styles.dropdownStyle}
               dropDownContainerStyle={styles.dropdownMenu}
