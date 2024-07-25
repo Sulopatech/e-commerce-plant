@@ -10,8 +10,10 @@
         <mj-button font-family="Helvetica"
                    background-color="#f45e43"
                    color="white"
+                   href="{{ verifyEmailAddressUrl }}?token={{ verificationToken }}">
+            Verify Me!
                    {{!-- href="{{ verifyEmailAddressUrl }}?token={{ verificationToken }}"> --}}
-            {{otp}}
+            {{!-- {{otp}} --}}
         </mj-button>
     </mj-column>
 </mj-section>
