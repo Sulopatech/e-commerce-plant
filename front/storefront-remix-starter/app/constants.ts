@@ -4,7 +4,7 @@ export const APP_META_DESCRIPTION =
 export const DEMO_API_URL = 'https://readonlydemo.vendure.io/shop-api';
 export let API_URL =
   typeof process !== 'undefined'
-    ? process.env.VENDURE_API_URL ?? DEMO_API_URL
+    ? 'http://api-plant.sulopa.com/shop-api' ?? DEMO_API_URL
     : DEMO_API_URL;
 
 /**

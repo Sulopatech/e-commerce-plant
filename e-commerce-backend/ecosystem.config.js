@@ -1,11 +1,12 @@
 module.exports = {
     apps: [{
-      name: 'vendure',
+      name: 'ecom_plant_backend',
       script: 'npm',
       args: 'run start',
       instances: 1,
       autorestart: true,
-      watch: false,
+      watch: true,
+      exec_mode: "fork",
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
