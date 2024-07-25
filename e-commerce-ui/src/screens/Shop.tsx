@@ -1,17 +1,15 @@
-import React, { useState, useCallback } from 'react';
-import { gql, useQuery } from '@apollo/client';
+import React, { useState } from 'react';
+import { useQuery } from '@apollo/client';
 import Modal from 'react-native-modal';
 import {
   View,
   FlatList,
   TouchableOpacity,
   Platform,
-  ActivityIndicator,
   Text,
 } from 'react-native';
 import { text } from '../text';
 import { hooks } from '../hooks';
-import { items } from '../items';
 import { utils } from '../utils';
 import { custom } from '../custom';
 import { svg } from '../assets/svg';
@@ -20,14 +18,12 @@ import { actions } from '../store/actions';
 import { components } from '../components';
 import { ShopScreenProps } from '../types/ScreenProps';
 import ProductCard from '../items/ProductCard';
-import { GET_ALL_PRODUCTS } from '../Api/get_collectiongql';
+import { GET_COLLECTION } from '../Api/get_collectiongql';
 
 const sortingBy = [
-  { id: 1, title: 'Top' },
-  { id: 2, title: 'Price: low to high' },
-  { id: 3, title: 'Price: high to low' },
-  { id: 4, title: 'Newest' },
-  { id: 5, title: 'Sale' },
+  { id: 1, title: 'A to Z' },
+  { id: 2, title: 'Newest' },
+  { id: 3, title: 'Sale' },
 ];
 
 const Shop: React.FC<ShopScreenProps> = ({ route }) => {
@@ -37,11 +33,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
   const [sort, setSort] = useState(sortingBy[0]);
   const [showModal, setShowModal] = useState(false);
 
-  const { loading, error, data } = useQuery(GET_ALL_PRODUCTS(title));
-
-  if (loading) {
-    return <ActivityIndicator size='large' color={theme.colors.mainColor} />;
-  }
+  const { loading, error, data } = useQuery(GET_COLLECTION(title));
 
   if (error) {
     return (
@@ -51,7 +43,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
     );
   }
 
-  const products = data?.collection?.productVariants?.items || [];
+  const products = data?.collection?.FilteredProduct?.items || [];
 
   const applyFilters = (products) => {
     // Add your filtering logic here, for example:
@@ -65,18 +57,12 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sort.title) {
-      case 'Price: low to high':
-        return a.price - b.price;
-      case 'Price: high to low':
-        return b.price - a.price;
+      case 'A to Z':
+        return a.name.localeCompare(b.name);
       case 'Newest':
-        return a.product.createdAt === b.product.createdAt ? 0 : new Date(a.product.createdAt) > new Date(b.product.createdAt) ? -1 : 1;
-      case 'Top':
-        return a.isTop === b.isTop ? 0 : a.isTop ? -1 : 1;
+        return parseInt(a.id, 10) - parseInt(b.id, 10);
       case 'Sale':
-        return a.oldPrice === b.oldPrice ? 0 : a.oldPrice ? -1 : 1;
-      case 'Featured':
-        return a.isFeatured === b.isFeatured ? 0 : a.isFeatured ? -1 : 1;
+        return parseInt(b.id, 10) - parseInt(a.id, 10);
       default:
         return 0;
     }
@@ -105,7 +91,8 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
           alignItems: 'center',
         }}
       >
-        <TouchableOpacity
+        <View></View>
+        {/* <TouchableOpacity
           style={{
             paddingTop: 20,
             paddingRight: 20,
@@ -118,7 +105,7 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
           onPress={() => navigation.navigate('Filter')}
         >
           <svg.FiltersSvg />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           style={{
             paddingTop: 20,
@@ -138,13 +125,14 @@ const Shop: React.FC<ShopScreenProps> = ({ route }) => {
   };
 
   const renderContent = (): JSX.Element | null => {
+    if (loading) return <components.Loader />;
     if (filteredProducts.length === 0) return <components.NoData />;
 
     return (
       <FlatList
         data={sortedProducts}
         renderItem={({ item }) => {
-          return <ProductCard item={item} version={1} />;
+          return <ProductCard item={item} slug={title} version={1} />;
         }}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
         numColumns={2}

@@ -4,6 +4,7 @@ import { CollectionCard } from '~/components/collections/CollectionCard';
 import { BookOpenIcon } from '@heroicons/react/24/solid';
 import { LoaderArgs } from '@remix-run/server-runtime';
 import { useTranslation } from 'react-i18next';
+import Banner_Img from '../components/assets/Banner_Img.jpg'
 
 export async function loader({ request }: LoaderArgs) {
   const collections = await getCollections(request, { take: 20 });
@@ -25,11 +26,11 @@ export default function Index() {
           {headerImage && (
             <img
               className="absolute inset-0 w-full"
-              src={headerImage + '?w=800'}
+              src={Banner_Img + '?w=300'}
               alt="header"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-br from-zinc-400 to-black mix-blend-darken" />
+          {/* <div className="absolute inset-0 bg-gradient-to-br from-zinc-400 to-black mix-blend-darken" /> */}
         </div>
         <div
           aria-hidden="true"
@@ -37,14 +38,16 @@ export default function Index() {
         />
         <div className="relative max-w-3xl mx-auto py-32 px-6 flex flex-col items-center text-center sm:py-64 lg:px-0">
           <div className="relative bg-zinc-800 bg-opacity-0 rounded-lg p-0">
-            <h1 className="text-6xl text-transparent bg-clip-text font-extrabold tracking-normal lg:text-6xl bg-gradient-to-r from-yellow-600 via-red-500 to-blue-600">
-              {t('vendure.title')}
+            <h1 className="text-6xl text-transparent bg-clip-text font-extrabold tracking-normal lg:text-6xl bg-gradient-to-r text-white">
+              {"Sulopa Plants"}
             </h1>
           </div>
+          {/* from-yellow-600 via-red-500 to-blue-600 */}
 
           <p className="mt-4 text-2xl text-white">
-            {t('vendure.intro')}{' '}
-            <a
+            {/* {t('vendure.intro')}{' '} */}
+            {"A service where you can explore and purchase a variety of plants"}{' '}
+            {/* <a
               href="https://www.vendure.io"
               className="text-blue-300 hover:text-blue-500"
             >
@@ -56,9 +59,9 @@ export default function Index() {
               className="text-red-300 hover:text-red-500"
             >
               Remix
-            </a>
+            </a> */}
           </p>
-          <p className="mt-4 text-gray-300 space-x-1">
+          {/* <p className="mt-4 text-gray-300 space-x-1">
             <BookOpenIcon className="w-5 h-5 inline" />
             <span>{t('common.readMore')}</span>
             <a
@@ -67,13 +70,13 @@ export default function Index() {
             >
               {t('vendure.link')}
             </a>
-          </p>
+          </p> */}
         </div>
       </div>
 
       <section
         aria-labelledby="category-heading"
-        className="pt-24 sm:pt-32 xl:max-w-7xl xl:mx-auto xl:px-8"
+        className="pt-24 sm:pt-10 xl:max-w-7xl xl:mx-auto xl:px-8"
       >
         <div className="px-4 sm:px-6 lg:px-8 xl:px-0">
           <h2

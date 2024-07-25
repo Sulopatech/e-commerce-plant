@@ -6,7 +6,7 @@ import {createImageProgress} from 'react-native-image-progress';
 const ImageProgress = createImageProgress(FastImage);
 
 type Props = {
-  source?: object;
+  source?: any;
   style?: object;
   imageStyle?: ImageStyle;
   resizeMode?: 'cover' | 'contain' | 'stretch';

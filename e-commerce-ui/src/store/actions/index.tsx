@@ -5,12 +5,15 @@ import {setScreen} from '../slices/tabSlice';
 import {addToCart} from '../slices/cartSlice';
 import {resetCart} from '../slices/cartSlice';
 import {setStart} from '../slices/startSlice';
-import {setCvv} from '../slices/paymentSlice';
+import {setCvv, setPinBilling, setPinShipping} from '../slices/paymentSlice';
 import {modifyItem} from '../slices/cartSlice';
 import {setName} from '../slices/paymentSlice';
 import {setDiscount} from '../slices/cartSlice';
 import {setPromoCode} from '../slices/cartSlice';
 import {setAddress} from '../slices/paymentSlice';
+import {setStreet} from '../slices/paymentSlice';
+import {setAddressShipping} from '../slices/paymentSlice';
+import {setStreetShipping} from '../slices/paymentSlice';
 import {resetFilters} from '../slices/filterSlice';
 import {setRememberMe} from '../slices/userSlice';
 import {removeFromCart} from '../slices/cartSlice';
@@ -40,6 +43,11 @@ export const actions = {
   addToCart,
   modifyItem,
   setAddress,
+  setAddressShipping,
+  setStreet,
+  setStreetShipping,
+  setPinBilling,
+  setPinShipping,
   setDiscount,
   resetFilters,
   setPromoCode,

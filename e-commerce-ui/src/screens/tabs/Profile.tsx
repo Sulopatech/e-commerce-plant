@@ -15,7 +15,7 @@ const Profile: React.FC = () => {
   const emailVerified = user?.emailVerified || false;
   const phoneVerified = user?.phoneVerified || false;
 
-  console.log('user', JSON.stringify(user, null, 2));
+  // console.log('user', JSON.stringify(user, null, 2));
 
   const phoneVerifiedAlert = (): void => {
     Alert.alert(
@@ -50,30 +50,30 @@ const Profile: React.FC = () => {
   };
 
   const renderUserInfo = (): JSX.Element => {
-    // return (
-    //   <components.UserData
-    //     onPress={() => {
-    //       if (user?.emailVerified && user?.phoneVerified) {
-    //         navigation.navigate('EditProfile');
-    //         return;
-    //       }
-    //       Alert.alert(
-    //         'Please verify your email and phone number',
-    //         'You need to verify your email and phone number to edit your profile.',
-    //         [
-    //           {
-    //             text: 'OK',
-    //             onPress: () => {
-    //               console.log('OK Pressed');
-    //             },
-    //           },
-    //         ],
-    //         {cancelable: false},
-    //       );
-    //     }}
-    //     containerStyle={{marginBottom: utils.responsiveHeight(30)}}
-    //   />
-    // );
+    return (
+      <components.UserData
+        onPress={() => {
+          if (user?.emailVerified && user?.phoneVerified) {
+            navigation.navigate('EditProfile');
+            return;
+          }
+          Alert.alert(
+            'Please verify your email and phone number',
+            'You need to verify your email and phone number to edit your profile.',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('OK Pressed');
+                },
+              },
+            ],
+            {cancelable: false},
+          );
+        }}
+        containerStyle={{marginBottom: utils.responsiveHeight(30)}}
+      />
+    );
   };
 
   const renderMenu = (): JSX.Element => {
@@ -179,7 +179,7 @@ const Profile: React.FC = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {renderUserInfo()}
+        {/* {renderUserInfo()} */}
         {renderMenu()}
       </ScrollView>
     );

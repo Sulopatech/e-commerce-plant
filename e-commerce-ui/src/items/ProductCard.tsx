@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import React from 'react';
 
 import { hooks } from '../hooks';
@@ -8,24 +8,26 @@ import { theme } from '../constants';
 import { product } from '../product';
 import { ProductType } from '../types';
 
-type Props = { version: 1 | 2 | 3; item: any; isLast?: boolean };
 
-const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | null => {
+type Props = { version: 1 | 2 | 3; item: any; isLast?: boolean; slug: any };
+
+const ProductCard: React.FC<Props> = ({ version, item, isLast, slug }): JSX.Element | null => {
   const navigation = hooks.useAppNavigation();
   const cart = hooks.useAppSelector(state => state.cartSlice.list);
 
   const onPress = () => {
-    navigation.navigate('Product', { item });
+    navigation.navigate<any>('Product', { item, slug });
   };
 
-  const ifInCart = cart.find(i => i.id === item.id);
-  const quantity = ifInCart ? ifInCart.quantity : 0;
+  const ifInCart = cart.find(i => i?.id === item?.id);
+  const quantity = ifInCart ? ifInCart?.quantity : 0;
 
-  const previewUrl = item.product.featuredAsset?.preview;
+  const inStock = item?.stockLevel === "IN_STOCK";
 
-  const inStock = item.stockLevel === "IN_STOCK";
+  // Extract the preview URL from the assets
+  const previewUrls = item?.assets?.map(asset => ({ uri: asset?.preview })) || [];
 
-  if (!previewUrl) {
+  if (!previewUrls.length) {
     return null;
   }
 
@@ -41,7 +43,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
         onPress={onPress}
       >
         <custom.ImageBackground
-          source={{ uri: previewUrl }}
+          source={previewUrls[0]} // Use the first URL if there are multiple
           style={{
             width: '100%',
             aspectRatio: 160 / 200,
@@ -60,16 +62,10 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
             containerStyle={{ marginBottom: 'auto', padding: 10 }}
           />
 
-          {quantity === 0 && (
+          {/* {quantity === 0 && (
             <product.ProductInCart
               item={item}
               version={1}
-              containerStyle={{ padding: 10 }}
-            />
-          )}
-          {/* {quantity > 0 && (
-            <product.ProductQuantity
-              quantity={quantity}
               containerStyle={{ padding: 10 }}
             />
           )} */}
@@ -89,8 +85,8 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
             width: utils.responsiveWidth(160, true),
           }}
         >
-          <product.ProductName item={item} style={{ marginBottom: 3 }} />
-          <product.ProductPrice item={item} />
+          <product.ProductName item={item?.name} style={{ marginBottom: 3 }} />
+          {/* <product.ProductPrice item={item} /> */}
         </View>
       </TouchableOpacity>
     );
@@ -101,7 +97,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
     return (
       <TouchableOpacity onPress={onPress}>
         <custom.ImageBackground
-          source={{ uri: previewUrl }}
+          source={previewUrls[0]} // Use the first URL if there are multiple
           style={{
             width: utils.responsiveWidth(138, true),
             aspectRatio: 138 / 170,
@@ -123,7 +119,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
             }}
           />
 
-          {quantity === 0 && (
+          {/* {quantity === 0 && (
             <product.ProductInCart
               item={item}
               containerStyle={{
@@ -133,22 +129,11 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
                 right: 0,
               }}
             />
-          )}
-          {/* {quantity > 0 && (
-            <product.ProductQuantity
-              quantity={quantity}
-              containerStyle={{
-                padding: 10,
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-              }}
-            />
           )} */}
         </custom.ImageBackground>
         <View style={{ width: utils.rsHeight(138, true) }}>
           <product.ProductName item={item} style={{ marginBottom: 3 }} />
-          <product.ProductPrice item={item} />
+          {/* <product.ProductPrice item={item} /> */}
         </View>
       </TouchableOpacity>
     );
@@ -161,7 +146,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
     return (
       <TouchableOpacity onPress={onPress}>
         <custom.ImageBackground
-          source={{ uri: previewUrl }}
+          source={previewUrls[0]} // Use the first URL if there are multiple
           style={{
             width: width,
             aspectRatio: 200 / 250,
@@ -182,7 +167,7 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
               right: 0,
             }}
           />
-          <product.ProductInCart
+          {/* <product.ProductInCart
             item={item}
             containerStyle={{
               position: 'absolute',
@@ -190,22 +175,11 @@ const ProductCard: React.FC<Props> = ({ version, item, isLast }): JSX.Element | 
               bottom: 0,
               right: 0,
             }}
-          />
-          {/* {quantity > 0 && (
-            <product.ProductQuantity
-              quantity={quantity}
-              containerStyle={{
-                padding: 14,
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-              }}
-            />
-          )} */}
+          /> */}
         </custom.ImageBackground>
         <View style={{ width: width }}>
           <product.ProductName item={item} style={{ marginBottom: 3 }} />
-          <product.ProductPrice item={item} />
+          {/* <product.ProductPrice item={item} /> */}
         </View>
       </TouchableOpacity>
     );

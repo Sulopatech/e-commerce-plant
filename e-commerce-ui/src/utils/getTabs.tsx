@@ -130,13 +130,13 @@ const getTabs = () => {
       name: 'Order',
       icon: CartTabSvg,
     },
+    // {
+    //   id: 4,
+    //   name: 'Wishlist',
+    //   icon: WishlistTabSvg,
+    // },
     {
       id: 4,
-      name: 'Wishlist',
-      icon: WishlistTabSvg,
-    },
-    {
-      id: 5,
       name: 'Profile',
       icon: ProfileTabSvg,
     },

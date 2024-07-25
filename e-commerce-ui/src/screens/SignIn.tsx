@@ -50,7 +50,6 @@ const SignIn: React.FC = () => {
   }, [loading]);
 
   const handleSignIn = async () => {
-    console.log('Inside handleSignIn'); // Debugging log
     setLoading(true);
     try {
       const {data} = await SignIn({
@@ -61,13 +60,10 @@ const SignIn: React.FC = () => {
         },
       });
 
-      console.log('API response:', data);
-
       if (data.authenticate && data.authenticate.__typename === 'CurrentUser') {
         const channels = data.authenticate.channels;
         if (channels && channels.length > 0) {
           const token = channels[0].token;
-
           await AsyncStorage.clear();
           await AsyncStorage.setItem('userToken', token);
           const userData: any = {

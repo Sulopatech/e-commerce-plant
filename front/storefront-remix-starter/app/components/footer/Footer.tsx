@@ -93,7 +93,7 @@ export default function Footer({
               </div>
             </div>
           </div>
-          <div className="mt-8 xl:mt-0">
+          {/* <div className="mt-8 xl:mt-0">
             <h3 className="text-sm font-semibold text-gray-500 tracking-wider uppercase">
               {t('footer.subscribeHeader')}
             </h3>
@@ -111,7 +111,7 @@ export default function Footer({
                 autoComplete="email"
                 required
                 className="appearance-none min-w-0 w-full bg-white border border-gray-300 rounded-md py-2 px-4 text-base text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white focus:border-white focus:placeholder-gray-400"
-                placeholder={t('footer.emailPlaceholder')}
+                placeholder={ t('footer.emailPlaceholder')}
               />
               <div className="mt-3 rounded-md sm:mt-0 sm:ml-3 sm:flex-shrink-0">
                 <button
@@ -122,9 +122,9 @@ export default function Footer({
                 </button>
               </div>
             </form>
-          </div>
+          </div> */}
         </div>
-        <div className="mt-8 border-t pt-8">
+        {/* <div className="mt-8 border-t pt-8">
           <a
             className="flex items-center space-x-4 font-medium text-gray-500 hover:text-gray-700"
             href="https://github.com/vendure-ecommerce/storefront-remix-starter"
@@ -143,7 +143,7 @@ export default function Footer({
             </svg>
             <span>github.com/vendure-ecommerce/storefront-remix-starter</span>
           </a>
-        </div>
+        </div> */}
       </div>
     </footer>
   );

@@ -45,7 +45,7 @@ const BottomTabBar: React.FC = () => {
           <TouchableOpacity
             key={index}
             style={{alignItems: 'center'}}
-            onPress={() => dispatch(setScreen(item.name))}
+            onPress={() => dispatch(setScreen(item?.name))}
           >
             <View style={{marginBottom: 6}}>
               <item.icon

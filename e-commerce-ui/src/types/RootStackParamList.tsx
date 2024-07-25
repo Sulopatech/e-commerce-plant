@@ -44,6 +44,7 @@ export type RootStackParamList = {
   PasswordChanged: undefined;
   AccountCreatedFailed: undefined;
   ShippingAndPaymentInfo: undefined;
+  OrderPreview: undefined;
 
   /* VERIFICATION */
   SignUpAccountCreated: {email?: string; password?: string};
@@ -59,4 +60,5 @@ export type RootStackParamList = {
   VerifyEmailForgot: {email?: string};
   SendEmailOtpForgot: undefined;
   Product: {item: any};
+  slug: any
 };

@@ -6,69 +6,38 @@ import {
   Platform,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 
 import {hooks} from '../hooks';
 import {custom} from '../custom';
-import {svg} from '../assets/svg';
 import {theme} from '../constants';
 import {ProductType} from '../types';
-import {components} from '../components';
-import {queryHooks} from '../store/slices/apiSlice';
 import {handleTextChange} from '../utils/handleTextChange';
 import {useQuery} from '@apollo/client';
-import {SEARCH_QUERY} from '../Api/search_gql';
-import {items} from '../items';
-import ProductName from '../product/ProductName';
+import {GET_PRODUCTS} from '../Api/search_gql';
 
 const Search: React.FC = () => {
   const navigation = hooks.useAppNavigation();
-
   const [searchQuery, setSearchQuery] = useState('');
-
-  const user = hooks.useAppSelector(state => state.userSlice.user);
-
-  const {data, loading, error} = useQuery(SEARCH_QUERY, {
-    variables: {
-      input: {
-        collections: {
-          id: user?.collections?.id,
-          name: user?.name?.data,
-        },
-        items: {
-          id: user?.items?.id,
-          ProductName: user?.items?.data,
-          productAsset: {
-            // id: ,
-            // preview:,
-          },
-        },
-      },
-    },
-    skip: !searchQuery,
-  });
-
-  // -----------Login error ------------------------ //
-  // const {
-  //   data: userData,
-  //   error: userError,
-  // isLoading: userLoading,
-  // } = queryHooks.useGetUserQuery(user?.id || 0);
-
-  const {
-    data: plantsData,
-    error: plantsError,
-    isLoading: plantsLoading,
-  } = queryHooks.useGetPlantsQuery();
-
   const ref = useRef<TextInput>(null);
 
   useEffect(() => {
     ref.current?.focus();
   }, []);
 
-  // -----------Login error ------------------------ //
-  // const isLoading = userLoading || plantsLoading;
+  const {loading, error, data} = useQuery(GET_PRODUCTS, {
+    variables: {
+      options: {
+        filter: {
+          name: {
+            contains: searchQuery,
+          },
+        },
+      },
+    },
+  });
 
   const handleSearch = handleTextChange(setSearchQuery);
 
@@ -128,7 +97,7 @@ const Search: React.FC = () => {
     );
   };
 
-  const renderItem = ({item, index}: {item: ProductType; index: number}) => {
+  const renderItem = ({item}) => {
     return (
       <TouchableOpacity
         style={{
@@ -143,17 +112,30 @@ const Search: React.FC = () => {
           navigation.navigate('Product', {item: item});
         }}
       >
-        <svg.SearchSmallSvg />
-        <Text
-          style={{
-            marginLeft: 10,
-            color: theme.colors.textColor,
-            ...theme.fonts.DM_Sans_400Regular,
-            fontSize: Platform.OS === 'ios' ? 14 : 12,
-          }}
-        >
-          {item.name}
-        </Text>
+        {item?.assets[0]?.preview && (
+          <Image
+            source={{uri: item?.assets[0]?.preview}}
+            style={{width: 50, height: 50, marginRight: 10}}
+          />
+        )}
+        <View style={{flex: 1}}>
+          <Text
+            style={{
+              color: theme.colors.textColor,
+              ...theme.fonts.DM_Sans_400Regular,
+              fontSize: Platform.OS === 'ios' ? 14 : 12,
+            }}
+          >
+            {item?.name}
+          </Text>
+          <Text
+            style={{
+              color: theme.colors.textColor,
+              ...theme.fonts.DM_Sans_400Regular,
+              fontSize: Platform.OS === 'ios' ? 12 : 10,
+            }}
+          ></Text>
+        </View>
       </TouchableOpacity>
     );
   };
@@ -182,29 +164,35 @@ const Search: React.FC = () => {
   };
 
   const renderSearchResults = () => {
-    const filteredProducts = plantsData?.plants.filter(item => {
-      return item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (loading) {
+      return <ActivityIndicator />;
+    }
+    if (error) {
+      return (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <Text>Error: {error.message}</Text>
+        </View>
+      );
+    }
+
+    const filteredProducts = data?.products?.items?.filter(item => {
+      return item?.name?.toLowerCase()?.includes(searchQuery?.toLowerCase());
     });
 
     return (
       <FlatList
         data={filteredProducts}
-        keyExtractor={(item: ProductType) => item.id.toString()}
+        keyExtractor={(item: ProductType) => item?.id?.toString()}
         contentContainerStyle={{flexGrow: 1}}
         keyboardShouldPersistTaps='handled' // when user taps on the screen, the keyboard will be hidden
         keyboardDismissMode='on-drag' // when user drags the screen, the keyboard will be hidden
         ListEmptyComponent={() => renderEmptyComponent()}
-        renderItem={({item, index}) => renderItem({item, index})}
+        renderItem={({item}) => renderItem({item})}
       />
     );
   };
 
   const renderContent = () => {
-    // -----------Login error ------------------------ //
-    // if (isLoading) {
-    //   return <components.Loader />;
-    // }
-
     return (
       <React.Fragment>
         {renderSearchBar()}
@@ -221,5 +209,3 @@ const Search: React.FC = () => {
 };
 
 export default Search;
-
-// original code for search

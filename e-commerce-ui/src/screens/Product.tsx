@@ -5,13 +5,13 @@ import {
   Alert,
   FlatList,
   Platform,
-  ScrollView,
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { useMutation } from '@apollo/client';
+import DropDownPicker from 'react-native-dropdown-picker';
+import Svg, { Path } from 'react-native-svg';
+import { useMutation, useQuery } from '@apollo/client';
 import { text } from '../text';
-import { alert } from '../alert';
 import { hooks } from '../hooks';
 import { items } from '../items';
 import { utils } from '../utils';
@@ -21,55 +21,48 @@ import { theme } from '../constants';
 import { product } from '../product';
 import { components } from '../components';
 import { queryHooks } from '../store/slices/apiSlice';
-import { addToCart } from '../store/slices/cartSlice';
-import { ProductScreenProps } from '../types/ScreenProps';
+import { GET_PRODUCT_DETAILS } from '../Api/get_collectiongql';
+import { ADDTOCART } from '../Api/order_gql';
 import { ProductType, ViewableItemsChanged } from '../types';
-import { gql, useQuery } from '@apollo/client';
-import { GET_ALL_PRODUCTS } from '../Api/get_products';
+import {showMessage} from 'react-native-flash-message';
 
-export const ADDTOCART = gql`
-  mutation AddItemToOrder($productVariantId: ID!, $quantity: Int!) {
-    addItemToOrder(productVariantId: $productVariantId, quantity: $quantity) {
-      __typename
-      ...ActiveOrder
-    }
-  }
-  fragment ActiveOrder on Order {
-    id
-    code
-    state
-    couponCodes
-    subTotalWithTax
-    shippingWithTax
-    totalWithTax
-    totalQuantity
-    lines {
-      id
-      productVariant {
-        id
-        name
-      }
-      featuredAsset {
-        id
-        preview
-      }
-      quantity
-      linePriceWithTax
-    }
-  }
-`;
+const renderMinusSvg = () => (
+  <Svg width={14} height={14} fill='none'>
+    <Path
+      stroke='#23374A'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      strokeWidth={1.2}
+      d='M2.898 7h8.114'
+    />
+  </Svg>
+);
 
-const Product: React.FC<ProductScreenProps> = ({ route }) => {
-  const { item } = route.params;
+const renderPlusSvg = () => (
+  <Svg width={14} height={14} fill='none'>
+    <Path
+      stroke='#23374A'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      strokeWidth={1.2}
+      d='M6.955 2.917v8.166M2.898 7h8.114'
+    />
+  </Svg>
+);
+
+const Product: React.FC<any> = ({ route }) => {
+  const { item, slug } = route.params;
   const { responsiveHeight } = utils;
-  const prodSlug = item?.product?.slug;
-  const { data } = useQuery(GET_ALL_PRODUCTS(prodSlug));
-  const productDesc = data?.product;
-  // console.log("data in product desc:", productDesc?.featuredAsset?.preview);
-
-  console.log("prduct datas", item?.featuredAsset?.preview)
+  const productId = item?.id;
+  const { data } = useQuery(GET_PRODUCT_DETAILS(slug, productId));
+  const productDesc = data?.collection?.FilteredProduct?.items[0];
+  const previewUrls = productDesc?.assets
+  ? productDesc.assets.map((asset: any) => ({ uri: asset.preview }))
+  : (item?.assets?.map((asset: any) => ({ uri: asset.preview })) || item?.featuredAsset?.preview);
+  const [loading, setLoading] = useState(false);
 
   const user = hooks.useAppSelector(state => state.userSlice.user);
+  const cart = hooks.useAppSelector(state => state.cartSlice.list);
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
 
@@ -77,15 +70,48 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
     viewAreaCoveragePercentThreshold: 50,
   }).current;
 
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [, setActiveIndex] = useState<number>(0);
+  const variantItems = data?.collection?.productVariants?.items.map((variant: any) => ({
+    label: variant?.name,
+    value: variant?.id,
+    stock: variant?.stockLevel
+  })) || [];
+
+  console.log("variant in list", variantItems)
+  // Map through the additional variant list items
+  const additionalVariantItems = item?.variantList?.items.map((variant: any) => ({
+    label: variant?.name,
+    value: variant?.id,
+  })) || [];
+
+  const variantItemsFromHome = item?.collection?.productVariants?.items.map((variant: any) => ({
+    label: variant?.name,
+    value: variant?.id,
+  })) || [];
+
+  // Combine both arrays
+  const combinedVariantItems = [...variantItems, ...additionalVariantItems, ...variantItemsFromHome];
+
+  const [open, setOpen] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState(
+    combinedVariantItems.length > 0 ? combinedVariantItems[0].value : null
+  );
+
+  useEffect(() => {
+    if (combinedVariantItems.length > 0) {
+      setSelectedVariant(combinedVariantItems[0].value);
+    }
+  }, [combinedVariantItems]);
+  const [quantity, setQuantity] = useState<number>(1);
+
+  // console.log("selected variant:", selectedVariant);
 
   const onViewableItemsChanged = useRef((info: ViewableItemsChanged) => {
     const index = info.viewableItems[0]?.index ?? 0;
     setActiveIndex(index);
   }).current;
-
-  const cart = hooks.useAppSelector(state => state.cartSlice.list);
-  const exist = (item: ProductType) => cart.find(i => i.id === item.id);
+  
+  const exist = (item: ProductType) => cart.find(i => i.id === item?.id);
 
   const {
     data: reviewsData,
@@ -100,8 +126,8 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
     isLoading: ordersLoading,
   } = queryHooks.useGetOrdersQuery(user?.id || 0);
 
-  const ifInOrderExist = ordersData?.orders.find((order: any) =>
-    order.products.find((product: ProductType) => product.id === productDesc?.id),
+  const ifInOrderExist = ordersData?.orders?.find((order: any) =>
+    order?.products?.find((product: ProductType) => product?.id === productDesc?.id),
   );
 
   useEffect(() => {
@@ -112,28 +138,46 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
     return unsubscribe;
   }, [navigation]);
 
-  const modifedItem = { ...productDesc };
-
   const [addItemToOrder] = useMutation(ADDTOCART, {
-    onCompleted: (data) => {
-      Alert.alert("Success", "Item added to order successfully!");
-    },
+    // onCompleted: (data) => {
+    //   Alert.alert("Success", "Item added to order successfully!");
+    // },
     onError: (error) => {
       Alert.alert("Error", "Failed to add item to order.");
     },
   });
 
-  const handleAddToCart = () => {
-    const productVariantId = productDesc?.variants[0]?.id;
-    const quantity = 1;
-
-    if (!exist(productDesc)) {
-      dispatch(addToCart(modifedItem));
-      addItemToOrder({ variables: { productVariantId, quantity } });
-    } else {
-      alert.alreadyAdded();
+  const handleAddToCart = async () => {
+    const productVariantId = selectedVariant;
+    const quantityToApi = quantity;
+    const selectedVariantItem = combinedVariantItems.find(variant => variant.value === selectedVariant);
+    if (selectedVariantItem?.stock === ("OUT_OF_STOCK" || "LOW_STOCK")) {
+      showMessage({
+        message: 'Error',
+        description: `This variant is out of stock.`,
+        type: 'danger',
+        icon: 'danger',
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!exist(productDesc)) {
+        showMessage({
+          message: 'Success',
+          description: `${productDesc?.name || item?.name || item?.productVariant?.name} added to cart`,
+          type: 'success',
+          icon: 'success',
+        })
+        await addItemToOrder({ variables: { productVariantId, quantityToApi } });
+      }
+    } catch (error) {
+      console.error("Error during cart: ", error);
+    } finally {
+      setLoading(false);
     }
   };
+  
 
   const renderHeader = (): JSX.Element => {
     return (
@@ -151,7 +195,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
       <FlatList
         bounces={false}
         horizontal={true}
-        data={productDesc?.featuredAsset?.preview}
+        data={previewUrls}
         pagingEnabled={true}
         style={{ flexGrow: 0 }}
         viewabilityConfig={viewabilityConfig}
@@ -159,9 +203,9 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
         onViewableItemsChanged={onViewableItemsChanged}
         renderItem={({ item }) => {
           return (
-            <custom.Image
-              resizeMode='contain'
-              source={{ uri: item }}
+            <custom.ImageBackground
+              resizeMode='cover'
+              source={{ uri: item.uri }}
               style={{
                 aspectRatio: 375 / 500,
                 width: theme.sizes.deviceWidth,
@@ -176,7 +220,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
 
   const renderCarousel = (): JSX.Element | null => {
     const renderIndicator = (): JSX.Element | null => {
-      if (productDesc?.featuredAsset?.preview?.length > 1) {
+      if (previewUrls.length > 1) {
         return (
           <View
             style={{
@@ -187,16 +231,10 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
               alignSelf: 'center',
             }}
           >
-            <Image
-              source={{
-                uri: productDesc?.featuredAsset?.preview || item?.featuredAsset?.preview,
-              }}
-              style={{ width: 430, height: 500 }}
-            />
+            {/* {<Image source={{ uri: previewUrls }} style={{ width: 430, height: 500 }} />} */}
           </View>
         );
       }
-
       return null;
     };
 
@@ -216,7 +254,7 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
       );
     };
 
-    if (productDesc?.featuredAsset?.preview?.length > 0) {
+    if (previewUrls?.length > 0) {
       return (
         <View style={{ marginBottom: utils.rsHeight(30) }}>
           {renderImages()}
@@ -238,17 +276,26 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
           ...theme.flex.rowCenterSpaceBetween,
         }}
       >
-        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name}</text.H3>
+        <text.H3 numberOfLines={1}>{productDesc?.name || item?.name || item?.productVariant?.name}</text.H3>
         <product.ProductRating rating={productDesc?.rating || item?.rating} />
       </View>
     );
   };
 
   const renderPriceWithQuantity = (): JSX.Element => {
+    // Combine both arrays
+    const combinedVariantItems = [
+      ...data?.collection?.productVariants?.items || [],
+      ...item?.variantList?.items || [],
+    ];
+
+    // Find the selected variant
+    const selectedVariantItem = combinedVariantItems.find(variant => variant.id === selectedVariant);
+    const price = selectedVariantItem ? selectedVariantItem.price : 0;
+
     return (
       <View
         style={{
-          marginLeft: 20,
           paddingLeft: 20,
           marginBottom: 30,
           borderTopWidth: 1,
@@ -267,9 +314,67 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
             color: theme.colors.mainColor,
           }}
         >
-          ${productDesc?.variants[0]?.price}
+          ₹{price / 100}
         </Text>
-        <product.ProductCounterInner item={modifedItem} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity
+            onPress={() => {
+              setQuantity(prevQuantity => Math.max(prevQuantity - 1, 0));
+            }}
+            style={{ paddingHorizontal: 20, paddingVertical: 23 }}
+          >
+            {renderMinusSvg()}
+          </TouchableOpacity>
+          <Text
+            style={{
+              ...theme.fonts.DM_Sans_700Bold,
+              fontSize: Platform.OS === 'ios' ? 14 : 12,
+              color: theme.colors.textColor,
+              lineHeight: Platform.OS === 'ios' ? 14 * 1.5 : 12 * 1.5,
+            }}
+          >
+            {quantity}
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              setQuantity(prevQuantity => prevQuantity + 1);
+            }}
+            style={{ paddingHorizontal: 20, paddingVertical: 23 }}
+          >
+            {renderPlusSvg()}
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  const renderVariantDropdown = (): JSX.Element => {
+
+    return (
+      <View style={{ marginHorizontal: 20, marginBottom: 30 }}>
+        <Text style={{ marginBottom: 10, color: theme.colors.mainColor }}>Select Variant</Text>
+        <DropDownPicker
+          open={open}
+          value={selectedVariant}
+          items={combinedVariantItems}
+          setOpen={setOpen}
+          setValue={setSelectedVariant}
+          setItems={() => {}}
+          style={{
+            borderWidth: 1,
+            borderColor: '#E7EBEB',
+            borderRadius: 4,
+          }}
+          dropDownContainerStyle={{
+            backgroundColor: 'white',
+            borderWidth: 1,
+            borderColor: '#E7EBEB',
+          }}
+          listMode="SCROLLVIEW"
+          onChangeValue={(value: any) => {
+            setSelectedVariant(value);
+          }}
+        />
       </View>
     );
   };
@@ -292,12 +397,12 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
           }}
           numberOfLines={6}
         >
-          {productDesc?.description || item?.description}
+          {productDesc?.description || item?.description || item?.productVariant?.description}
         </text.T16>
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('Description', {
-              description: productDesc?.description,
+              description: productDesc?.description || item?.description || item?.productVariant?.description,
               title: productDesc?.name,
             });
           }}
@@ -339,14 +444,28 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
   };
 
   const renderButton = (): JSX.Element => {
+    const selectedVariantItem = combinedVariantItems.find(variant => variant.value === selectedVariant);
+    const isOutOfStock = selectedVariantItem?.stock === ("OUT_OF_STOCK" || "LOW_STOCK");
+  
     return (
-      <View style={{ padding: 20 }}>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: 20,
+          backgroundColor: 'white',
+        }}
+      >
         <components.Button
-          title='+ ADD to cart'
+          title={isOutOfStock ? 'OUT OF STOCK' : '+ ADD to cart'}
           onPress={handleAddToCart}
           containerStyle={{
             paddingBottom: ifInOrderExist ? responsiveHeight(14) : 0,
           }}
+          loading={loading}
+          // disabled={isOutOfStock}
         />
         {ifInOrderExist && (
           <components.Button
@@ -361,27 +480,47 @@ const Product: React.FC<ProductScreenProps> = ({ route }) => {
       </View>
     );
   };
+  
+  
 
-  const renderContent = (): JSX.Element => {
-    return (
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {renderCarousel()}
-        {renderNameWithRating()}
-        {renderPriceWithQuantity()}
-        {renderDescription()}
-        {renderReviews()}
-        {renderButton()}
-      </ScrollView>
-    );
-  };
+  // Define data for FlatList
+  const listData = [
+    { key: 'carousel', render: renderCarousel },
+    { key: 'nameWithRating', render: renderNameWithRating },
+    { key: 'priceWithQuantity', render: renderPriceWithQuantity },
+    { key: 'variantDropdown', render: renderVariantDropdown },
+    { key: 'description', render: renderDescription },
+    { key: 'reviews', render: renderReviews },
+    // { key: 'button', render: renderButton },
+  ];
+
+  const renderItem = ({ item }: { item: any }) => item.render();
 
   return (
-    <custom.SafeAreaView insets={['top', 'bottom']}>
+    <custom.SafeAreaView insets={['top', 'bottom']} style={{ flex: 1 }}>
       {renderHeader()}
-      {renderContent()}
+      <FlatList
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={item => item.key}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 50 }}
+        ListFooterComponent={() => (
+          <View style={{ padding: 20 }}>
+            {ifInOrderExist && (
+              <components.Button
+                title='Leave a review'
+                touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
+                onPress={() => {
+                  navigation.navigate('LeaveAReview', { productId: productDesc?.id });
+                }}
+                textStyle={{ color: theme.colors.steelTeal }}
+              />
+            )}
+          </View>
+        )}
+      />
+      {renderButton()}
     </custom.SafeAreaView>
   );
 };

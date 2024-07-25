@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Platform, Alert, RefreshControl } from 'react-native';
-import { gql, useQuery } from '@apollo/client';
+import { View, Alert, RefreshControl, StyleSheet } from 'react-native';
+import { useQuery } from '@apollo/client';
+import { useFocusEffect } from '@react-navigation/native';
 import { text } from '../../text';
 import { hooks } from '../../hooks';
 import { items } from '../../items';
@@ -13,50 +14,17 @@ import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
 import { useChangeHandler } from '../../utils/useChangeHandler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
-const GET_ORDERS = gql`
-  query GETORDERS {
-    activeCustomer {
-      id
-      firstName
-      orders {
-        totalItems
-        items {
-          id
-          type
-          lines {
-            id
-            unitPriceWithTax
-            quantity
-            linePriceWithTax
-            productVariant {
-              id
-              name
-              price
-            }
-              featuredAsset{
-              preview
-            }
-          }
-        }
-      }
-    }
-  }
-`;
+import { GET_ACTIVE_ORDERS } from '../../Api/order_gql';
+import { setScreen } from '../../store/slices/tabSlice';
 
 const Order: React.FC = () => {
   const dispatch = hooks.useAppDispatch();
   const navigation = hooks.useAppNavigation();
 
-  const cart = useAppSelector(state => state.cartSlice.list);
-  const user = useAppSelector(state => state.userSlice.user);
-  const total = useAppSelector(state => state.cartSlice.total);
-  const delivery = useAppSelector(state => state.cartSlice.delivery);
   const discount = useAppSelector(state => state.cartSlice.discount);
-  const subtotal = useAppSelector(state => state.cartSlice.subtotal);
   const promoCode = useAppSelector(state => state.cartSlice.promoCode);
 
-  const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ORDERS);
+  const { data: ordersData, error: ordersError, loading: ordersLoading, refetch: refetchOrders } = useQuery(GET_ACTIVE_ORDERS);
 
   const {
     data: plantsData,
@@ -71,9 +39,6 @@ const Order: React.FC = () => {
     isLoading: promocodesLoading,
     refetch: refetchPromocodes,
   } = queryHooks.useGetPromocodesQuery();
-
-  const isError = plantsError || promocodesError || ordersError;
-  const isLoading = plantsLoading || promocodesLoading || ordersLoading;
 
   const handlePromocodeChange = useChangeHandler(actions.setPromoCode);
 
@@ -93,13 +58,21 @@ const Order: React.FC = () => {
       });
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      refetchOrders();
+    }, [])
+  );
+
   const renderProducts = (): JSX.Element | null => {
-    if (cart.length > 0) {
+    if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
         <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
-          {cart.map((item, index, array) => {
-            const isLast = index === array.length - 1;
-            return <items.OrderItem key={index} item={item} isLast={isLast} />;
+          {ordersData?.activeOrder?.lines?.map((order, index) => {
+            const isLast = index === order?.lines?.length - 1;
+            return (
+              <items.OrderItem key={order?.id} item={order} isLast={isLast} />
+            );
           })}
         </View>
       );
@@ -109,13 +82,13 @@ const Order: React.FC = () => {
   };
 
   const renderEnterVoucher = (): JSX.Element | null => {
-    if (cart.length > 0) {
+    if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
         <View
           style={{
             paddingHorizontal: 20,
             ...theme.flex.rowCenterSpaceBetween,
-            marginBottom: utils.responsiveHeight(70),
+            marginBottom: utils.responsiveHeight(120),
           }}
         >
           <custom.InputField
@@ -198,59 +171,32 @@ const Order: React.FC = () => {
   };
 
   const renderTotal = (): JSX.Element | null => {
-    if (cart.length > 0) {
+    if (ordersData?.activeOrder?.lines?.length > 0) {
       return (
-        <View
-          style={{
-            marginHorizontal: 20,
-            marginBottom: 20,
-            padding: 20,
-            borderRadius: 15,
-            backgroundColor: theme.colors.imageBackground,
-          }}
-        >
+        <View style={styles.totalContainer}>
+          {/* DELIVERY */}
+          <View style={styles.row}>
+            <text.T14>Total Quantity</text.T14>
+            <text.T14>{ordersData?.activeOrder?.totalQuantity}</text.T14>
+          </View>
           {/* SUBTOTAL */}
-          <View
-            style={{
-              ...theme.flex.rowCenterSpaceBetween,
-              marginBottom: utils.responsiveHeight(14),
-            }}
-          >
+          <View style={styles.row}>
             <text.H5>Subtotal</text.H5>
             <text.T14 style={{ color: theme.colors.mainColor }}>
-              ${subtotal?.toFixed(2)}
+              ₹{ordersData?.activeOrder?.subTotal?.toFixed(2) / 100}
             </text.T14>
-          </View>
-          {/* DELIVERY */}
-          <View
-            style={{
-              ...theme.flex.rowCenterSpaceBetween,
-              paddingBottom: utils.responsiveHeight(14),
-            }}
-          >
-            <text.T14>Delivery</text.T14>
-            <text.T14>${delivery}</text.T14>
           </View>
           {/* DISCOUNT */}
           {discount > 0 && (
-            <View
-              style={{
-                borderBottomWidth: 1,
-                ...theme.flex.rowCenterSpaceBetween,
-                paddingBottom: utils.responsiveHeight(14),
-                marginBottom: utils.responsiveHeight(14),
-                borderColor: theme.colors.antiFlashWhite,
-              }}
-            >
+            <View style={styles.rowWithBorder}>
               <text.T14>Discount</text.T14>
               <text.T14>{discount}%</text.T14>
             </View>
           )}
           {/* TOTAL */}
-          <View style={{ ...theme.flex.rowCenterSpaceBetween }}>
-            <text.H4>Total</text.H4>
-            <text.H4>${total?.toFixed(2)}</text.H4>
-            {/* <text.H4>${(totalWithDiscount + delivery).toFixed(2)}</text.H4> */}
+          <View style={styles.row}>
+            <text.H4>Subtotal with tax</text.H4>
+            <text.H4>₹{ordersData?.activeOrder?.subTotalWithTax?.toFixed(2) / 100}</text.H4>
           </View>
         </View>
       );
@@ -260,7 +206,7 @@ const Order: React.FC = () => {
   };
 
   const renderEmpty = (): JSX.Element | null => {
-    if (cart.length === 0) {
+    if (!ordersData?.activeOrder?.lines || ordersData?.activeOrder?.lines?.length === 0) {
       return (
         <View style={{ flexGrow: 1, padding: 20, justifyContent: 'center' }}>
           <custom.Image
@@ -288,28 +234,20 @@ const Order: React.FC = () => {
   const renderButton = (): JSX.Element | null => {
     return (
       <components.Button
-        title={cart.length > 0 ? 'Shipping & Payment info' : 'Shop now'}
+        title={ordersData?.activeOrder?.lines?.length > 0 ? 'Shipping & Payment info' : 'Shop now'}
         containerStyle={{ padding: 20 }}
         touchableOpacityStyle={{ backgroundColor: theme.colors.pastelMint }}
         textStyle={{ color: theme.colors.steelTeal }}
         onPress={() => {
-          if (cart.length === 0) {
-            navigation.navigate('Shop', {
-              title: 'Shop',
-              // products: plantsData?.plants ?? [],
-            });
+          if (!ordersData?.activeOrder?.lines || ordersData?.activeOrder?.lines?.length === 0) {
+            // navigation.navigate('Shop', {
+            //   title: 'Best-Selling',
+            // });
+            dispatch(setScreen("Category"))
             return;
           }
 
-          if (!user?.emailVerified || !user?.phoneVerified) {
-            Alert.alert(
-              'Verification required',
-              'Please verify your email and phone number before proceeding',
-            );
-            return;
-          }
-
-          if (cart.length > 0) {
+          if (ordersData?.activeOrder?.lines?.length > 0) {
             dispatch(actions.resetFilters());
             navigation.navigate('ShippingAndPaymentInfo');
             return;
@@ -319,37 +257,8 @@ const Order: React.FC = () => {
     );
   };
 
-  const renderOrders = (): JSX.Element | null => {
-    if (ordersLoading) return <components.Loader />;
-    if (ordersError) return <components.Error />;
-
-    if (ordersData && ordersData.activeCustomer && ordersData.activeCustomer.orders.items.length > 0) {
-      return (
-        <View style={{ paddingLeft: 20, marginBottom: utils.rsHeight(30) }}>
-          {ordersData.activeCustomer.orders.items.map((order, index) => {
-            const isLast = index === ordersData.activeCustomer.orders.items.length - 1;
-            return (
-              <View key={order.id} style={{ marginBottom: isLast ? 0 : 20 }}>
-                <Text>Order ID: {order.id}</Text>
-                {order.lines.map(line => (
-                  <View key={line.id} style={{ marginVertical: 10 }}>
-                    <Text>Product: {line.productVariant.name}</Text>
-                    <Text>Quantity: {line.productVariant.price}</Text>
-                    <Text>Price: ${line.unitPriceWithTax / 100}</Text>
-                    <Text>Total: ${line.linePriceWithTax / 100}</Text>
-                  </View>
-                ))}
-              </View>
-            );
-          })}
-        </View>
-      );
-    }
-
-    return null;
-  };
-
   const renderContent = (): JSX.Element => {
+    if (ordersLoading) return <components.Loader />;
     return (
       <KeyboardAwareScrollView
         enableOnAndroid={true}
@@ -362,20 +271,47 @@ const Order: React.FC = () => {
         }
       >
         {renderProducts()}
-        {renderEnterVoucher()}
-        {renderTotal()}
         {renderEmpty()}
-        {renderOrders()}
       </KeyboardAwareScrollView>
     );
   };
 
   return (
-    <React.Fragment>
+    <View style={styles.container}>
       {renderContent()}
+      {renderEnterVoucher()}
+      {renderTotal()}
       {renderButton()}
-    </React.Fragment>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  totalContainer: {
+    marginHorizontal: 0,
+    marginBottom: 60,
+    padding: 20,
+    borderRadius: 15,
+    backgroundColor: theme.colors.imageBackground,
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+  },
+  row: {
+    ...theme.flex.rowCenterSpaceBetween,
+    marginBottom: utils.responsiveHeight(14),
+  },
+  rowWithBorder: {
+    borderBottomWidth: 5,
+    ...theme.flex.rowCenterSpaceBetween,
+    paddingBottom: utils.responsiveHeight(24),
+    marginBottom: utils.responsiveHeight(24),
+    borderColor: theme.colors.antiFlashWhite,
+  },
+});
 
 export default Order;

@@ -19,8 +19,17 @@ import { ExtendedcollectionPlugin } from './plugins/extendedcollection/extendedc
 import { BannersPlugin } from './plugins/banners/banners.plugin';
 import { MultivendorPlugin } from './plugins/multivendor-plugin/multivendor.plugin';
 import { ResponseLoggerPlugin } from './plugins/response-logger/response-logger.plugin';
-
+import { SES, SendRawEmailCommand } from '@aws-sdk/client-ses'
 const IS_DEV = process.env.APP_ENV === 'dev';
+console.log(__dirname)
+const ses = new SES({
+    apiVersion: '2010-12-01',
+    region: 'ap-south-1' ,
+    credentials: {
+      accessKeyId: process.env.SES_ACCESS_KEY || '',
+      secretAccessKey: process.env.SES_SECRET_KEY || '',
+    },
+  });
 
 export const config: VendureConfig = {
     
@@ -86,24 +95,18 @@ export const config: VendureConfig = {
         DefaultJobQueuePlugin.init({ useDatabaseForBuffer: true }),
         DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: true }),
         EmailPlugin.init({
-            devMode: true,
-            outputPath: path.join(__dirname, '../static/email/test-emails'),
-            route: 'mailbox',
-            handlers: [otpEmailVerificationHandler],
+            handlers: [...defaultEmailHandlers,otpEmailVerificationHandler],
             transport: {
-                type: 'smtp',
-                host: 'smtp.sulopa.com',
-                port: 587,
-                auth: {
-                  user: 'username',
-                  pass: 'password',
-                }
-              },
+                type: 'ses',
+                SES: { ses, aws: { SendRawEmailCommand } },
+                sendingRate: 10, // optional messages per second sending rate
+            },
             templatePath: path.join(__dirname, '../static/email/templates'),
             globalTemplateVars: {
                 // The following variables will change depending on your storefront implementation.
                 // Here we are assuming a storefront running at http://localhost:8080.
-                fromAddress: 'rishikumar@sulopa.com',
+            
+                fromAddress: 'noreply@qrcodx.com',
                 verifyEmailAddressUrl: 'http://localhost:8080/verify',
                 passwordResetUrl: 'http://localhost:8080/password-reset',
                 changeEmailAddressUrl: 'http://localhost:8080/verify-email-address-change'

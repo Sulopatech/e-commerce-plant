@@ -4,7 +4,7 @@ const config: CodegenConfig = {
     overwrite: true,
     // This assumes your server is running on the standard port
     // and with the default admin API path. Adjust accordingly.
-    schema: 'http://0.0.0.0:3000/admin-api',
+    schema: 'http://0.0.0.0:5000/admin-api',
     config: {
         // This tells codegen that the `Money` scalar is a number
         scalars: { Money: 'number' },

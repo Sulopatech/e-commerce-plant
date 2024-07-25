@@ -11,6 +11,24 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+const GET_BANNER = gql`
+query banner{
+  banners{
+    items{
+      id
+      description
+      name
+      asset{
+        id
+        source
+        preview
+      }
+    }
+    totalItems
+  }
+}
+`
+
 import { text } from '../../text';
 import { items } from '../../items';
 import { hooks } from '../../hooks';
@@ -20,9 +38,9 @@ import { svg } from '../../assets/svg';
 import { theme } from '../../constants';
 import { components } from '../../components';
 import { queryHooks } from '../../store/slices/apiSlice';
-import { GETCATEGORY, GET_ALL_PRODUCTS } from '../../Api/get_collectiongql';
-import { useQuery } from '@apollo/client';
-import Categories from './Categories';
+import { GETCATEGORY, GET_COLLECTION } from '../../Api/get_collectiongql';
+import { gql, useQuery } from '@apollo/client';
+import ProductCard from '../../items/ProductCard';
 
 type ViewableItemsChanged = {
   viewableItems: Array<ViewToken>;
@@ -52,10 +70,12 @@ const Home: React.FC = () => {
     },
   });
 
-  console.log("data :", data?.collections);
-  console.log("error :", categoriesError);
-  console.log("loading :", categoriesLoading);
-  console.log("refetch :", refetchCategories);
+  const title = "featured-product"
+  const titleBest = "best-selling"
+  const { data: featuredData } = useQuery(GET_COLLECTION(title));
+  const { data: bestSellersData } = useQuery(GET_COLLECTION(titleBest));
+
+  const { data: bannerData } = useQuery(GET_BANNER);
 
   const {
     data: carouselData,
@@ -85,7 +105,9 @@ const Home: React.FC = () => {
 
   let categories = data?.collections?.items ?? [];
 
-  let banner = bannersData?.banners || [];
+  let banner = bannerData?.banners?.items || [];
+
+  console.log("baNNER:",bannerData)
 
   const isData =
     banner.length === 0 &&
@@ -126,7 +148,7 @@ const Home: React.FC = () => {
       <TouchableOpacity
         activeOpacity={0.5}
         onPress={() => {
-          if (products?.length === 0) {
+          if (false) {
             Alert.alert(
               'Products do not exist',
               'Unfortunately, there are no products with the name of such promotion.',
@@ -142,13 +164,12 @@ const Home: React.FC = () => {
           }
 
           navigation.navigate('Shop', {
-            title: 'Shop',
-            products: products || [],
+            title: 'featured-product',
           });
         }}
       >
         <custom.ImageBackground
-          source={{ uri: item.image }}
+          source={{ uri: item?.asset?.preview }}
           style={{
             width: theme.sizes.deviceWidth,
             aspectRatio: 375 / 500,
@@ -160,19 +181,19 @@ const Home: React.FC = () => {
           imageStyle={{ backgroundColor: theme.colors.imageBackground }}
         >
           <View style={{ marginBottom: 30 }}>
+            {/* <text.H1 style={{ textTransform: 'capitalize' }}>
+              {item?.name}
+            </text.H1> */}
             <text.H1 style={{ textTransform: 'capitalize' }}>
-              {item.title_line_1}
-            </text.H1>
-            <text.H1 style={{ textTransform: 'capitalize' }}>
-              {item.title_line_2}
+              {item?.description}
             </text.H1>
             <View
               style={{
                 marginTop: 30,
                 backgroundColor: theme.colors.pastelMint,
                 alignSelf: 'flex-start',
-                paddingHorizontal: 20,
-                paddingVertical: 8,
+                paddingHorizontal: 24,
+                paddingVertical: 15,
                 borderRadius: 50,
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -183,7 +204,7 @@ const Home: React.FC = () => {
               <Text
                 style={{
                   ...theme.fonts.DM_Sans_500Medium,
-                  fontSize: Platform.OS === 'ios' ? 12 : 10,
+                  fontSize: Platform.OS === 'ios' ? 12 : 13,
                   lineHeight: Platform.OS === 'ios' ? 12 * 1.7 : 10 * 1.7,
                   color: theme.colors.mainColor,
                 }}
@@ -199,9 +220,13 @@ const Home: React.FC = () => {
   };
 
   const renderFlatList = () => {
+    // console.log("*****COMING TO FLAT LIST")
+    // console.log("*****carousel********",carousel)
     return (
       <FlatList
-        data={carousel}
+        data={banner}
+        // data={[{ "id": 1, "image": "https://everbloom.rn-admin.site/storage/rvmjqtilPLUFFT56Uztu1XyeluTKWBHaakSiXCLQ.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" },
+        // { "id": 2, "image": "https://everbloom.rn-admin.site/storage/2RxLwmDxKluhZp2FGrQXosmuIirqRFL8s0SY9o15.jpg", "promotion": "Enjoy 30% Off On Select Items!", "title_line_1": "Enjoy 30% Off On", "title_line_2": "Select Items!" }]}
         horizontal={true}
         pagingEnabled={true}
         bounces={false}
@@ -215,7 +240,8 @@ const Home: React.FC = () => {
   };
 
   const renderDots = (): JSX.Element | null => {
-    if (carousel.length && carousel.length > 0) {
+    // if (carousel.length && carousel.length > 0) {
+    if (true) {
       return (
         <View
           style={{
@@ -226,7 +252,7 @@ const Home: React.FC = () => {
             position: 'absolute',
           }}
         >
-          {carouselData?.carousel.map((_, current, array) => {
+          {banner?.map((_, current, array) => {
             const last = current === array.length - 1;
             return (
               <View
@@ -252,7 +278,7 @@ const Home: React.FC = () => {
   };
 
   const renderCarousel = (): JSX.Element | null => {
-    if (carouselData?.carousel.length && carouselData?.carousel.length > 0) {
+    if (true) {
       return (
         <View
           style={{
@@ -270,40 +296,36 @@ const Home: React.FC = () => {
   };
 
   const renderCategories = (): JSX.Element => {
-    console.log("Rendering categories:", categories);
-  
+
     if (!categories || categories.length === 0) {
-      console.log("No categories data available");
+      // console.log("No categories data available");
       return <View />;
     }
-  
+
     return (
       <ScrollView
         horizontal={true}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
-          paddingLeft: 20,
+          paddingLeft: 0,
         }}
         style={{
           marginBottom: utils.responsiveHeight(50),
           marginTop: carouselData?.carousel.length
             ? 0
-            : utils.responsiveHeight(20),
+            : utils.responsiveHeight(0),
           flexGrow: 0,
         }}
       >
-        {categories.map((item, index, array) => {
-          console.log(`Rendering category item: ${item.name}`);
-          const isLast = index === array.length -1;
-          
-         
+        {categories?.map((item, index, array) => {
+          const isLast = index === array.length - 1;
+
+
           const dataFilter = plantsData?.plants.filter(
             e => e.categories.includes(item.name),
           );
-  
-          console.log(`Filtered products for ${item.name}:`, dataFilter);
-          const qty = dataFilter?.length ?? 0;
-  
+          const qty = item?.productVariants?.totalItems;
+
           return (
             <items.CategoryItem
               item={item}
@@ -317,76 +339,75 @@ const Home: React.FC = () => {
       </ScrollView>
     );
   };
-  
+
 
   const renderBestSellers = (): JSX.Element | null => {
-    if (bestSellers?.length === 0) return null;
+    const bestSeller = bestSellersData?.collection?.FilteredProduct?.items || [];
 
     return (
       <View style={{ marginBottom: utils.responsiveHeight(50) }}>
         <components.BlockHeading
           title='Best sellers'
           containerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 0,
             marginBottom: 11,
           }}
           viewAllOnPress={() => {
             navigation.navigate('Shop', {
-              title: 'Best sellers',
-              products: bestSellers,
+              title: 'best-selling',
             });
           }}
         />
-        <ScrollView
-          horizontal={true}
-          contentContainerStyle={{
-            paddingLeft: 20,
-          }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {bestSellers?.map((item, index, array) => {
-            const isLast = index === array.length - 1;
+        <FlatList
+          data={bestSeller}
+          renderItem={({ item, index }) => {
+            const isLast = index === featured.length - 1;
             return (
               <items.ProductCard
                 item={item}
                 key={item.id.toString()}
-                version={3}
+                version={1}
                 isLast={isLast}
+                slug={item.slug}
               />
             );
-          })}
-        </ScrollView>
+          }}
+          horizontal={true}
+          contentContainerStyle={{ paddingLeft: 0 }}
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+        />
       </View>
     );
   };
 
   const renderBanner = (): JSX.Element | null => {
-    if (banner?.length === 0) return null;
+    //if (banner?.length === 0) return null;
 
-    const bannerPromotion = bannersData?.banners[0]?.promotion;
-    const bannerLength = bannersData?.banners?.length ?? 0;
-    const products =
-      plantsData?.plants.filter(item => item.promotion === bannerPromotion) ??
-      [];
+    // const bannerPromotion = bannersData?.banners[0]?.promotion;
+    // const bannerLength = bannersData?.banners?.length ?? 0;
+    // const products =
+    //   plantsData?.plants.filter(item => item.promotion === bannerPromotion) ??
+    //   [];
 
-    if (bannerLength > 0) {
+    if (true) {
       return (
         <TouchableOpacity
           style={{ marginBottom: utils.responsiveHeight(50) }}
           onPress={() => {
-            if (products.length === 0) {
+            if (true) {
               Alert.alert('No data', 'No data available for this promotion');
               return;
             }
 
             navigation.navigate('Shop', {
               title: 'Shop',
-              products: products,
             });
           }}
         >
           <custom.Image
-            source={{ uri: banner[0]?.image }}
+            source={{ uri: 'https://everbloom.rn-admin.site/storage/MuVAapQZ8kQIVA5LquIIRMFHkdv0CD8hicIT6zg8.png' }}
             style={{
               width: theme.sizes.deviceWidth - 20,
               aspectRatio: 355 / 200,
@@ -406,63 +427,68 @@ const Home: React.FC = () => {
   };
 
   const renderFeatured = (): JSX.Element | null => {
-    if (featured?.length === 0) return null;
+    const featured = featuredData?.collection?.FilteredProduct?.items || [];
 
     return (
       <View style={{ marginBottom: utils.responsiveHeight(20) }}>
         <components.BlockHeading
-          title='Featured products'
+          title="Featured products"
           containerStyle={{
-            paddingHorizontal: 20,
+            paddingHorizontal: 0,
             marginBottom: utils.rsHeight(11),
           }}
           viewAllOnPress={() => {
             navigation.navigate('Shop', {
-              title: 'Featured',
-              products: featured,
+              title: 'featured-product',
             });
           }}
         />
-        <ScrollView
-          horizontal={true}
-          contentContainerStyle={{
-            paddingLeft: 20,
-          }}
-          showsHorizontalScrollIndicator={false}
-        >
-          {featured?.map((item, index, array) => {
-            const isLast = index === array.length - 1;
+        <FlatList
+          data={featured}
+          renderItem={({ item, index }) => {
+            const isLast = index === featured.length - 1;
             return (
               <items.ProductCard
                 item={item}
                 key={item.id.toString()}
-                version={2}
+                version={1}
                 isLast={isLast}
+                slug={item.slug}
               />
             );
-          })}
-        </ScrollView>
+          }}
+          horizontal={true}
+          contentContainerStyle={{ paddingLeft: 0 }}
+          ItemSeparatorComponent={() => <View style={{ width: 10 }} />}
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id.toString()}
+        />
       </View>
     );
   };
 
- const renderContent = (): JSX.Element => {
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        paddingTop: 20,
-        paddingHorizontal: 20,
-      }}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {renderCategories()}
-    </ScrollView>
-  );
-};
+
+  const renderContent = (): JSX.Element => {
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          // paddingTop: 20,
+          paddingHorizontal: 10,
+        }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {renderCarousel()}
+        {renderCategories()}
+        {renderBanner()}
+        {renderFeatured()}
+        {renderBestSellers()}
+      </ScrollView>
+    );
+  };
 
   return renderContent();
 };
