@@ -55,7 +55,7 @@ export default function SignInPage() {
               <p>
                 {t('account.emailAddress')}
                 {': '}
-                <span className="font-bold">test@vendure.io</span>
+                <span className="font-bold">test@sulopa.com</span>
               </p>
               <p>
                 {t('account.password')}: <span className="font-bold">test</span>
@@ -82,7 +82,7 @@ export default function SignInPage() {
                       type="email"
                       autoComplete="email"
                       required
-                      defaultValue="test@vendure.io"
+                      defaultValue="test@sulopa.com"
                       placeholder={t('account.emailAddress')}
                       className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm disabled:text-gray-400 disabled:bg-gray-200 disabled:cursor-not-allowed"
                     />

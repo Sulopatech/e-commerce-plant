@@ -30,17 +30,45 @@ export function Header({
         'bg-gradient-to-r from-zinc-700 to-gray-900 shadow-lg transform shadow-xl',
       )}
     >
-      <div className=" mx-auto p-4 flex items-center space-x-4">
+      <div className="bg-zinc-100 text-gray-600 shadow-inner text-center text-sm py-2 px-2 xl:px-0">
+        <div className="max-w-6xl mx-2 md:mx-auto flex items-center justify-end">
+          {/* <div>
+            <p className="hidden sm:block">
+              {t('vendure.exclusive')}{' '}
+              <a
+                href="https://github.com/vendure-ecommerce/storefront-remix-starter"
+                target="_blank"
+                className="underline"
+              >
+                {t('vendure.repoLinkLabel')}
+              </a>
+            </p>
+          </div> */}
+          <div>
+            <Link
+              to={isSignedIn ? '/account' : '/sign-in'}
+              className="flex space-x-1"
+            >
+              <UserIcon className="w-4 h-4"></UserIcon>
+              <span>
+                {isSignedIn ? t('account.myAccount') : t('account.signIn')}
+              </span>
+            </Link>
+          </div>
+        </div>
+      </div>
+      <div className="max-w-6xl mx-auto p-4 flex items-center space-x-4">
         <h1 className="text-white w-10">
           <Link to="/">
-            <img
+            {/* <img
               // src="/Sulopa_Whitelogo.png"
               src={Sulopa_Logo}
               // style={{ height: '40px', width: '50px' }}
-              width={100}
-              height={90}
+              width={80}
+              height={61}
               alt={t('commmon.logoAlt')}
-            />
+            /> */}
+            <h1 className='text-28 font-bold'>Sulopa</h1>
           </Link>
         </h1>
         <div className="relative md:hidden">
@@ -66,7 +94,7 @@ export function Header({
             </div>
           )}
         </div>
-        <div className="hidden md:flex space-x-4">
+        <div className="hidden md:flex space-x-4 ml-10">
           {data.collections.map((collection) => (
             <Link
               className="text-sm md:text-base text-gray-200 hover:text-white"
