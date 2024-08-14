@@ -1,4 +1,4 @@
-package com.everbloom
+package com.sulopa.plant
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
