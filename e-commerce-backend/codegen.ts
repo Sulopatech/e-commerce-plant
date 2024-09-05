@@ -17,6 +17,7 @@ const config: CodegenConfig = {
         './src/plugins/extendedcollection/gql/generated.ts': { plugins: ['typescript'] },
         './src/plugins/banners/gql/generated.ts': { plugins: ['typescript'] },
         './src/plugins/multivendor-plugin/gql/generated.ts': { plugins: ['typescript'] },
+        './src/plugins/email-name-validation/gql/generated.ts': { plugins: ['typescript'] },
     },
 };
 

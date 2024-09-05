@@ -20,6 +20,8 @@ import { BannersPlugin } from './plugins/banners/banners.plugin';
 import { MultivendorPlugin } from './plugins/multivendor-plugin/multivendor.plugin';
 import { ResponseLoggerPlugin } from './plugins/response-logger/response-logger.plugin';
 import { SES, SendRawEmailCommand } from '@aws-sdk/client-ses'
+import { EmailNameValidationPlugin } from './plugins/email-name-validation/email-name-validation.plugin';
+
 const IS_DEV = process.env.APP_ENV === 'dev';
 console.log(__dirname)
 const ses = new SES({
@@ -45,16 +47,16 @@ export const config: VendureConfig = {
             adminApiPlayground: {
                 settings: { 'request.credentials': 'include' },
             },
-            adminApiDebug: true,
+            adminApiDebug: false,
             shopApiPlayground: {
                 settings: { 'request.credentials': 'include' },
             },
-            shopApiDebug: true,
+            shopApiDebug: false,
         } : {}),
     },
     logger:new DefaultLogger({ level: LogLevel.Debug }),
     authOptions: {
-        requireVerification :false,
+        requireVerification :true,
         tokenMethod: ['bearer', 'cookie'],
         superadminCredentials: {
             identifier: process.env.SUPERADMIN_USERNAME,
@@ -136,5 +138,6 @@ export const config: VendureConfig = {
         BannersPlugin.init({}),
         MultivendorPlugin.init({platformFeePercent: 10, platformFeeSKU: 'FEE',}),
         ResponseLoggerPlugin.init({}),
+        EmailNameValidationPlugin.init({}),
     ],
 };
