@@ -39,7 +39,7 @@ import { RequestLoggerMiddleware } from './service/response-logger.service';
         config.apiOptions.middleware.push(middleware);
         return config;
         },
-    compatibility: '^2.0.0',
+    compatibility: '^3.0.1',
 })
 export class ResponseLoggerPlugin {
     static options: PluginInitOptions;

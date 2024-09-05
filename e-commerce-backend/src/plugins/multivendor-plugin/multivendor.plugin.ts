@@ -151,7 +151,7 @@ import { MultivendorPluginOptions } from './types';
             new MultivendorShippingLineAssignmentStrategy();
         return config;
     },
-    compatibility: '^2.0.0',
+    compatibility: '^3.0.1',
     shopApiExtensions: {
         schema: shopApiExtensions,
         resolvers: [MultivendorResolver],

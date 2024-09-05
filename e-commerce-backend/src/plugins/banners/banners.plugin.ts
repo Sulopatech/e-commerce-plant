@@ -18,7 +18,7 @@ import { BannersShopResolver } from './api/banners-shop.resolver';
         // modifying the `config` object.
         return config;
     },
-    compatibility: '^2.0.0',
+    compatibility: '^3.0.1',
     entities: [Banners],
     adminApiExtensions: {
         schema: adminApiExtensions,

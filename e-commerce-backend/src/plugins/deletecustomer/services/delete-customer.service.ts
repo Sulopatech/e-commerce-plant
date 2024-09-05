@@ -12,7 +12,8 @@ import {
     isGraphQlErrorResult,
 } from '@vendure/core';
 import { DELETECUSTOMER_PLUGIN_OPTIONS } from '../constants';
-import { PluginInitOptions } from '../types';
+import { PluginInitOptions, } from '../types';
+import { DeletionResponse, DeletionResult } from '@vendure/common/lib/generated-types';
 
 @Injectable()
 export class DeleteCustomerService {
@@ -24,7 +25,7 @@ export class DeleteCustomerService {
         @Inject(DELETECUSTOMER_PLUGIN_OPTIONS) private options: PluginInitOptions
     ) {}
 
-    async deleteCustomerMutation(ctx: RequestContext, id: ID): Promise<boolean> {
+    async deleteCustomerMutation(ctx: RequestContext, id: ID): Promise<DeletionResponse> {
         
 
         let customer = undefined;
@@ -51,23 +52,47 @@ export class DeleteCustomerService {
         
 
         // Delete the customer
-        const deleteResult = await this.customerService.softDelete(ctx, customer.id);
-        console.log(deleteResult)
-        if (isGraphQlErrorResult(deleteResult)) {
-            throw new Error(`Failed to delete customer: ${deleteResult}`);
-        }
-
-        // Delete associated user if it exists
-        if (customer.user) {
-            console.log(customer.user)
-            const deleteUserResult = await this.userService.softDelete(ctx, customer.user.id);
-            console.log(deleteUserResult)
-            if (isGraphQlErrorResult(deleteUserResult)) {
-                throw new Error(`Failed to delete associated user: ${deleteUserResult}`);
+        try{
+            const deleteResult = await this.customerService.softDelete(ctx, customer.id);
+            console.log(deleteResult)
+            if (isGraphQlErrorResult(deleteResult)) {
+                // throw new Error(`Failed to delete customer: ${deleteResult}`);
+                return {
+                    result: DeletionResult.NOT_DELETED,
+                    message: `Failed to delete customer: ${deleteResult}`,
+                };
             }
+        }catch(e:any){
+            return {
+                result: DeletionResult.NOT_DELETED,
+                message: e.toString(),
+            };
         }
-
-        return true;
+        
+        // try{
+        // // Delete associated user if it exists
+        // if (customer.user) {
+        //     console.log(customer.user)
+        //     const deleteUserResult = await this.userService.softDelete(ctx, customer.user.id);
+        //     console.log(deleteUserResult)
+        //     if (isGraphQlErrorResult(deleteUserResult)) {
+        //         // throw new Error(`Failed to delete associated user: ${deleteUserResult}`);
+        //         return {
+        //             result: DeletionResult.NOT_DELETED,
+        //             message: `Failed to delete associated user: ${deleteUserResult}`,
+        //         };
+        //     }
+        // }
+        // }
+        // catch(e:any){
+        //     return {
+        //         result: DeletionResult.NOT_DELETED,
+        //         message: e.toString(),
+        //     };
+        // }
+        return {
+            result:DeletionResult.DELETED,
+        };
     }
 
 }

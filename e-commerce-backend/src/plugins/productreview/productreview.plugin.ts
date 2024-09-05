@@ -38,7 +38,7 @@ import { ProductEntityResolver } from './api/product-extention.resolver';
         });
         return config;
     },
-    compatibility: '^2.0.0',
+    compatibility: '^3.0.1',
     entities: [ProductReview],
     adminApiExtensions: {
         schema: adminApiExtensions,

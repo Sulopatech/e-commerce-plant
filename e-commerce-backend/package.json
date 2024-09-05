@@ -13,25 +13,25 @@
     "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.614.0",
-    "@vendure/admin-ui-plugin": "2.2.6",
-    "@vendure/asset-server-plugin": "2.2.6",
-    "@vendure/core": "^2.2.7",
-    "@vendure/email-plugin": "^2.2.6",
+    "@aws-sdk/client-ses": "^3.645.0",
+    "@vendure/admin-ui-plugin": "3.0.1",
+    "@vendure/asset-server-plugin": "3.0.1",
+    "@vendure/core": "^3.0.1",
+    "@vendure/email-plugin": "^3.0.1",
     "dotenv": "16.4.5",
     "mysql": "2.18.1",
     "otp-generator": "^4.0.1"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.2",
-    "@graphql-codegen/client-preset": "^4.3.0",
-    "@graphql-codegen/typescript": "^4.0.7",
+    "@graphql-codegen/client-preset": "^4.3.3",
+    "@graphql-codegen/typescript": "^ 4.0.9",
     "@types/otp-generator": "^4.0.2",
-    "@types/react": "18.3.3",
-    "@vendure/cli": "^2.2.6",
-    "@vendure/ui-devkit": "2.2.6",
+    "@types/react": "18.3.5",
+    "@vendure/cli": "^3.0.1",
+    "@vendure/ui-devkit": "3.0.1",
     "concurrently": "8.2.2",
     "copyfiles": "^2.4.1",
-    "typescript": "5.4.5"
+    "typescript": "5.5.4"
   }
 }

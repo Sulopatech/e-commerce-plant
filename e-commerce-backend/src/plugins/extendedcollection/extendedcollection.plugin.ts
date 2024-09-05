@@ -16,7 +16,7 @@ import { shopApiExtensions } from './api/api-extensions';
         // modifying the `config` object.
         return config;
     },
-    compatibility: '^2.0.0',
+    compatibility: '^3.0.1',
     shopApiExtensions: {
         schema: shopApiExtensions,
         resolvers: [CollectionResolver]
