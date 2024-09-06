@@ -56,7 +56,7 @@ export const config: VendureConfig = {
     },
     logger:new DefaultLogger({ level: LogLevel.Debug }),
     authOptions: {
-        requireVerification :true,
+        requireVerification :false,
         tokenMethod: ['bearer', 'cookie'],
         superadminCredentials: {
             identifier: process.env.SUPERADMIN_USERNAME,
