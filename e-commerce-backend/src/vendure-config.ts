@@ -21,6 +21,8 @@ import { MultivendorPlugin } from './plugins/multivendor-plugin/multivendor.plug
 import { ResponseLoggerPlugin } from './plugins/response-logger/response-logger.plugin';
 import { SES, SendRawEmailCommand } from '@aws-sdk/client-ses'
 import { EmailNameValidationPlugin } from './plugins/email-name-validation/email-name-validation.plugin';
+import { PaymentPlugin } from './plugins/payment/payment.plugin';
+import { razorpayPaymentMethodHandler } from './plugins/payment/my-payment-handler';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 console.log(__dirname)
@@ -80,7 +82,7 @@ export const config: VendureConfig = {
         password: process.env.DB_PASSWORD,
     },
     paymentOptions: {
-        paymentMethodHandlers: [dummyPaymentHandler],
+        paymentMethodHandlers: [dummyPaymentHandler, razorpayPaymentMethodHandler],
     },
     // When adding or altering custom field definitions, the database will
     // need to be updated. See the "Migrations" section in README.md.
@@ -139,5 +141,6 @@ export const config: VendureConfig = {
         MultivendorPlugin.init({platformFeePercent: 10, platformFeeSKU: 'FEE',}),
         ResponseLoggerPlugin.init({}),
         EmailNameValidationPlugin.init({}),
+        PaymentPlugin.init({}),
     ],
 };
