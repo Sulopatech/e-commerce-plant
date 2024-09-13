@@ -23,6 +23,7 @@ import { SES, SendRawEmailCommand } from '@aws-sdk/client-ses'
 import { EmailNameValidationPlugin } from './plugins/email-name-validation/email-name-validation.plugin';
 import { PaymentPlugin } from './plugins/payment/payment.plugin';
 import { razorpayPaymentMethodHandler } from './plugins/payment/my-payment-handler';
+import { WishlistPlugin } from './plugins/wishlist/wishlist.plugin';
 
 const IS_DEV = process.env.APP_ENV === 'dev';
 console.log(__dirname)
@@ -142,5 +143,6 @@ export const config: VendureConfig = {
         ResponseLoggerPlugin.init({}),
         EmailNameValidationPlugin.init({}),
         PaymentPlugin.init({}),
+        WishlistPlugin.init({})
     ],
 };
