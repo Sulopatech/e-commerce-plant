@@ -37,16 +37,11 @@ export const razorpayPaymentMethodHandler = new PaymentMethodHandler({
      */
     createPayment: async (ctx, order, amount, args, metadata): Promise<CreatePaymentResult> => {
         try {
-            const razorpayOrder = await instance.orders.create({
-                amount: order.totalWithTax * 100, // Razorpay requires amount in paisa (1 INR = 100 paisa)
-                currency: 'INR',
-                receipt: order.code,
-            });
-            
+
             // Getting razorpayOrderid stored for current vendure order.
             const razorpayOrderId = (order?.customFields as any).razorpay_order_id;
-            
-            metadata = JSON.parse(metadata as any);
+
+            // metadata = JSON.parse(metadata as any);
             
             const { razorpay_payment_id: razorpayPaymentId, razorpay_signature: razorpaySignature } = metadata;
 
